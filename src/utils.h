@@ -15,11 +15,9 @@
  *  See LICENSE file for more information.
  */
 
-
 #ifndef  GUM_UTILS_H__
 #define  GUM_UTILS_H__
 
 #include "basic_utils.h"
-#include "vg_utils.h"
 
 #endif  /* ----- #ifndef GUM_UTILS_H__  ----- */
