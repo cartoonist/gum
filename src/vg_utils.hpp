@@ -22,7 +22,7 @@
 #include <string>
 
 #include "vg.pb.h"
-#include "stream/stream.hpp"
+#include "vg/io/stream.hpp"
 
 #include "seqgraph.hpp"
 #include "basic_utils.hpp"
