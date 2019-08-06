@@ -15,11 +15,11 @@
  *  See LICENSE file for more information.
  */
 
-
 #ifndef  GUM_BASIC_UTILS_H__
 #define  GUM_BASIC_UTILS_H__
 
 #include <iterator>
+
 
 namespace gum {
   namespace utils {
@@ -30,13 +30,13 @@ namespace gum {
      *  @param  suf The second string.
      *  @return `true` if `suf` is a suffix of `str`; otherwise `false`.
      *
-     *  NOTE: The string type should have `length` method and support reversed iterator.
+     *  NOTE: The string type should have `size` method and support reversed iterator.
      */
     template< typename TText >
         inline bool
       ends_with( TText const& str, TText const& suf )
       {
-        if ( suf.length() <= str.length() &&
+        if ( suf.size() <= str.size() &&
             std::equal( std::rbegin( suf ), std::rend( suf ), std::rbegin( str ) ) ) {
           return true;
         }
@@ -50,13 +50,13 @@ namespace gum {
      *  @param  pre The second string.
      *  @return `true` if `pre` is a prefix of `str`; otherwise `false`.
      *
-     *  It checks the first string whether the second one is one of its prefixes or not.
+     *  NOTE: The string type should have `size` method and support forward iterator.
      */
     template< typename TText >
         inline bool
       starts_with( TText const& str, TText const& pre )
       {
-        if ( pre.length() <= str.length() &&
+        if ( pre.size() <= str.size() &&
             std::equal( std::begin( pre ), std::end( pre ), std::begin( str ) ) ) {
           return true;
         }
