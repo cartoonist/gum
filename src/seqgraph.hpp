@@ -1,5 +1,5 @@
 /**
- *    @file  seqgraph.h
+ *    @file  seqgraph.hpp
  *   @brief  Sequence graph class definition
  *
  *  This header file defines `SeqGraph` class which represents a sequence graph.
@@ -15,10 +15,10 @@
  *  See LICENSE file for more information.
  */
 
-#ifndef  GUM_SEQGRAPH_H__
-#define  GUM_SEQGRAPH_H__
+#ifndef  GUM_SEQGRAPH_HPP__
+#define  GUM_SEQGRAPH_HPP__
 
-#include "seqgraph_base.h"
+#include "seqgraph_base.hpp"
 
 namespace gum {
   /**
@@ -407,4 +407,4 @@ namespace gum {
     };
 }  /* -----  end of namespace gum  ----- */
 
-#endif  /* ----- #ifndef GUM_SEQGRAPH_H__  ----- */
+#endif  /* ----- #ifndef GUM_SEQGRAPH_HPP__  ----- */

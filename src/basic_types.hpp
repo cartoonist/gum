@@ -1,5 +1,5 @@
 /**
- *    @file  basic_types.h
+ *    @file  basic_types.hpp
  *   @brief  Basic type definitions.
  *
  *  This header file defines some basic types.
@@ -15,8 +15,8 @@
  *  See LICENSE file for more information.
  */
 
-#ifndef  GUM_BASIC_TYPES_H__
-#define  GUM_BASIC_TYPES_H__
+#ifndef  GUM_BASIC_TYPES_HPP__
+#define  GUM_BASIC_TYPES_HPP__
 
 #include <cinttypes>
 
@@ -80,4 +80,4 @@ namespace gum {
     using uinteger_t = typename uinteger< TWidth >::type;
 }  /* -----  end of namespace gum  ----- */
 
-#endif  /* ----- #ifndef GUM_BASIC_TYPES_H__  ----- */
+#endif  /* ----- #ifndef GUM_BASIC_TYPES_HPP__  ----- */

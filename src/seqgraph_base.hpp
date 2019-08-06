@@ -1,5 +1,5 @@
 /**
- *    @file  seqgraph_base.h
+ *    @file  seqgraph_base.hpp
  *   @brief  Sequence graph base definitions
  *
  *  This is a base header file for sequence graph class definition.
@@ -15,8 +15,8 @@
  *  See LICENSE file for more information.
  */
 
-#ifndef  GUM_SEQGRAPH_BASE_H__
-#define  GUM_SEQGRAPH_BASE_H__
+#ifndef  GUM_SEQGRAPH_BASE_HPP__
+#define  GUM_SEQGRAPH_BASE_HPP__
 
 #include <string>
 #include <vector>
@@ -25,7 +25,7 @@
 
 #include <sparsehash/dense_hash_map>
 
-#include "basic_types.h"
+#include "basic_types.hpp"
 
 namespace gum {
   /* Graph dynamic specialization tag. */
@@ -195,4 +195,4 @@ namespace gum {
     class SeqGraph;
 }  /* -----  end of namespace gum  ----- */
 
-#endif  /* ----- #ifndef GUM_SEQGRAPH_BASE_H__  ----- */
+#endif  /* ----- #ifndef GUM_SEQGRAPH_BASE_HPP__  ----- */

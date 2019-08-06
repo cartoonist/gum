@@ -1,5 +1,5 @@
 /**
- *    @file  base.h
+ *    @file  base.hpp
  *   @brief  Basic data types and macros
  *
  *  This header file defines basic data types and macros.
@@ -15,8 +15,8 @@
  *  See LICENSE file for more information.
  */
 
-#ifndef  GUM_BASE_H__
-#define  GUM_BASE_H__
+#ifndef  GUM_BASE_HPP__
+#define  GUM_BASE_HPP__
 
 #include <string>
 #include <iostream>
@@ -48,4 +48,4 @@ assert_fail( std::string const& expr, std::string const& outfile,
   std::exit( 134 );
 }
 
-#endif  /* ----- #ifndef GUM_BASE_H__  ----- */
+#endif  /* ----- #ifndef GUM_BASE_HPP__  ----- */

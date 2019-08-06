@@ -1,5 +1,5 @@
 /**
- *    @file  utils.h
+ *    @file  utils.hpp
  *   @brief  Utility data types and functions.
  *
  *  This header file aggregates all utility header files.
@@ -15,9 +15,9 @@
  *  See LICENSE file for more information.
  */
 
-#ifndef  GUM_UTILS_H__
-#define  GUM_UTILS_H__
+#ifndef  GUM_UTILS_HPP__
+#define  GUM_UTILS_HPP__
 
-#include "basic_utils.h"
+#include "basic_utils.hpp"
 
-#endif  /* ----- #ifndef GUM_UTILS_H__  ----- */
+#endif  /* ----- #ifndef GUM_UTILS_HPP__  ----- */

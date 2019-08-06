@@ -1,5 +1,5 @@
 /**
- *    @file  vg_utils.h
+ *    @file  vg_utils.hpp
  *   @brief  vg utility functions and data types.
  *
  *  This header file is a part of the utility header files specialised for vg data type.
@@ -16,16 +16,16 @@
  */
 
 
-#ifndef  GUM_VG_UTILS_H__
-#define  GUM_VG_UTILS_H__
+#ifndef  GUM_VG_UTILS_HPP__
+#define  GUM_VG_UTILS_HPP__
 
 #include <string>
 
 #include "vg.pb.h"
 #include "stream/stream.hpp"
 
-#include "seqgraph.h"
-#include "basic_utils.h"
+#include "seqgraph.hpp"
+#include "basic_utils.hpp"
 
 #define VG_FILE_EXT ".vg"
 
@@ -84,4 +84,4 @@ namespace gum {
   }  /* -----  end of namespace utils  ----- */
 }  /* -----  end of namespace gum  ----- */
 
-#endif  /* ----- #ifndef GUM_VG_UTILS_H__  ----- */
+#endif  /* ----- #ifndef GUM_VG_UTILS_HPP__  ----- */

@@ -1,5 +1,5 @@
 /**
- *    @file  basic_utils.h
+ *    @file  basic_utils.hpp
  *   @brief  Basic utility data types and functions.
  *
  *  This header file includes auxiliary data types and utility functions.
@@ -15,8 +15,8 @@
  *  See LICENSE file for more information.
  */
 
-#ifndef  GUM_BASIC_UTILS_H__
-#define  GUM_BASIC_UTILS_H__
+#ifndef  GUM_BASIC_UTILS_HPP__
+#define  GUM_BASIC_UTILS_HPP__
 
 #include <iterator>
 
@@ -65,4 +65,4 @@ namespace gum {
   }  /* -----  end of namespace utils  ----- */
 }  /* -----  end of namespace gum  ----- */
 
-#endif  /* ----- #ifndef GUM_BASIC_UTILS_H__  ----- */
+#endif  /* ----- #ifndef GUM_BASIC_UTILS_HPP__  ----- */
