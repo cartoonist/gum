@@ -20,6 +20,7 @@
 
 #include <cinttypes>
 
+
 namespace gum {
   /**
    *  @brief  Wrap signed integer type of width TWidth.

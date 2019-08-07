@@ -27,6 +27,7 @@
 
 #include "basic_types.hpp"
 
+
 namespace gum {
   /* Graph dynamic specialization tag. */
   struct Dynamic;

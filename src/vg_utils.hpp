@@ -29,8 +29,9 @@
 
 #define VG_FILE_EXT ".vg"
 
+
 namespace gum {
-  namespace utils {
+  namespace util {
     template< uint8_t ...TWidths >
         inline void
       add( SeqGraph< Dynamic, TWidths... >& graph, vg::Node const& node ) {
@@ -79,9 +80,9 @@ namespace gum {
           throw std::runtime_error( "cannot open file '" + fname + "'" );
         }
 
-        if ( utils::start_with( fname, VG_FILE_EXT ) ) extend_vg( graph, ifs );
+        if ( util::start_with( fname, VG_FILE_EXT ) ) extend_vg( graph, ifs );
       }  /* -----  end of template function extend  ----- */
-  }  /* -----  end of namespace utils  ----- */
+  }  /* -----  end of namespace util  ----- */
 }  /* -----  end of namespace gum  ----- */
 
 #endif  /* ----- #ifndef GUM_VG_UTILS_HPP__  ----- */

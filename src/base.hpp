@@ -27,6 +27,7 @@
    ? __ASSERT_VOID_CAST (0)						\
    : assert_fail (#expr, BINARY_NAME, __FILE__, __LINE__, __PRETTY_FUNCTION__))
 
+
 /**
  *  @brief  Assert fail function
  *

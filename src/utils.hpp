@@ -2,7 +2,8 @@
  *    @file  utils.hpp
  *   @brief  Utility data types and functions.
  *
- *  This header file aggregates all utility header files.
+ *  This header file aggregates all utility header files, except for those which are
+ *  dependent on optional external libraries.
  *
  *  @author  Ali Ghaffaari (\@cartoonist), <ali.ghaffaari@mpi-inf.mpg.de>
  *

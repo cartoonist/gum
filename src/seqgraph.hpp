@@ -20,6 +20,7 @@
 
 #include "seqgraph_base.hpp"
 
+
 namespace gum {
   /**
    *  @brief  Bidirected graph class (dynamic).

@@ -22,7 +22,7 @@
 
 
 namespace gum {
-  namespace utils {
+  namespace util {
     /**
      *  @brief  Check whether a string ends with another string.
      *
@@ -62,7 +62,7 @@ namespace gum {
         }
         return false;
       }  /* -----  end of template function starts_with  ----- */
-  }  /* -----  end of namespace utils  ----- */
+  }  /* -----  end of namespace util  ----- */
 }  /* -----  end of namespace gum  ----- */
 
 #endif  /* ----- #ifndef GUM_BASIC_UTILS_HPP__  ----- */
