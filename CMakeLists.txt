@@ -5,6 +5,7 @@ project(gum VERSION 0.0.1 LANGUAGES CXX)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 # Finding dependencies.
 find_package(SparseHash REQUIRED)
+find_package(GFAKluge)
 find_package(VGio)
 
 # Adding test submodule.
