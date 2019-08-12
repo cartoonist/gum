@@ -51,7 +51,7 @@ namespace gum {
         using rank_map_type = google::dense_hash_map< id_type, rank_type >;
     };  /* ----------  end of template class GraphTrait  ---------- */
 
-  template< typename TSpec, typename TDir, uint8_t TIdWidth, uint8_t TOffsetWidth >
+  template< typename TSpec, typename TDir, uint8_t ...TWidths >
     class DirectedGraphTrait;
 
   template< uint8_t ...TWidths >
@@ -118,10 +118,10 @@ namespace gum {
         }
     };  /* ----------  end of template class DirectedGraphTrait  ---------- */
 
-  template< typename TSpec, typename TDir, uint8_t TIdWidth, uint8_t TOffsetWidth >
+  template< typename TSpec, typename TDir, uint8_t ...TWidths >
     class DirectedGraph;
 
-  template< typename TSpec, uint8_t TIdWidth, uint8_t TOffsetWidth >
+  template< typename TSpec, uint8_t ...TWidths >
     class NodePropertyTrait;
 
   template< uint8_t ...TWidths >
@@ -155,10 +155,10 @@ namespace gum {
         using container_type = std::vector< value_type >;
     };
 
-  template< typename TSpec, uint8_t TIdWidth, uint8_t TOffsetWidth >
+  template< typename TSpec, uint8_t ...TWidths >
     class NodeProperty;
 
-  template< typename TSpec, typename TDir, uint8_t TIdWidth, uint8_t TOffsetWidth >
+  template< typename TSpec, typename TDir, uint8_t ...TWidths >
     class EdgePropertyTrait;
 
   template< typename TDir, uint8_t ...TWidths >
@@ -186,14 +186,17 @@ namespace gum {
         using container_type = google::dense_hash_map< key_type, value_type >;
     };
 
-  template< typename TSpec, uint8_t TIdWidth, uint8_t TOffsetWidth >
+  template< typename TSpec, typename TDir, uint8_t ...TWidths >
     class EdgeProperty;
 
   template< typename TSpec, uint8_t TIdWidth, uint8_t TOffsetWidth >
     class GraphProperty;
 
-  template< typename TSpec, uint8_t TIdWidth, uint8_t TOffsetWidth >
+  template< typename TSpec, uint8_t ...TWidths >
     class SeqGraph;
+
+  template< typename TSpec, uint8_t ...TWidths >
+    class DiSeqGraph;
 }  /* -----  end of namespace gum  ----- */
 
 #endif  /* ----- #ifndef GUM_SEQGRAPH_BASE_HPP__  ----- */
