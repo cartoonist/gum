@@ -21,7 +21,7 @@
 #include <string>
 #include <iostream>
 
-#define BINARY_NAME "grem"
+#define BINARY_NAME "gum"
 #define ASSERT(expr)							\
   ((expr)								\
    ? __ASSERT_VOID_CAST (0)						\

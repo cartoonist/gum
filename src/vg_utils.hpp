@@ -15,30 +15,29 @@
  *  See LICENSE file for more information.
  */
 
-
 #ifndef  GUM_VG_UTILS_HPP__
 #define  GUM_VG_UTILS_HPP__
 
 #include <string>
 
-#include "vg.pb.h"
-#include "vg/io/stream.hpp"
+#include <vg/vg.pb.h>
+#include <vg/io/stream.hpp>
 
 #include "seqgraph.hpp"
 #include "basic_utils.hpp"
 
-#define VG_FILE_EXT ".vg"
-
 
 namespace gum {
   namespace util {
+    const std::string VG_FILE_EXT(".vg");
+
     template< uint8_t ...TWidths >
         inline void
       add( SeqGraph< Dynamic, TWidths... >& graph, vg::Node const& node ) {
         using graph_type = SeqGraph< Dynamic, TWidths... >;
         using node_type = typename graph_type::node_type;
-        graph.add_node( node.id(), node_type( node.sequence(), node.name() ) )
-      }
+        graph.add_node( node.id(), node_type( node.sequence(), node.name() ) );
+      }  /* -----  end of template function add  ----- */
 
     template< uint8_t ...TWidths >
         inline void
@@ -47,13 +46,13 @@ namespace gum {
         using link_type = typename graph_type::link_type;
         using edge_type = typename graph_type::edge_type;
         graph.add_edge( link_type( edge.from, edge.from_start, edge.to, edge.to_end ),
-            edge_type( edge.overlap ) )
-      }
+            edge_type( edge.overlap ) );
+      }  /* -----  end of template function add  ----- */
 
     template< uint8_t ...TWidths >
         inline void
       extend( SeqGraph< Dynamic, TWidths... >& graph, vg::Graph const& other ) {
-        for ( std:size_t i = 0; i < other.node_size(); ++i ) {
+        for ( std::size_t i = 0; i < other.node_size(); ++i ) {
           add( graph, other.node( i ) );
         }
         for ( std::size_t i = 0; i < other.edge_size(); ++i ) {
@@ -69,7 +68,7 @@ namespace gum {
         auto handle_chunks = [&graph]( vg::Graph const& other ) {
           extend( graph, other );
         };
-        stream::for_each( in, handle_chunks );
+        vg::io::for_each( in, handle_chunks );
       }  /* -----  end of template function extend_vg  ----- */
 
     template< uint8_t ...TWidths >
@@ -80,7 +79,7 @@ namespace gum {
           throw std::runtime_error( "cannot open file '" + fname + "'" );
         }
 
-        if ( util::start_with( fname, VG_FILE_EXT ) ) extend_vg( graph, ifs );
+        if ( util::starts_with( fname, VG_FILE_EXT ) ) extend_vg( graph, ifs );
       }  /* -----  end of template function extend  ----- */
   }  /* -----  end of namespace util  ----- */
 }  /* -----  end of namespace gum  ----- */
