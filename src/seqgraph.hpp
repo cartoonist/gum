@@ -85,6 +85,12 @@ namespace gum {
           return this->nodes[ rank - 1 ];
         }  /* -----  end of method DirectedGraph::rank_to_id  ----- */
 
+          inline rank_type
+        get_max_node_rank( ) const
+        {
+          return this->node_rank.size();
+        }  /* -----  end of method DirectedGraph::get_max_node_rank  ----- */
+
           inline void
         add_node( id_type id )
         {
