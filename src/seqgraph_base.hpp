@@ -46,8 +46,8 @@ namespace gum {
       public:
         using id_type = integer_t< TIdWidth >;
         using offset_type = integer_t< TOffsetWidth >;
-        using rank_type = id_type;
         using nodes_type = std::vector< id_type >;
+        using rank_type = typename nodes_type::size_type;
         using rank_map_type = google::dense_hash_map< id_type, rank_type >;
     };  /* ----------  end of template class GraphTrait  ---------- */
 

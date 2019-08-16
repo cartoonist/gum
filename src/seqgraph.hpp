@@ -82,7 +82,7 @@ namespace gum {
         rank_to_id( rank_type rank ) const
         {
           if ( rank <= 0 ) throw std::runtime_error( "non-positive node rank");
-          return this->nodes[ rank ];
+          return this->nodes[ rank - 1 ];
         }  /* -----  end of method DirectedGraph::rank_to_id  ----- */
 
           inline void
@@ -238,7 +238,7 @@ namespace gum {
           inline value_type const&
         operator[]( rank_type rank ) const
         {
-          return this->nodes[ rank ];
+          return this->nodes[ rank - 1 ];
         }
 
         /* === METHODS === */
