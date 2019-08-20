@@ -19,6 +19,7 @@
 #define  GUM_VG_UTILS_HPP__
 
 #include <string>
+#include <istream>
 
 #include <vg/vg.pb.h>
 #include <vg/io/stream.hpp>
@@ -29,11 +30,13 @@
 
 namespace gum {
   namespace util {
+    struct VGFormat { };
     const std::string VG_FILE_EXT(".vg");
 
     template< uint8_t ...TWidths >
         inline void
-      add( SeqGraph< Dynamic, TWidths... >& graph, vg::Node const& node ) {
+      add( SeqGraph< Dynamic, TWidths... >& graph, vg::Node const& node )
+      {
         using graph_type = SeqGraph< Dynamic, TWidths... >;
         using node_type = typename graph_type::node_type;
         graph.add_node( node.id(), node_type( node.sequence(), node.name() ) );
@@ -41,7 +44,8 @@ namespace gum {
 
     template< uint8_t ...TWidths >
         inline void
-      add( SeqGraph< Dynamic, TWidths... >& graph, vg::Edge const& edge ) {
+      add( SeqGraph< Dynamic, TWidths... >& graph, vg::Edge const& edge )
+      {
         using graph_type = SeqGraph< Dynamic, TWidths... >;
         using link_type = typename graph_type::link_type;
         using edge_type = typename graph_type::edge_type;
@@ -51,7 +55,8 @@ namespace gum {
 
     template< uint8_t ...TWidths >
         inline void
-      extend( SeqGraph< Dynamic, TWidths... >& graph, vg::Graph const& other ) {
+      extend( SeqGraph< Dynamic, TWidths... >& graph, vg::Graph const& other )
+      {
         for ( std::size_t i = 0; i < other.node_size(); ++i ) {
           add( graph, other.node( i ) );
         }
@@ -64,7 +69,8 @@ namespace gum {
 
     template< uint8_t ...TWidths >
         inline void
-      extend_vg( SeqGraph< Dynamic, TWidths... >& graph, std::istream& in ) {
+      extend_vg( SeqGraph< Dynamic, TWidths... >& graph, std::istream& in )
+      {
         auto handle_chunks = [&graph]( vg::Graph const& other ) {
           extend( graph, other );
         };
@@ -73,13 +79,21 @@ namespace gum {
 
     template< uint8_t ...TWidths >
         inline void
-      extend( SeqGraph< Dynamic, TWidths... >& graph, std::string const& fname ) {
+      extend_vg( SeqGraph< Dynamic, TWidths... >& graph, std::string fname )
+      {
         std::ifstream ifs( fname, std::ifstream::in | std::ifstream::binary );
         if( !ifs ) {
           throw std::runtime_error( "cannot open file '" + fname + "'" );
         }
+        extend_vg( graph, ifs );
+      }  /* -----  end of template function extend_vg  ----- */
 
-        if ( util::starts_with( fname, VG_FILE_EXT ) ) extend_vg( graph, ifs );
+    template< uint8_t ...TWidths >
+        inline void
+      extend( SeqGraph< Dynamic, TWidths... >& graph, std::string fname,
+          VGFormat )
+      {
+        extend_vg( graph, fname );
       }  /* -----  end of template function extend  ----- */
   }  /* -----  end of namespace util  ----- */
 }  /* -----  end of namespace gum  ----- */
