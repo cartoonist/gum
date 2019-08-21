@@ -96,6 +96,18 @@ namespace gum {
           return this->node_rank.size();
         }  /* -----  end of method DirectedGraph::get_max_node_rank  ----- */
 
+          inline rank_type
+        get_node_count( ) const
+        {
+          return this->nodes.size();
+        }  /* -----  end of method DirectedGraph::get_node_count  ----- */
+
+          inline rank_type
+        get_edge_count( ) const
+        {
+          return this->edge_count;
+        }  /* -----  end of method DirectedGraph::get_edge_count  ----- */
+
           inline void
         add_node( id_type id )
         {
@@ -135,6 +147,7 @@ namespace gum {
           if ( safe && this->has_edge( from, to ) ) return;
           this->adj_to[ from ].push_back( to );
           this->adj_from[ to ].push_back( from );
+          ++this->edge_count;
         }  /* -----  end of method DirectedGraph::add_edge  ----- */
 
           inline void
@@ -194,6 +207,7 @@ namespace gum {
         rank_map_type node_rank;
         adj_map_type adj_to;
         adj_map_type adj_from;
+        rank_type edge_count;
 
         /* === METHODS === */
           inline void
