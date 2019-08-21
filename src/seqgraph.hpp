@@ -80,7 +80,9 @@ namespace gum {
         id_to_rank( id_type id ) const
         {
           if ( id <= 0 ) throw std::runtime_error( "non-positive node ID");
-          return this->node_rank[ id ];
+          auto found = this->node_rank.find( id );
+          if ( found == this->node_rank.end() ) return 0;
+          return found->second;
         }  /* -----  end of method DirectedGraph::id_to_rank  ----- */
 
           inline id_type
@@ -93,7 +95,7 @@ namespace gum {
           inline rank_type
         get_max_node_rank( ) const
         {
-          return this->node_rank.size();
+          return this->get_node_count();
         }  /* -----  end of method DirectedGraph::get_max_node_rank  ----- */
 
           inline rank_type
@@ -159,8 +161,12 @@ namespace gum {
           inline bool
         has_edge( side_type from, side_type to ) const
         {
-          auto const& adjacents = this->adj_to[ from ];
-          return adjacents.find( to ) != adjacents.end();
+          auto outs = this->adj_to.find( from );
+          auto ins = this->adj_from.find( to );
+          if ( outs == this->adj_to.end() || ins == this->adj_from.end() ) return false;
+          if ( outs->second.size() < ins->second.size() )
+            return outs->second.find( to ) != outs->second.end();
+          return ins->second.find( from ) != ins->second.end();
         }  /* -----  end of method DirectedGraph::has_edge  ----- */
 
           inline bool
@@ -169,16 +175,20 @@ namespace gum {
           return this->has_edge( this->from_side( sides ), this->to_side( sides ) );
         }  /* -----  end of method DirectedGraph::has_edge  ----- */
 
-          inline adjs_type const&
+          inline adjs_type
         get_adjacents_to( side_type from ) const
         {
-          return this->adj_to[ from ];
+          auto found = this->adj_to.find( from );
+          if ( found == this->adj_to.end() ) return adjs_type();
+          return found->second;
         }  /* -----  end of method DirectedGraph::get_adjacents_to  ----- */
 
-          inline adjs_type const&
+          inline adjs_type
         get_adjacents_from( side_type to ) const
         {
-          return this->adj_to[ to ];
+          auto found = this->adj_from.find( to );
+          if ( found == this->adj_from.end() ) return adjs_type();
+          return found->second;
         }  /* -----  end of method DirectedGraph::get_adjacents_from  ----- */
 
           inline rank_type
@@ -230,11 +240,11 @@ namespace gum {
         set_rank( typename nodes_type::const_iterator begin,
             typename nodes_type::const_iterator end )
         {
-          assert( end - begin + this->node_rank.size() == this->nodes.size() );
+          assert( end - begin + this->get_max_node_rank() == this->nodes.size() );
           for ( ; begin != end; ++begin ) {
             bool inserted;
             std::tie( std::ignore, inserted ) =
-              this->node_rank.insert( { *begin, this->node_rank.size() + 1 } );
+              this->node_rank.insert( { *begin, this->get_max_node_rank() + 1 } );
             assert( inserted );  // avoid duplicate insersion from upstream.
           }
         }  /* -----  end of method DirectedGraph::set_rank  ----- */
