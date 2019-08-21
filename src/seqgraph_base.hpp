@@ -38,7 +38,7 @@ namespace gum {
   /* Graph bidirected specialization tag. */
   struct Bidirected;
 
-  template< typename TSpec, uint8_t TIdWidth, uint8_t TOffsetWidth >
+  template< typename TSpec, uint8_t TIdWidth = 64, uint8_t TOffsetWidth = 64 >
     class GraphTrait;
 
   template< uint8_t TIdWidth, uint8_t TOffsetWidth >
@@ -170,7 +170,7 @@ namespace gum {
         }
     };  /* ----------  end of template class DirectedGraphTrait  ---------- */
 
-  template< typename TSpec, typename TDir, uint8_t ...TWidths >
+  template< typename TSpec, typename TDir = Bidirected, uint8_t ...TWidths >
     class DirectedGraph;
 
   template< typename TSpec, uint8_t ...TWidths >
