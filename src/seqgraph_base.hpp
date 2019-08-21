@@ -70,17 +70,17 @@ namespace gum {
         using adjs_type = std::vector< side_type >;
         using adj_map_type = google::dense_hash_map< side_type, adjs_type >;
 
-          inline side_type
+          static inline side_type
         from_side( link_type sides ) {
           return side_type( std::get<0>( sides ), std::get<1>( sides ) );
         }
 
-          inline side_type
+          static inline side_type
         to_side( link_type sides ) {
           return side_type( std::get<2>( sides ), std::get<3>( sides ) );
         }
 
-          inline link_type
+          static inline link_type
         merge_sides( side_type from, side_type to ) {
           return link_type( from.first, from.second, to.first, to.second );
         }
@@ -102,17 +102,17 @@ namespace gum {
         using adjs_type = nodes_type;
         using adj_map_type = google::dense_hash_map< side_type, adjs_type >;
 
-          inline side_type
+          static inline side_type
         from_side( link_type sides ) {
           return sides.first;
         }
 
-          inline side_type
+          static inline side_type
         to_side( link_type sides ) {
           return sides.second;
         }
 
-          inline link_type
+          static inline link_type
         merge_sides( side_type from, side_type to ) {
           return link_type( from, to );
         }
@@ -130,9 +130,9 @@ namespace gum {
         using spec_type = Dynamic;
         using trait_type = GraphTrait< spec_type, TWidths... >;
       public:
-        using typename trait_type::id_type;
-        using typename trait_type::offset_type;
-        using typename trait_type::rank_type;
+        using id_type = typename trait_type::id_type;
+        using offset_type = typename trait_type::offset_type;
+        using rank_type = typename trait_type::rank_type;
         class Node
         {
           public:
@@ -150,8 +150,8 @@ namespace gum {
         };  /* -----  end of class Node  ----- */
         using node_type = Node;
         using value_type = node_type;
-        using typename value_type::sequence_type;
-        using typename value_type::name_type;
+        using sequence_type = typename value_type::sequence_type;
+        using name_type = typename value_type::name_type;
         using container_type = std::vector< value_type >;
     };
 
@@ -167,9 +167,9 @@ namespace gum {
         using spec_type = Dynamic;
         using trait_type = DirectedGraphTrait< spec_type, TDir, TWidths... >;
       public:
-        using typename trait_type::id_type;
-        using typename trait_type::offset_type;
-        using typename trait_type::link_type;
+        using id_type = typename trait_type::id_type;
+        using offset_type = typename trait_type::offset_type;
+        using link_type = typename trait_type::link_type;
         class Edge {
           public:
             /* === LIFECYCLE === */

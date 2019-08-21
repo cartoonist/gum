@@ -35,15 +35,15 @@ namespace gum {
         /* === TYPEDEFS  === */
         using spec_type = Dynamic;
         using trait_type = DirectedGraphTrait< spec_type, TDir, TWidths... >;
-        using typename trait_type::id_type;
-        using typename trait_type::offset_type;
-        using typename trait_type::rank_type;
-        using typename trait_type::nodes_type;
-        using typename trait_type::rank_map_type;
-        using typename trait_type::side_type;
-        using typename trait_type::link_type;
-        using typename trait_type::adjs_type;
-        using typename trait_type::adj_map_type;
+        using id_type = typename trait_type::id_type;
+        using offset_type = typename trait_type::offset_type;
+        using rank_type = typename trait_type::rank_type;
+        using nodes_type = typename trait_type::nodes_type;
+        using rank_map_type = typename trait_type::rank_map_type;
+        using side_type = typename trait_type::side_type;
+        using link_type = typename trait_type::link_type;
+        using adjs_type = typename trait_type::adjs_type;
+        using adj_map_type = typename trait_type::adj_map_type;
 
         /* === LIFECYCLE === */
         DirectedGraph() = default;                                  /* constructor      */
@@ -100,15 +100,29 @@ namespace gum {
           this->set_last_rank();
         }  /* -----  end of method DirectedGraph::add_node  ----- */
 
-          inline void
+          inline bool
         has_node( id_type id )
         {
           return this->id_to_rank( id ) != 0;
         }  /* -----  end of method DirectedGraph::has_node  ----- */
 
-        using trait_type::from_side;
-        using trait_type::to_side;
-        using trait_type::merge_sides;
+          inline side_type
+        from_side( link_type sides )
+        {
+          return trait_type::from_side( sides );
+        }
+
+          inline side_type
+        to_side( link_type sides )
+        {
+          return trait_type::to_side( sides );
+        }
+
+          inline link_type
+        merge_sides( side_type from, side_type to )
+        {
+          return trait_type::merge_sides( from, to );
+        }
 
           inline void
         add_edge( side_type from, side_type to, bool safe=true )
@@ -134,7 +148,7 @@ namespace gum {
           inline bool
         has_edge( link_type sides ) const
         {
-          this->has_edge( this->from_side( sides ), this->to_side( sides ) );
+          return this->has_edge( this->from_side( sides ), this->to_side( sides ) );
         }  /* -----  end of method DirectedGraph::has_edge  ----- */
 
           inline adjs_type const&
@@ -216,13 +230,13 @@ namespace gum {
         /* === TYPEDEFS  === */
         using spec_type = Dynamic;
         using trait_type = NodePropertyTrait< spec_type, TWidths... >;
-        using typename trait_type::id_type;
-        using typename trait_type::offset_type;
-        using typename trait_type::rank_type;
-        using typename trait_type::value_type;
-        using typename trait_type::container_type;
-        using typename trait_type::sequence_type;
-        using typename trait_type::name_type;
+        using id_type = typename trait_type::id_type;
+        using offset_type = typename trait_type::offset_type;
+        using rank_type = typename trait_type::rank_type;
+        using value_type = typename trait_type::value_type;
+        using container_type = typename trait_type::container_type;
+        using sequence_type = typename trait_type::sequence_type;
+        using name_type = typename trait_type::name_type;
 
         /* === LIFECYCLE === */
         NodeProperty() = default;                                 /* constructor      */
@@ -272,11 +286,11 @@ namespace gum {
         /* === TYPEDEFS  === */
         using spec_type = Dynamic;
         using trait_type = EdgePropertyTrait< spec_type, TDir, TWidths... >;
-        using typename trait_type::id_type;
-        using typename trait_type::offset_type;
-        using typename trait_type::key_type;
-        using typename trait_type::value_type;
-        using typename trait_type::container_type;
+        using id_type = typename trait_type::id_type;
+        using offset_type = typename trait_type::offset_type;
+        using key_type = typename trait_type::key_type;
+        using value_type = typename trait_type::value_type;
+        using container_type = typename trait_type::container_type;
 
         /* === LIFECYCLE === */
         EdgeProperty() = default;                                 /* constructor      */
@@ -333,8 +347,8 @@ namespace gum {
         using typename base_type::rank_type;
         using typename base_type::side_type;
         using typename base_type::link_type;
-        using typename node_prop_type::node_type;
-        using typename edge_prop_type::edge_type;
+        using node_type = typename node_prop_type::node_type;
+        using edge_type = typename edge_prop_type::edge_type;
         /* === LIFECYCLE === */
         SeqGraph() = default;                                  /* constructor      */
         SeqGraph( SeqGraph const& other ) = default;           /* copy constructor */
@@ -371,7 +385,7 @@ namespace gum {
           inline bool
         has_edge( side_type from, side_type to ) const
         {
-          this->has_edge( base_type::merge_sides( from, to ) );
+          return this->has_edge( base_type::merge_sides( from, to ) );
         }  /* -----  end of method SeqGraph::has_edge  ----- */
 
           inline typename node_type::sequence_type
