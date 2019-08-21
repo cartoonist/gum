@@ -181,16 +181,32 @@ namespace gum {
           return this->adj_to[ to ];
         }  /* -----  end of method DirectedGraph::get_adjacents_from  ----- */
 
-          inline bool
-        has_edges_from( side_type from )
+          inline rank_type
+        outdegree( side_type side ) const
         {
-          return !this->adj_from[ from ].empty();
+          auto found = this->adj_to.find( side );
+          if ( found == this->adj_to.end() ) return 0;
+          return found->second.size();
+        }  /* -----  end of method DirectedGraph::outdegree  ----- */
+
+          inline rank_type
+        indegree( side_type side ) const
+        {
+          auto found = this->adj_from.find( side );
+          if ( found == this->adj_from.end() ) return 0;
+          return found->second.size();
+        }  /* -----  end of method DirectedGraph::indegree  ----- */
+
+          inline bool
+        has_edges_from( side_type side ) const
+        {
+          return this->indegree( side ) != 0;
         }  /* -----  end of method DirectedGraph::has_edges_from  ----- */
 
           inline bool
-        has_edges_to( side_type to )
+        has_edges_to( side_type side ) const
         {
-          return !this->adj_to[ to ].empty();
+          return this->outdegree( side ) != 0;
         }  /* -----  end of method DirectedGraph::has_edges_to  ----- */
 
       protected:
