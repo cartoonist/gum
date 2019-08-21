@@ -75,41 +75,41 @@ namespace gum {
           constexpr static inline side_type
         get_dummy_side( ) {
           return dummy_side;
-        }
+        }  /* -----  end of method DirectedGraphTrait::get_dummy_side  ----- */
 
           constexpr static inline link_type
         get_dummy_link( ) {
           return DirectedGraphTrait::merge_sides( dummy_side, dummy_side );
-        }
+        }  /* -----  end of method DirectedGraphTrait::get_dummy_link  ----- */
 
           static inline void
         init_rank_map( rank_map_type& m )
         {
           // `dense_hash_map` requires to set empty key before any `insert` call.
           m.set_empty_key( 0 );  // ID cannot be zero, so it can be used as empty key.
-        }
+        }  /* -----  end of method DirectedGraphTrait::init_rank_map  ----- */
 
           static inline void
         init_adj_map( adj_map_type& m )
         {
           // `dense_hash_map` requires to set empty key before any `insert` call.
           m.set_empty_key( DirectedGraphTrait::get_dummy_side() );
-        }
+        }  /* -----  end of method DirectedGraphTrait::init_adj_map  ----- */
 
           constexpr static inline side_type
         from_side( link_type sides ) {
           return side_type( std::get<0>( sides ), std::get<1>( sides ) );
-        }
+        }  /* -----  end of method DirectedGraphTrait::from_side  ----- */
 
           constexpr static inline side_type
         to_side( link_type sides ) {
           return side_type( std::get<2>( sides ), std::get<3>( sides ) );
-        }
+        }  /* -----  end of method DirectedGraphTrait::to_side  ----- */
 
           constexpr static inline link_type
         merge_sides( side_type from, side_type to ) {
           return link_type( from.first, from.second, to.first, to.second );
-        }
+        }  /* -----  end of method DirectedGraphTrait::merge_sides  ----- */
     };  /* ----------  end of template class DirectedGraphTrait  ---------- */
 
   template< uint8_t ...TWidths >
@@ -133,41 +133,41 @@ namespace gum {
           constexpr static inline side_type
         get_dummy_side( ) {
           return dummy_side;
-        }
+        }  /* -----  end of method DirectedGraphTrait::get_dummy_side  ----- */
 
           constexpr static inline link_type
         get_dummy_link( ) {
           return DirectedGraphTrait::merge_sides( dummy_side, dummy_side );
-        }
+        }  /* -----  end of method DirectedGraphTrait::get_dummy_link  ----- */
 
           static inline void
         init_rank_map( rank_map_type& m )
         {
           // `dense_hash_map` requires to set empty key before any `insert` call.
           m.set_empty_key( 0 );  // ID cannot be zero, so it can be used as empty key.
-        }
+        }  /* -----  end of method DirectedGraphTrait::init_rank_map  ----- */
 
           static inline void
         init_adj_map( adj_map_type& m )
         {
           // `dense_hash_map` requires to set empty key before any `insert` call.
           m.set_empty_key( DirectedGraphTrait::get_dummy_side() );
-        }
+        }  /* -----  end of method DirectedGraphTrait::init_adj_map  ----- */
 
           constexpr static inline side_type
         from_side( link_type sides ) {
           return sides.first;
-        }
+        }  /* -----  end of method DirectedGraphTrait::from_side  ----- */
 
           constexpr static inline side_type
         to_side( link_type sides ) {
           return sides.second;
-        }
+        }  /* -----  end of method DirectedGraphTrait::to_side  ----- */
 
           constexpr static inline link_type
         merge_sides( side_type from, side_type to ) {
           return link_type( from, to );
-        }
+        }  /* -----  end of method DirectedGraphTrait::merge_sides  ----- */
     };  /* ----------  end of template class DirectedGraphTrait  ---------- */
 
   template< typename TSpec, typename TDir = Bidirected, uint8_t ...TWidths >
@@ -240,7 +240,7 @@ namespace gum {
           static inline void
         init_container( container_type& c ) {
           c.set_empty_key( trait_type::get_dummy_link( ) );
-        }
+        }  /* -----  end of method EdgePropertyTrait::init_container  ----- */
     };
 
   template< typename TSpec, typename TDir, uint8_t ...TWidths >

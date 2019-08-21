@@ -50,6 +50,8 @@ namespace gum {
           trait_type::init_rank_map( this->node_rank );
           trait_type::init_adj_map( this->adj_from );
           trait_type::init_adj_map( this->adj_to );
+          this->max_rank = 0;
+          this->edge_count = 0;
         }
 
         DirectedGraph( DirectedGraph const& other ) = default;      /* copy constructor */
@@ -95,7 +97,8 @@ namespace gum {
           inline rank_type
         get_max_node_rank( ) const
         {
-          return this->get_node_count();
+          assert( this->max_rank == this->get_node_count() );
+          return this->max_rank;
         }  /* -----  end of method DirectedGraph::get_max_node_rank  ----- */
 
           inline rank_type
@@ -120,28 +123,28 @@ namespace gum {
         }  /* -----  end of method DirectedGraph::add_node  ----- */
 
           inline bool
-        has_node( id_type id )
+        has_node( id_type id ) const
         {
           return this->id_to_rank( id ) != 0;
         }  /* -----  end of method DirectedGraph::has_node  ----- */
 
-          inline side_type
-        from_side( link_type sides )
+          constexpr inline side_type
+        from_side( link_type sides ) const
         {
           return trait_type::from_side( sides );
-        }
+        }  /* -----  end of method DirectedGraph::from_side  ----- */
 
-          inline side_type
-        to_side( link_type sides )
+          constexpr inline side_type
+        to_side( link_type sides ) const
         {
           return trait_type::to_side( sides );
-        }
+        }  /* -----  end of method DirectedGraph::to_side  ----- */
 
-          inline link_type
-        merge_sides( side_type from, side_type to )
+          constexpr inline link_type
+        merge_sides( side_type from, side_type to ) const
         {
           return trait_type::merge_sides( from, to );
-        }
+        }  /* -----  end of method DirectedGraph::merge_sides  ----- */
 
           inline void
         add_edge( side_type from, side_type to, bool safe=true )
@@ -234,17 +237,18 @@ namespace gum {
         adj_map_type adj_to;
         adj_map_type adj_from;
         rank_type edge_count;
+        rank_type max_rank;
 
         /* === METHODS === */
           inline void
         set_rank( typename nodes_type::const_iterator begin,
             typename nodes_type::const_iterator end )
         {
-          assert( end - begin + this->get_max_node_rank() == this->nodes.size() );
+          assert( end - begin + this->max_rank == this->nodes.size() );
           for ( ; begin != end; ++begin ) {
             bool inserted;
             std::tie( std::ignore, inserted ) =
-              this->node_rank.insert( { *begin, this->get_max_node_rank() + 1 } );
+              this->node_rank.insert( { *begin, ++this->max_rank } );
             assert( inserted );  // avoid duplicate insersion from upstream.
           }
         }  /* -----  end of method DirectedGraph::set_rank  ----- */
