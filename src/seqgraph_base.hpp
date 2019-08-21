@@ -70,17 +70,43 @@ namespace gum {
         using adjs_type = std::vector< side_type >;
         using adj_map_type = google::dense_hash_map< side_type, adjs_type >;
 
-          static inline side_type
+        constexpr static side_type dummy_side = { 0, false };
+
+          constexpr static inline side_type
+        get_dummy_side( ) {
+          return dummy_side;
+        }
+
+          constexpr static inline link_type
+        get_dummy_link( ) {
+          return DirectedGraphTrait::merge_sides( dummy_side, dummy_side );
+        }
+
+          static inline void
+        init_rank_map( rank_map_type& m )
+        {
+          // `dense_hash_map` requires to set empty key before any `insert` call.
+          m.set_empty_key( 0 );  // ID cannot be zero, so it can be used as empty key.
+        }
+
+          static inline void
+        init_adj_map( adj_map_type& m )
+        {
+          // `dense_hash_map` requires to set empty key before any `insert` call.
+          m.set_empty_key( DirectedGraphTrait::get_dummy_side() );
+        }
+
+          constexpr static inline side_type
         from_side( link_type sides ) {
           return side_type( std::get<0>( sides ), std::get<1>( sides ) );
         }
 
-          static inline side_type
+          constexpr static inline side_type
         to_side( link_type sides ) {
           return side_type( std::get<2>( sides ), std::get<3>( sides ) );
         }
 
-          static inline link_type
+          constexpr static inline link_type
         merge_sides( side_type from, side_type to ) {
           return link_type( from.first, from.second, to.first, to.second );
         }
@@ -102,17 +128,43 @@ namespace gum {
         using adjs_type = nodes_type;
         using adj_map_type = google::dense_hash_map< side_type, adjs_type >;
 
-          static inline side_type
+        constexpr static side_type dummy_side = 0;
+
+          constexpr static inline side_type
+        get_dummy_side( ) {
+          return dummy_side;
+        }
+
+          constexpr static inline link_type
+        get_dummy_link( ) {
+          return DirectedGraphTrait::merge_sides( dummy_side, dummy_side );
+        }
+
+          static inline void
+        init_rank_map( rank_map_type& m )
+        {
+          // `dense_hash_map` requires to set empty key before any `insert` call.
+          m.set_empty_key( 0 );  // ID cannot be zero, so it can be used as empty key.
+        }
+
+          static inline void
+        init_adj_map( adj_map_type& m )
+        {
+          // `dense_hash_map` requires to set empty key before any `insert` call.
+          m.set_empty_key( DirectedGraphTrait::get_dummy_side() );
+        }
+
+          constexpr static inline side_type
         from_side( link_type sides ) {
           return sides.first;
         }
 
-          static inline side_type
+          constexpr static inline side_type
         to_side( link_type sides ) {
           return sides.second;
         }
 
-          static inline link_type
+          constexpr static inline link_type
         merge_sides( side_type from, side_type to ) {
           return link_type( from, to );
         }
@@ -184,6 +236,11 @@ namespace gum {
         using key_type = link_type;
         using value_type = edge_type;
         using container_type = google::dense_hash_map< key_type, value_type >;
+
+          static inline void
+        init_container( container_type& c ) {
+          c.set_empty_key( trait_type::get_dummy_link( ) );
+        }
     };
 
   template< typename TSpec, typename TDir, uint8_t ...TWidths >

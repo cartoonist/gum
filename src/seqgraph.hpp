@@ -46,7 +46,12 @@ namespace gum {
         using adj_map_type = typename trait_type::adj_map_type;
 
         /* === LIFECYCLE === */
-        DirectedGraph() = default;                                  /* constructor      */
+        DirectedGraph( ) {                                          /* constructor      */
+          trait_type::init_rank_map( this->node_rank );
+          trait_type::init_adj_map( this->adj_from );
+          trait_type::init_adj_map( this->adj_to );
+        }
+
         DirectedGraph( DirectedGraph const& other ) = default;      /* copy constructor */
         DirectedGraph( DirectedGraph&& other ) noexcept = default;  /* move constructor */
         ~DirectedGraph() noexcept = default;                        /* destructor       */
@@ -293,7 +298,10 @@ namespace gum {
         using container_type = typename trait_type::container_type;
 
         /* === LIFECYCLE === */
-        EdgeProperty() = default;                                 /* constructor      */
+        EdgeProperty( ) {                                         /* constructor      */
+          trait_type::init_container( this->edges );
+        }
+
         EdgeProperty( EdgeProperty const& other ) = default;      /* copy constructor */
         EdgeProperty( EdgeProperty&& other ) noexcept = default;  /* move constructor */
         ~EdgeProperty() noexcept = default;                       /* destructor       */
