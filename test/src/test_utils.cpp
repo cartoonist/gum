@@ -15,14 +15,14 @@
  *  See LICENSE file for more information.
  */
 
-#include "catch2/catch.hpp"
-
 #include "utils.hpp"
+
+#include "test_base.hpp"
 
 
 using namespace gum;
 
-TEMPLATE_TEST_CASE( "Prefix and suffix check of a string", "[utils][template]",
+TEMPLATE_SCENARIO( "Prefix and suffix check of a string", "[utils][template]",
     std::string, ( std::vector< char > ) )
 {
   GIVEN( "A non-empty string" )
