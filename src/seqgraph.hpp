@@ -18,6 +18,8 @@
 #ifndef  GUM_SEQGRAPH_HPP__
 #define  GUM_SEQGRAPH_HPP__
 
+#include <algorithm>
+
 #include "seqgraph_base.hpp"
 
 
@@ -153,29 +155,28 @@ namespace gum {
         }
 
           inline void
-        add_edge( side_type from, side_type to, bool safe=true )
+        add_edge( side_type from, side_type to )
         {
-          if ( safe && this->has_edge( from, to ) ) return;
-          this->adj_to[ from ].push_back( to );
-          this->adj_from[ to ].push_back( from );
-          ++this->edge_count;
+          this->add_edge_imp( from, to );
         }  /* -----  end of method DirectedGraph::add_edge  ----- */
 
           inline void
-        add_edge( link_type sides, bool safe=true )
+        add_edge( link_type sides )
         {
-          this->add_edge( this->from_side( sides ), this->to_side( sides ), safe );
+          this->add_edge( this->from_side( sides ), this->to_side( sides ) );
         }  /* -----  end of method DirectedGraph::add_edge  ----- */
 
           inline bool
         has_edge( side_type from, side_type to ) const
         {
-          auto outs = this->adj_to.find( from );
-          auto ins = this->adj_from.find( to );
-          if ( outs == this->adj_to.end() || ins == this->adj_from.end() ) return false;
-          if ( outs->second.size() < ins->second.size() )
-            return outs->second.find( to ) != outs->second.end();
-          return ins->second.find( from ) != ins->second.end();
+          auto oit = this->adj_to.find( from );
+          auto iit = this->adj_from.find( to );
+          auto const& outs = oit->second;
+          auto const& ins = iit->second;
+          if ( oit == this->adj_to.end() || iit == this->adj_from.end() ) return false;
+          if ( outs.size() < ins.size() )
+            return std::find( outs.begin(), outs.end(), to ) != outs.end();
+          return std::find( ins.begin(), ins.end(), from ) != ins.end();
         }  /* -----  end of method DirectedGraph::has_edge  ----- */
 
           inline bool
@@ -235,6 +236,21 @@ namespace gum {
         {
           return this->nodes;
         }  /* -----  end of method DirectedGraph::get_nodes  ----- */
+
+          inline void
+        add_edge_imp( side_type from, side_type to, bool safe=true )
+        {
+          if ( safe && this->has_edge( from, to ) ) return;
+          this->adj_to[ from ].push_back( to );
+          this->adj_from[ to ].push_back( from );
+          ++this->edge_count;
+        }  /* -----  end of method DirectedGraph::add_edge_imp  ----- */
+
+          inline void
+        add_edge_imp( link_type sides, bool safe=true )
+        {
+          this->add_edge_imp( this->from_side( sides ), this->to_side( sides ), safe );
+        }  /* -----  end of method DirectedGraph::add_edge_imp  ----- */
 
       private:
         /* === DATA MEMBERS === */
@@ -430,7 +446,7 @@ namespace gum {
         add_edge( link_type sides, edge_type edge )
         {
           if ( this->has_edge( sides ) ) return;
-          base_type::add_edge( sides, false );
+          base_type::add_edge_imp( sides, false );
           this->edge_prop.add_edge( sides, edge );
         }  /* -----  end of method SeqGraph::add_edge  ----- */
 
