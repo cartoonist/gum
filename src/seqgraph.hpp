@@ -146,6 +146,12 @@ namespace gum {
           return trait_type::merge_sides( from, to );
         }  /* -----  end of method DirectedGraph::merge_sides  ----- */
 
+          constexpr inline side_type
+        opposite_side( side_type side ) const
+        {
+          return trait_type::opposite_side( side );
+        }
+
           inline void
         add_edge( side_type from, side_type to, bool safe=true )
         {

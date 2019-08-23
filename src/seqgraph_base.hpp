@@ -54,6 +54,22 @@ namespace gum {
   template< typename TSpec, typename TDir, uint8_t ...TWidths >
     class DirectedGraphTrait;
 
+  /**
+   *  @brief  Trait for Bidirected graph.
+   *
+   *  NOTE: In a bidirected graph, each node has two sides. Here, `side_type` can get a
+   *  value indicating each of these sides. It is defined as a pair `<id_type, bool>` in
+   *  which the first element shows the node ID of the side and the second one indicates
+   *  which side of the node is meant. Although the graph class __usually__ doesn't care
+   *  how this boolean is being used (e.g. either it can store `from_start`/`to_end` or
+   *  head/tail), all higher-level functions (e.g. interface functions in `io_utils`
+   *  module) assume that the boolean value shows head (`false`) and tail (`true`) of
+   *  the node if required; i.e.:
+   *
+   *              ─┬──────╮     ╭───────┬────┬──────╮     ╭───────┬─
+   *           ... │ true ├────➤│ false │ ID │ true ├────➤│ false │ ...
+   *              ─┴──────╯     ╰───────┴────┴──────╯     ╰───────┴─
+   */
   template< uint8_t ...TWidths >
     class DirectedGraphTrait< Dynamic, Bidirected, TWidths... >
     : public GraphTrait< Dynamic, TWidths... > {
@@ -73,12 +89,14 @@ namespace gum {
         constexpr static side_type dummy_side = { 0, false };
 
           constexpr static inline side_type
-        get_dummy_side( ) {
+        get_dummy_side( )
+        {
           return dummy_side;
         }  /* -----  end of method DirectedGraphTrait::get_dummy_side  ----- */
 
           constexpr static inline link_type
-        get_dummy_link( ) {
+        get_dummy_link( )
+        {
           return DirectedGraphTrait::merge_sides( dummy_side, dummy_side );
         }  /* -----  end of method DirectedGraphTrait::get_dummy_link  ----- */
 
@@ -97,19 +115,28 @@ namespace gum {
         }  /* -----  end of method DirectedGraphTrait::init_adj_map  ----- */
 
           constexpr static inline side_type
-        from_side( link_type sides ) {
+        from_side( link_type sides )
+        {
           return side_type( std::get<0>( sides ), std::get<1>( sides ) );
         }  /* -----  end of method DirectedGraphTrait::from_side  ----- */
 
           constexpr static inline side_type
-        to_side( link_type sides ) {
+        to_side( link_type sides )
+        {
           return side_type( std::get<2>( sides ), std::get<3>( sides ) );
         }  /* -----  end of method DirectedGraphTrait::to_side  ----- */
 
           constexpr static inline link_type
-        merge_sides( side_type from, side_type to ) {
+        merge_sides( side_type from, side_type to )
+        {
           return link_type( from.first, from.second, to.first, to.second );
         }  /* -----  end of method DirectedGraphTrait::merge_sides  ----- */
+
+          constexpr static inline side_type
+        opposite_side( side_type side )
+        {
+          return side_type( side.first, !side.second );
+        }
     };  /* ----------  end of template class DirectedGraphTrait  ---------- */
 
   template< uint8_t ...TWidths >
@@ -131,12 +158,14 @@ namespace gum {
         constexpr static side_type dummy_side = 0;
 
           constexpr static inline side_type
-        get_dummy_side( ) {
+        get_dummy_side( )
+        {
           return dummy_side;
         }  /* -----  end of method DirectedGraphTrait::get_dummy_side  ----- */
 
           constexpr static inline link_type
-        get_dummy_link( ) {
+        get_dummy_link( )
+        {
           return DirectedGraphTrait::merge_sides( dummy_side, dummy_side );
         }  /* -----  end of method DirectedGraphTrait::get_dummy_link  ----- */
 
@@ -155,19 +184,28 @@ namespace gum {
         }  /* -----  end of method DirectedGraphTrait::init_adj_map  ----- */
 
           constexpr static inline side_type
-        from_side( link_type sides ) {
+        from_side( link_type sides )
+        {
           return sides.first;
         }  /* -----  end of method DirectedGraphTrait::from_side  ----- */
 
           constexpr static inline side_type
-        to_side( link_type sides ) {
+        to_side( link_type sides )
+        {
           return sides.second;
         }  /* -----  end of method DirectedGraphTrait::to_side  ----- */
 
           constexpr static inline link_type
-        merge_sides( side_type from, side_type to ) {
+        merge_sides( side_type from, side_type to )
+        {
           return link_type( from, to );
         }  /* -----  end of method DirectedGraphTrait::merge_sides  ----- */
+
+          constexpr static inline side_type
+        opposite_side( side_type side )
+        {
+          return side;
+        }
     };  /* ----------  end of template class DirectedGraphTrait  ---------- */
 
   template< typename TSpec, typename TDir = Bidirected, uint8_t ...TWidths >
@@ -238,7 +276,8 @@ namespace gum {
         using container_type = google::dense_hash_map< key_type, value_type >;
 
           static inline void
-        init_container( container_type& c ) {
+        init_container( container_type& c )
+        {
           c.set_empty_key( trait_type::get_dummy_link( ) );
         }  /* -----  end of method EdgePropertyTrait::init_container  ----- */
     };
