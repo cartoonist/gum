@@ -84,7 +84,17 @@ namespace gum {
         using side_type = std::pair< id_type, bool >;
         using link_type = std::tuple< id_type, bool, id_type, bool >;
         using adjs_type = std::vector< side_type >;
-        using adj_map_type = google::dense_hash_map< side_type, adjs_type >;
+
+        struct hash_side {
+            inline std::size_t
+          operator()( side_type const& side ) const
+          {
+            auto hash = std::hash< id_type >{}( side.first );
+            return side.second ? ~hash : hash;
+          }
+        };
+
+        using adj_map_type = google::dense_hash_map< side_type, adjs_type, hash_side >;
 
         constexpr static side_type dummy_side = { 0, false };
 
