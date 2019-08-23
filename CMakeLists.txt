@@ -14,3 +14,4 @@ add_subdirectory(test)
 # Registering tests.
 include(CTest)
 add_test(NAME TestUtils COMMAND Tests "[utils]")
+add_test(NAME TestSeqGraph COMMAND Tests "[seqgraph]")
