@@ -304,6 +304,7 @@ namespace gum {
         using id_type = typename trait_type::id_type;
         using offset_type = typename trait_type::offset_type;
         using rank_type = typename trait_type::rank_type;
+        using node_type = typename trait_type::node_type;
         using value_type = typename trait_type::value_type;
         using container_type = typename trait_type::container_type;
         using sequence_type = typename trait_type::sequence_type;
@@ -359,6 +360,7 @@ namespace gum {
         using trait_type = EdgePropertyTrait< spec_type, TDir, TWidths... >;
         using id_type = typename trait_type::id_type;
         using offset_type = typename trait_type::offset_type;
+        using edge_type = typename trait_type::edge_type;
         using key_type = typename trait_type::key_type;
         using value_type = typename trait_type::value_type;
         using container_type = typename trait_type::container_type;
@@ -437,7 +439,7 @@ namespace gum {
 
         /* === METHODS === */
           inline void
-        add_node( id_type id, node_type node )
+        add_node( id_type id, node_type node=node_type() )
         {
           if ( this->has_node( id ) ) return;
           base_type::add_node( id );
@@ -445,7 +447,7 @@ namespace gum {
         }  /* -----  end of method SeqGraph::add_node  ----- */
 
           inline void
-        add_edge( link_type sides, edge_type edge )
+        add_edge( link_type sides, edge_type edge=edge_type() )
         {
           if ( this->has_edge( sides ) ) return;
           base_type::add_edge_imp( sides, false );

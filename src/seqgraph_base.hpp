@@ -107,7 +107,8 @@ namespace gum {
           constexpr static inline link_type
         get_dummy_link( )
         {
-          return DirectedGraphTrait::merge_sides( dummy_side, dummy_side );
+          return DirectedGraphTrait::merge_sides( DirectedGraphTrait::get_dummy_side(),
+              DirectedGraphTrait::get_dummy_side() );
         }  /* -----  end of method DirectedGraphTrait::get_dummy_link  ----- */
 
           static inline void
@@ -176,7 +177,8 @@ namespace gum {
           constexpr static inline link_type
         get_dummy_link( )
         {
-          return DirectedGraphTrait::merge_sides( dummy_side, dummy_side );
+          return DirectedGraphTrait::merge_sides( DirectedGraphTrait::get_dummy_side(),
+              DirectedGraphTrait::get_dummy_side() );
         }  /* -----  end of method DirectedGraphTrait::get_dummy_link  ----- */
 
           static inline void
