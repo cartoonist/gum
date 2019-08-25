@@ -406,16 +406,18 @@ namespace gum {
    *
    *  Represent a sequence graph (node-labeled bidirected graph).
    */
-  template< uint8_t ...TWidths >
-    class SeqGraph< Dynamic, TWidths... >
+  template< template< class, uint8_t ... > class TNodeProp,
+    template< class, class, uint8_t ... > class TEdgeProp,
+    uint8_t ...TWidths >
+    class SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >
     : public DirectedGraph< Dynamic, Bidirected, TWidths... > {
       public:
         /* === TYPEDEFS  === */
         using spec_type = Dynamic;
         using dir_type = Bidirected;
         using base_type = DirectedGraph< spec_type, dir_type, TWidths... >;
-        using node_prop_type = NodeProperty< spec_type, TWidths... >;
-        using edge_prop_type = EdgeProperty< spec_type, dir_type, TWidths... >;
+        using node_prop_type = TNodeProp< spec_type, TWidths... >;
+        using edge_prop_type = TEdgeProp< spec_type, dir_type, TWidths ... >;
         using typename base_type::id_type;
         using typename base_type::offset_type;
         using typename base_type::rank_type;

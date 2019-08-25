@@ -258,6 +258,9 @@ namespace gum {
   template< typename TSpec, uint8_t ...TWidths >
     class NodeProperty;
 
+  template< typename TSpec, uint8_t ...TWidths >
+    using DefaultNodeProperty = NodeProperty< TSpec, TWidths... >;
+
   template< typename TSpec, typename TDir, uint8_t ...TWidths >
     class EdgePropertyTrait;
 
@@ -295,10 +298,16 @@ namespace gum {
   template< typename TSpec, typename TDir, uint8_t ...TWidths >
     class EdgeProperty;
 
+  template< typename TSpec, typename TDir, uint8_t ...TWidths >
+    using DefaultEdgeProperty = EdgeProperty< TSpec, TDir, TWidths... >;
+
   template< typename TSpec, uint8_t TIdWidth, uint8_t TOffsetWidth >
     class GraphProperty;
 
-  template< typename TSpec, uint8_t ...TWidths >
+  template< typename TSpec,
+    template< class, uint8_t ... > class TNodeProp = DefaultNodeProperty,
+    template< class, class, uint8_t ... > class TEdgeProp = DefaultEdgeProperty,
+    uint8_t ...TWidths >
     class SeqGraph;
 
   template< typename TSpec, uint8_t ...TWidths >
