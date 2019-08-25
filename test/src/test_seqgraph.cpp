@@ -27,7 +27,8 @@ TEMPLATE_SCENARIO( "Generic functionality of DirectedGraph", "[seqgraph][templat
    ( gum::DirectedGraph< gum::Dynamic, gum::Directed > ),
    ( gum::DirectedGraph< gum::Dynamic, gum::Directed, 32, 32 > ),
    ( gum::DirectedGraph< gum::Dynamic, gum::Bidirected, 64, 32 > ),
-   ( gum::DirectedGraph< gum::Dynamic, gum::Bidirected, 32, 64 > ) )
+   ( gum::DirectedGraph< gum::Dynamic, gum::Bidirected, 32, 64 > ),
+   ( gum::SeqGraph< gum::Dynamic > ) )
 {
   GIVEN( "A DirectedGraph with some nodes and edges" )
   {
