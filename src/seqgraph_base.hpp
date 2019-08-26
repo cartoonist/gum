@@ -94,6 +94,16 @@ namespace gum {
           }
         };
 
+        struct hash_link {
+            inline std::size_t
+          operator()( link_type const& sides ) const
+          {
+            auto hash1 = hash_side{}( DirectedGraphTrait::from_side( sides ) );
+            auto hash2 = hash_side{}( DirectedGraphTrait::to_side( sides ) );
+            return hash1 ^ hash2;
+          }
+        };
+
         using adj_map_type = google::dense_hash_map< side_type, adjs_type, hash_side >;
 
         constexpr static side_type dummy_side = { 0, false };
@@ -164,6 +174,18 @@ namespace gum {
         using side_type = id_type;
         using link_type = std::pair< id_type, id_type >;
         using adjs_type = nodes_type;
+        using hash_side = std::hash< side_type >;
+
+        struct hash_link {
+            inline std::size_t
+          operator()( link_type const& sides ) const
+          {
+            auto hash1 = hash_side{}( DirectedGraphTrait::from_side( sides ) );
+            auto hash2 = hash_side{}( DirectedGraphTrait::to_side( sides ) );
+            return hash1 ^ hash2;
+          }
+        };
+
         using adj_map_type = google::dense_hash_map< side_type, adjs_type >;
 
         constexpr static side_type dummy_side = 0;
@@ -288,7 +310,8 @@ namespace gum {
         using edge_type = Edge;
         using key_type = link_type;
         using value_type = edge_type;
-        using container_type = google::dense_hash_map< key_type, value_type >;
+        using container_type = google::dense_hash_map< key_type, value_type,
+              typename trait_type::hash_link >;
 
           static inline void
         init_container( container_type& c )
