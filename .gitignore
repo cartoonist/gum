@@ -8,8 +8,11 @@
 # ctags
 tags
 
-# compile flags
+# Compile flags
 compile_commands.json
+
+# Build directory
+build
 
 ## GitHub defaults ##
 # Compiled Object files
