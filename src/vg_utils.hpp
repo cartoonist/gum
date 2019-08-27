@@ -33,29 +33,38 @@ namespace gum {
     struct VGFormat { };
     const std::string VG_FILE_EXT(".vg");
 
-    template< uint8_t ...TWidths >
+    template< template< class, uint8_t ... > class TNodeProp,
+      template< class, class, uint8_t ... > class TEdgeProp,
+      uint8_t ...TWidths >
         inline void
-      add( SeqGraph< Dynamic, TWidths... >& graph, vg::Node const& node )
+      add( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >& graph,
+          vg::Node const& node )
       {
-        using graph_type = SeqGraph< Dynamic, TWidths... >;
+        using graph_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >;
         using node_type = typename graph_type::node_type;
         graph.add_node( node.id(), node_type( node.sequence(), node.name() ) );
       }  /* -----  end of template function add  ----- */
 
-    template< uint8_t ...TWidths >
+    template< template< class, uint8_t ... > class TNodeProp,
+      template< class, class, uint8_t ... > class TEdgeProp,
+      uint8_t ...TWidths >
         inline void
-      add( SeqGraph< Dynamic, TWidths... >& graph, vg::Edge const& edge )
+      add( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >& graph,
+          vg::Edge const& edge )
       {
-        using graph_type = SeqGraph< Dynamic, TWidths... >;
+        using graph_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >;
         using link_type = typename graph_type::link_type;
         using edge_type = typename graph_type::edge_type;
         graph.add_edge( link_type( edge.from, edge.from_start, edge.to, edge.to_end ),
             edge_type( edge.overlap ) );
       }  /* -----  end of template function add  ----- */
 
-    template< uint8_t ...TWidths >
+    template< template< class, uint8_t ... > class TNodeProp,
+      template< class, class, uint8_t ... > class TEdgeProp,
+      uint8_t ...TWidths >
         inline void
-      extend( SeqGraph< Dynamic, TWidths... >& graph, vg::Graph const& other )
+      extend( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >& graph,
+          vg::Graph const& other )
       {
         for ( std::size_t i = 0; i < other.node_size(); ++i ) {
           add( graph, other.node( i ) );
@@ -67,9 +76,12 @@ namespace gum {
         // Add paths
       }  /* -----  end of template function extend  ----- */
 
-    template< uint8_t ...TWidths >
+    template< template< class, uint8_t ... > class TNodeProp,
+      template< class, class, uint8_t ... > class TEdgeProp,
+      uint8_t ...TWidths >
         inline void
-      extend_vg( SeqGraph< Dynamic, TWidths... >& graph, std::istream& in )
+      extend_vg( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >& graph,
+          std::istream& in )
       {
         auto handle_chunks = [&graph]( vg::Graph const& other ) {
           extend( graph, other );
@@ -77,9 +89,12 @@ namespace gum {
         vg::io::for_each( in, handle_chunks );
       }  /* -----  end of template function extend_vg  ----- */
 
-    template< uint8_t ...TWidths >
+    template< template< class, uint8_t ... > class TNodeProp,
+      template< class, class, uint8_t ... > class TEdgeProp,
+      uint8_t ...TWidths >
         inline void
-      extend_vg( SeqGraph< Dynamic, TWidths... >& graph, std::string fname )
+      extend_vg( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >& graph,
+          std::string fname )
       {
         std::ifstream ifs( fname, std::ifstream::in | std::ifstream::binary );
         if( !ifs ) {
@@ -88,9 +103,12 @@ namespace gum {
         extend_vg( graph, ifs );
       }  /* -----  end of template function extend_vg  ----- */
 
-    template< uint8_t ...TWidths >
+    template< template< class, uint8_t ... > class TNodeProp,
+      template< class, class, uint8_t ... > class TEdgeProp,
+      uint8_t ...TWidths >
         inline void
-      extend( SeqGraph< Dynamic, TWidths... >& graph, std::string fname,
+      extend( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >& graph,
+          std::string fname,
           VGFormat )
       {
         extend_vg( graph, fname );

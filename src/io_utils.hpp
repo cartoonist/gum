@@ -24,9 +24,12 @@
 
 namespace gum {
   namespace util {
-    template< typename ...TArgs, uint8_t ...TWidths >
+    template< template< class, uint8_t ... > class TNodeProp,
+      template< class, class, uint8_t ... > class TEdgeProp,
+      typename ...TArgs, uint8_t ...TWidths >
         inline void
-      extend( SeqGraph< Dynamic, TWidths... >& graph, std::string fname,
+      extend( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >& graph,
+          std::string fname,
           TArgs&&... args )
       {
         if ( util::ends_with( fname, VG_FILE_EXT ) ) {

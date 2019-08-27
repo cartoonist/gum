@@ -46,22 +46,30 @@ namespace gum {
         }
       }  /* -----  end of template function generate_node_ids  ----- */
 
-    template< typename TCallback, uint8_t ...TWidths >
+    template< typename TCallback,
+      template< class, uint8_t ... > class TNodeProp,
+      template< class, class, uint8_t ... > class TEdgeProp,
+      uint8_t ...TWidths >
         inline void
-      add( SeqGraph< Dynamic, TWidths... >& graph, gfak::sequence_elem const& elem,
+      add( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >& graph,
+          gfak::sequence_elem const& elem,
           TCallback to_id=std::stoi )
       {
-        using graph_type = SeqGraph< Dynamic, TWidths... >;
+        using graph_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >;
         using node_type = typename graph_type::node_type;
         graph.add_node( to_id( elem.name ), node_type( elem.sequence, elem.name ) );
       }  /* -----  end of template function add  ----- */
 
-    template< typename TCallback, uint8_t ...TWidths >
+    template< typename TCallback,
+      template< class, uint8_t ... > class TNodeProp,
+      template< class, class, uint8_t ... > class TEdgeProp,
+      uint8_t ...TWidths >
         inline void
-      add( SeqGraph< Dynamic, TWidths... >& graph, gfak::edge_elem const& elem,
+      add( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >& graph,
+          gfak::edge_elem const& elem,
           TCallback to_id=std::stoi )
       {
-        using graph_type = SeqGraph< Dynamic, TWidths... >;
+        using graph_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >;
         using link_type = typename graph_type::link_type;
         using edge_type = typename graph_type::edge_type;
 
@@ -75,9 +83,13 @@ namespace gum {
         graph.add_edge( link, edge_type( elem.sink_end ) );
       }  /* -----  end of template function add  ----- */
 
-    template< typename TCallback, uint8_t ...TWidths >
+    template< typename TCallback,
+      template< class, uint8_t ... > class TNodeProp,
+      template< class, class, uint8_t ... > class TEdgeProp,
+      uint8_t ...TWidths >
         inline void
-      extend( SeqGraph< Dynamic, TWidths... >& graph, gfak::GFAKluge& other,
+      extend( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >& graph,
+          gfak::GFAKluge& other,
           TCallback to_id )
       {
         for ( auto const& rec : other.get_name_to_seq() ) {
@@ -90,12 +102,15 @@ namespace gum {
         // Add paths as O-groups
       }
 
-    template< uint8_t ...TWidths >
+    template< template< class, uint8_t ... > class TNodeProp,
+      template< class, class, uint8_t ... > class TEdgeProp,
+      uint8_t ...TWidths >
         inline void
-      extend( SeqGraph< Dynamic, TWidths... >& graph, gfak::GFAKluge& other,
-             bool generate_ids=false )
+      extend( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >& graph,
+          gfak::GFAKluge& other,
+          bool generate_ids=false )
       {
-        using graph_type = SeqGraph< Dynamic, TWidths... >;
+        using graph_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >;
         using id_type = typename graph_type::id_type;
 
         google::dense_hash_map< std::string, id_type > ids;
@@ -112,9 +127,13 @@ namespace gum {
         }
       }
 
-    template< typename ...TArgs, uint8_t ...TWidths >
+    template< template< class, uint8_t ... > class TNodeProp,
+      template< class, class, uint8_t ... > class TEdgeProp,
+      typename ...TArgs,
+      uint8_t ...TWidths >
         inline void
-      extend_gfa( SeqGraph< Dynamic, TWidths... >& graph, std::istream& in,
+      extend_gfa( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >& graph,
+          std::istream& in,
           TArgs&&... args )
       {
         gfak::GFAKluge gg;
@@ -122,9 +141,13 @@ namespace gum {
         extend( graph, gg, std::forward< TArgs >( args )... );
       }
 
-    template< typename ...TArgs, uint8_t ...TWidths >
+    template< template< class, uint8_t ... > class TNodeProp,
+      template< class, class, uint8_t ... > class TEdgeProp,
+      typename ...TArgs,
+      uint8_t ...TWidths >
         inline void
-      extend_gfa( SeqGraph< Dynamic, TWidths... >& graph, std::string fname,
+      extend_gfa( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >& graph,
+          std::string fname,
           TArgs&&... args )
       {
         gfak::GFAKluge gg;
@@ -132,9 +155,13 @@ namespace gum {
         extend( graph, gg, std::forward< TArgs >( args )... );
       }
 
-    template< typename ...TArgs, uint8_t ...TWidths >
+    template< template< class, uint8_t ... > class TNodeProp,
+      template< class, class, uint8_t ... > class TEdgeProp,
+      typename ...TArgs,
+      uint8_t ...TWidths >
         inline void
-      extend( SeqGraph< Dynamic, TWidths... >& graph, std::string fname,
+      extend( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >& graph,
+          std::string fname,
           GFAFormat, TArgs&&... args )
       {
         extend_gfa( graph, fname, std::forward< TArgs >( args )... );
