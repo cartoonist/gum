@@ -7,6 +7,7 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 find_package(SparseHash REQUIRED)
 find_package(GFAKluge)
 find_package(VGio)
+find_package(OpenMP)
 
 # Adding test submodule.
 add_subdirectory(test)
