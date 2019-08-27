@@ -78,7 +78,7 @@ namespace gum {
             elem.source_end - elem.source_begin != elem.sink_end ) {
           throw std::runtime_error( "only simple dovetail overlap is supported" );
         }
-        link_type link( to_id( elem.source_name ), !elem.source_orientation_forward,
+        link_type link( to_id( elem.source_name ), elem.source_orientation_forward,
            to_id( elem.sink_name ), !elem.sink_orientation_forward );
         graph.add_edge( link, edge_type( elem.sink_end ) );
       }  /* -----  end of template function add  ----- */

@@ -55,7 +55,8 @@ namespace gum {
         using graph_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >;
         using link_type = typename graph_type::link_type;
         using edge_type = typename graph_type::edge_type;
-        graph.add_edge( link_type( edge.from, edge.from_start, edge.to, edge.to_end ),
+        graph.add_edge(
+            link_type( edge.from(), !edge.from_start(), edge.to(), edge.to_end() ),
             edge_type( edge.overlap ) );
       }  /* -----  end of template function add  ----- */
 
