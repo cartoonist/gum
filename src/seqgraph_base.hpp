@@ -23,7 +23,7 @@
 #include <utility>
 #include <tuple>
 
-#include <sparsehash/dense_hash_map>
+#include <sparsehash/sparse_hash_map>
 
 #include "basic_types.hpp"
 
@@ -48,7 +48,14 @@ namespace gum {
         using offset_type = integer_t< TOffsetWidth >;
         using nodes_type = std::vector< id_type >;
         using rank_type = typename nodes_type::size_type;
-        using rank_map_type = google::dense_hash_map< id_type, rank_type >;
+        using rank_map_type = google::sparse_hash_map< id_type, rank_type >;
+
+          static inline void
+        init_rank_map( rank_map_type& m )
+        {
+          // `dense_hash_map` requires to set empty key before any `insert` call.
+          //m.set_empty_key( 0 );  // ID cannot be zero, so it can be used as empty key.
+        }  /* -----  end of method GraphTrait::init_rank_map  ----- */
     };  /* ----------  end of template class GraphTrait  ---------- */
 
   template< typename TSpec, typename TDir, uint8_t ...TWidths >
@@ -104,7 +111,7 @@ namespace gum {
           }
         };
 
-        using adj_map_type = google::dense_hash_map< side_type, adjs_type, hash_side >;
+        using adj_map_type = google::sparse_hash_map< side_type, adjs_type, hash_side >;
 
         constexpr static side_type dummy_side = { 0, false };
 
@@ -122,17 +129,10 @@ namespace gum {
         }  /* -----  end of method DirectedGraphTrait::get_dummy_link  ----- */
 
           static inline void
-        init_rank_map( rank_map_type& m )
-        {
-          // `dense_hash_map` requires to set empty key before any `insert` call.
-          m.set_empty_key( 0 );  // ID cannot be zero, so it can be used as empty key.
-        }  /* -----  end of method DirectedGraphTrait::init_rank_map  ----- */
-
-          static inline void
         init_adj_map( adj_map_type& m )
         {
           // `dense_hash_map` requires to set empty key before any `insert` call.
-          m.set_empty_key( DirectedGraphTrait::get_dummy_side() );
+          //m.set_empty_key( DirectedGraphTrait::get_dummy_side() );
         }  /* -----  end of method DirectedGraphTrait::init_adj_map  ----- */
 
           constexpr static inline side_type
@@ -186,7 +186,7 @@ namespace gum {
           }
         };
 
-        using adj_map_type = google::dense_hash_map< side_type, adjs_type >;
+        using adj_map_type = google::sparse_hash_map< side_type, adjs_type >;
 
         constexpr static side_type dummy_side = 0;
 
@@ -204,17 +204,10 @@ namespace gum {
         }  /* -----  end of method DirectedGraphTrait::get_dummy_link  ----- */
 
           static inline void
-        init_rank_map( rank_map_type& m )
-        {
-          // `dense_hash_map` requires to set empty key before any `insert` call.
-          m.set_empty_key( 0 );  // ID cannot be zero, so it can be used as empty key.
-        }  /* -----  end of method DirectedGraphTrait::init_rank_map  ----- */
-
-          static inline void
         init_adj_map( adj_map_type& m )
         {
           // `dense_hash_map` requires to set empty key before any `insert` call.
-          m.set_empty_key( DirectedGraphTrait::get_dummy_side() );
+          //m.set_empty_key( DirectedGraphTrait::get_dummy_side() );
         }  /* -----  end of method DirectedGraphTrait::init_adj_map  ----- */
 
           constexpr static inline side_type
@@ -310,13 +303,13 @@ namespace gum {
         using edge_type = Edge;
         using key_type = link_type;
         using value_type = edge_type;
-        using container_type = google::dense_hash_map< key_type, value_type,
+        using container_type = google::sparse_hash_map< key_type, value_type,
               typename trait_type::hash_link >;
 
           static inline void
         init_container( container_type& c )
         {
-          c.set_empty_key( trait_type::get_dummy_link( ) );
+          //c.set_empty_key( trait_type::get_dummy_link( ) );
         }  /* -----  end of method EdgePropertyTrait::init_container  ----- */
     };
 

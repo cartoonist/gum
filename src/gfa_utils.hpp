@@ -122,7 +122,7 @@ namespace gum {
         using graph_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >;
         using id_type = typename graph_type::id_type;
 
-        google::dense_hash_map< std::string, id_type > ids;
+        google::sparse_hash_map< std::string, id_type > ids;
         auto sequential_ids = [&ids]( std::string const& name ) {
           auto found = ids.find( name );
           assert( found != ids.end() );
