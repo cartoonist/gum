@@ -16,8 +16,8 @@
  *  See LICENSE file for more information.
  */
 
-#ifndef  GUM_GFA_UTILS_H__
-#define  GUM_GFA_UTILS_H__
+#ifndef  GUM_GFA_UTILS_HPP__
+#define  GUM_GFA_UTILS_HPP__
 
 #include <string>
 #include <istream>
@@ -169,4 +169,4 @@ namespace gum {
   }  /* -----  end of namespace util  ----- */
 }  /* -----  end of namespace gum  ----- */
 
-#endif  /* ----- #ifndef GUM_GFA_UTILS_H__  ----- */
+#endif  /* ----- #ifndef GUM_GFA_UTILS_HPP__  ----- */

@@ -16,8 +16,8 @@
  *  See LICENSE file for more information.
  */
 
-#ifndef  GUM_IO_UTILS_H__
-#define  GUM_IO_UTILS_H__
+#ifndef  GUM_IO_UTILS_HPP__
+#define  GUM_IO_UTILS_HPP__
 
 #include "vg_utils.hpp"
 #include "gfa_utils.hpp"
@@ -43,4 +43,4 @@ namespace gum {
   }  /* -----  end of namespace util  ----- */
 }  /* -----  end of namespace gum  ----- */
 
-#endif  /* ----- #ifndef GUM_IO_UTILS_H__  ----- */
+#endif  /* ----- #ifndef GUM_IO_UTILS_HPP__  ----- */

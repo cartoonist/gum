@@ -15,11 +15,21 @@
  *  See LICENSE file for more information.
  */
 
-#ifndef  GUM_TEST_BASE_H__
-#define  GUM_TEST_BASE_H__
+#ifndef  GUM_TEST_BASE_HPP__
+#define  GUM_TEST_BASE_HPP__
+
+#include <string>
 
 #include "catch2/catch.hpp"
 
+#include "test_config.hpp"
+
 #define TEMPLATE_SCENARIO TEMPLATE_TEST_CASE
 
-#endif  /* ----- #ifndef GUM_TEST_BASE_H__  ----- */
+#ifndef TEST_DATA_DIR
+#define TEST_DATA_DIR PROJECT_SOURCE_DIR "/test/data"
+#endif
+
+static const std::string test_data_dir( TEST_DATA_DIR );
+
+#endif  /* ----- #ifndef GUM_TEST_BASE_HPP__  ----- */
