@@ -470,7 +470,7 @@ namespace gum {
         node_sequence( id_type id ) const
         {
           rank_type rank = base_type::id_to_rank( id );
-          return this->node_prop[ rank - 1 ].sequence;
+          return this->node_prop[ rank ].sequence;
         }  /* -----  end of method SeqGraph::node_sequence  ----- */
 
           inline typename node_type::sequence_type::size_type
