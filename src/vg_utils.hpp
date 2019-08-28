@@ -20,6 +20,7 @@
 
 #include <string>
 #include <istream>
+#include <functional>
 
 #include <vg/vg.pb.h>
 #include <vg/io/stream.hpp>
@@ -57,7 +58,7 @@ namespace gum {
         using edge_type = typename graph_type::edge_type;
         graph.add_edge(
             link_type( edge.from(), !edge.from_start(), edge.to(), edge.to_end() ),
-            edge_type( edge.overlap ) );
+            edge_type( edge.overlap() ) );
       }  /* -----  end of template function add  ----- */
 
     template< template< class, uint8_t ... > class TNodeProp,
@@ -65,12 +66,15 @@ namespace gum {
       uint8_t ...TWidths >
         inline void
       extend( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >& graph,
-          vg::Graph const& other )
+          vg::Graph& other )
       {
-        for ( std::size_t i = 0; i < other.node_size(); ++i ) {
+        using node_size_type = decltype( other.node_size() );
+        using edge_size_type = decltype( other.edge_size() );
+
+        for ( node_size_type i = 0; i < other.node_size(); ++i ) {
           add( graph, other.node( i ) );
         }
-        for ( std::size_t i = 0; i < other.edge_size(); ++i ) {
+        for ( edge_size_type i = 0; i < other.edge_size(); ++i ) {
           add( graph, other.edge( i ) );
         }
         // :TODO:Tue Jul 30 18:33:\@cartoonist:
@@ -84,9 +88,10 @@ namespace gum {
       extend_vg( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >& graph,
           std::istream& in )
       {
-        auto handle_chunks = [&graph]( vg::Graph const& other ) {
-          extend( graph, other );
-        };
+        std::function< void( vg::Graph& ) > handle_chunks =
+          [&graph]( vg::Graph& other ) {
+            extend( graph, other );
+          };
         vg::io::for_each( in, handle_chunks );
       }  /* -----  end of template function extend_vg  ----- */
 
