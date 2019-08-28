@@ -46,6 +46,12 @@ namespace gum {
         }
       }  /* -----  end of template function generate_node_ids  ----- */
 
+      inline long long int
+    str_to_ll( std::string const& str )
+    {
+      return std::stoll( str );
+    }  /* -----  end of function str_to_ll  ----- */
+
     template< typename TCallback,
       template< class, uint8_t ... > class TNodeProp,
       template< class, class, uint8_t ... > class TEdgeProp,
@@ -53,7 +59,7 @@ namespace gum {
         inline void
       add( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >& graph,
           gfak::sequence_elem const& elem,
-          TCallback to_id=std::stoi )
+          TCallback to_id=str_to_ll )
       {
         using graph_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >;
         using node_type = typename graph_type::node_type;
@@ -67,7 +73,7 @@ namespace gum {
         inline void
       add( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >& graph,
           gfak::edge_elem const& elem,
-          TCallback to_id=std::stoi )
+          TCallback to_id=str_to_ll )
       {
         using graph_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >;
         using link_type = typename graph_type::link_type;
@@ -123,7 +129,7 @@ namespace gum {
           extend( graph, other, sequential_ids );
         }
         else {
-          extend( graph, other, std::stoi );
+          extend( graph, other, str_to_ll );
         }
       }
 
