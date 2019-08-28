@@ -80,7 +80,8 @@ namespace gum {
         using edge_type = typename graph_type::edge_type;
 
         auto source_len = graph.node_length( to_id( elem.source_name ) );
-        if ( elem.type != 1 || elem.sink_begin != 0 || elem.source_end != source_len ||
+        if ( ( elem.type != 1 && elem.type != 2 ) ||
+            elem.sink_begin != 0 || elem.source_end != source_len ||
             elem.source_end - elem.source_begin != elem.sink_end ) {
           throw std::runtime_error( "only simple dovetail overlap is supported" );
         }
@@ -102,7 +103,9 @@ namespace gum {
           add( graph, rec.second, to_id );
         }
         for ( auto const& rec : other.get_seq_to_edges() ) {
-          add( graph, rec.second, to_id );
+          for ( auto const& elem : rec.second ) {
+            add( graph, elem, to_id );
+          }
         }
         // :TODO:Tue Aug 20 16:51:\@cartoonist:
         // Add paths as O-groups
@@ -121,7 +124,9 @@ namespace gum {
 
         google::dense_hash_map< std::string, id_type > ids;
         auto sequential_ids = [&ids]( std::string const& name ) {
-          return ids.at( name );
+          auto found = ids.find( name );
+          assert( found != ids.end() );
+          return found->second;
         };
 
         if ( generate_ids ) {
