@@ -123,27 +123,27 @@ SCENARIO( "Specialised functionality of DirectedGraph", "[seqgraph]" )
         REQUIRE( !graph.has_edge( abs_id, edge.second ) );
         REQUIRE( graph.has_edge( edge ) );
       }
-      auto adjs = graph.get_adjacents_to( 2 );
+      auto adjs = graph.adjacents_to( 2 );
       std::vector< side_type > truth = { 23, 6, 401 };
       REQUIRE( adjs.size() == truth.size() );
       for ( auto const& side : truth ) {
         REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
       }
-      adjs = graph.get_adjacents_to( 10344 );
+      adjs = graph.adjacents_to( 10344 );
       truth = { 92 };
       REQUIRE( adjs.size() == truth.size() );
       for ( auto const& side : truth ) {
         REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
       }
-      adjs = graph.get_adjacents_to( abs_id );
+      adjs = graph.adjacents_to( abs_id );
       REQUIRE( adjs.empty() );
-      adjs = graph.get_adjacents_from( 2 );
+      adjs = graph.adjacents_from( 2 );
       truth = { 1 };
       REQUIRE( adjs.size() == truth.size() );
       for ( auto const& side : truth ) {
         REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
       }
-      adjs = graph.get_adjacents_from( 10344 );
+      adjs = graph.adjacents_from( 10344 );
       truth = { 23, 6, 401, 72 };
       REQUIRE( adjs.size() == truth.size() );
       for ( auto const& side : truth ) {
@@ -229,37 +229,37 @@ SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[seqgraph]" 
         REQUIRE( !graph.has_edge( graph.opposite_side( graph.from_side( edge ) ),
               graph.to_side( edge ) ) );
       }
-      auto adjs = graph.get_adjacents_to( { 2, true } );
+      auto adjs = graph.adjacents_to( { 2, true } );
       std::vector< side_type > truth = { { 23, false }, { 6, true }, { 401, false } };
       REQUIRE( adjs.size() == truth.size() );
       for ( auto const& side : truth ) {
         REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
       }
-      adjs = graph.get_adjacents_to( { 10344, false } );
+      adjs = graph.adjacents_to( { 10344, false } );
       truth = { { 92, false } };
       REQUIRE( adjs.size() == truth.size() );
       for ( auto const& side : truth ) {
         REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
       }
-      adjs = graph.get_adjacents_to( { 10344, true } );
+      adjs = graph.adjacents_to( { 10344, true } );
       REQUIRE( adjs.empty() );
-      adjs = graph.get_adjacents_to( { abs_id, true } );
+      adjs = graph.adjacents_to( { abs_id, true } );
       REQUIRE( adjs.empty() );
-      adjs = graph.get_adjacents_from( { 2, false } );
+      adjs = graph.adjacents_from( { 2, false } );
       truth = { { 1, true } };
       REQUIRE( adjs.size() == truth.size() );
       for ( auto const& side : truth ) {
         REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
       }
-      adjs = graph.get_adjacents_from( { 2, true } );
+      adjs = graph.adjacents_from( { 2, true } );
       REQUIRE( adjs.empty() );
-      adjs = graph.get_adjacents_from( { 10344, false } );
+      adjs = graph.adjacents_from( { 10344, false } );
       truth = { { 23, true }, { 401, true }, { 72, true } };
       REQUIRE( adjs.size() == truth.size() );
       for ( auto const& side : truth ) {
         REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
       }
-      adjs = graph.get_adjacents_from( { 10344, true } );
+      adjs = graph.adjacents_from( { 10344, true } );
       truth = { { 6, false } };
       REQUIRE( adjs.size() == truth.size() );
       for ( auto const& side : truth ) {

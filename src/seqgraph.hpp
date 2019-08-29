@@ -183,20 +183,20 @@ namespace gum {
         }  /* -----  end of method DirectedGraph::has_edge  ----- */
 
           inline adjs_type
-        get_adjacents_to( side_type from ) const
+        adjacents_to( side_type from ) const
         {
           auto found = this->adj_to.find( from );
           if ( found == this->adj_to.end() ) return adjs_type();
           return found->second;
-        }  /* -----  end of method DirectedGraph::get_adjacents_to  ----- */
+        }  /* -----  end of method DirectedGraph::adjacents_to  ----- */
 
           inline adjs_type
-        get_adjacents_from( side_type to ) const
+        adjacents_from( side_type to ) const
         {
           auto found = this->adj_from.find( to );
           if ( found == this->adj_from.end() ) return adjs_type();
           return found->second;
-        }  /* -----  end of method DirectedGraph::get_adjacents_from  ----- */
+        }  /* -----  end of method DirectedGraph::adjacents_from  ----- */
 
           inline rank_type
         outdegree( side_type side ) const
