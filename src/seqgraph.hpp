@@ -392,6 +392,12 @@ namespace gum {
         EdgeProperty& operator=( EdgeProperty const& other ) = default;      /* copy assignment operator */
         EdgeProperty& operator=( EdgeProperty&& other ) noexcept = default;  /* move assignment operator */
 
+          inline edge_type const&
+        operator[]( key_type sides ) const
+        {
+          return this->edges.find( sides )->second;
+        }  /* -----  end of method EdgeProperty::operator[]  ----- */
+
         /* === METHODS === */
           inline void
         add_edge( key_type sides, value_type edge )
