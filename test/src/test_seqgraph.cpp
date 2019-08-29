@@ -19,6 +19,7 @@
 #include <utility>
 
 #include "seqgraph.hpp"
+#include "io_utils.hpp"
 
 #include "test_base.hpp"
 
@@ -189,11 +190,13 @@ SCENARIO( "Specialised functionality of DirectedGraph", "[seqgraph]" )
   }
 }
 
-SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[seqgraph]" )
+TEMPLATE_SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[seqgraph]",
+   ( gum::DirectedGraph< gum::Dynamic, gum::Bidirected > ),
+   ( gum::SeqGraph< gum::Dynamic > ) )
 {
   GIVEN( "A Bidirected DirectedGraph with some nodes and edges" )
   {
-    using graph_type = gum::DirectedGraph< gum::Dynamic, gum::Bidirected >;
+    using graph_type = TestType;
     using id_type = typename graph_type::id_type;
     using side_type = typename graph_type::side_type;
     using link_type = typename graph_type::link_type;
@@ -334,6 +337,70 @@ SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[seqgraph]" 
         graph.add_edge( { 1, true, 2, false } );
         graph.add_edge( { 10344, false, 92, false } );
         REQUIRE( graph.get_edge_count() == edges.size() );
+      }
+    }
+  }
+}
+
+SCENARIO( "Specialised functionality of Dynamic SeqGraph", "[seqgraph]" )
+{
+  GIVEN( "A simple Dynamic SeqGraph" )
+  {
+    using graph_type = gum::SeqGraph< gum::Dynamic >;
+    using link_type = typename graph_type::link_type;
+
+    graph_type graph;
+    auto integrity_test = []( graph_type const& graph ) {
+      REQUIRE( graph.node_sequence( 1 ) == "TGGTCAAC" );
+      REQUIRE( graph.node_sequence( 2 ) == "T" );
+      REQUIRE( graph.node_sequence( 3 ) == "GCC" );
+      REQUIRE( graph.node_sequence( 4 ) == "A" );
+      REQUIRE( graph.node_sequence( 5 ) == "CTTAAA" );
+      REQUIRE( graph.node_sequence( 6 ) == "GCG" );
+      REQUIRE( graph.node_sequence( 7 ) == "CTTTT" );
+      REQUIRE( graph.node_sequence( 8 ) == "AAAT" );
+      REQUIRE( graph.node_length( 1 ) == 8 );
+      REQUIRE( graph.node_length( 2 ) == 1 );
+      REQUIRE( graph.node_length( 3 ) == 3 );
+      REQUIRE( graph.node_length( 4 ) == 1 );
+      REQUIRE( graph.node_length( 5 ) == 6 );
+      REQUIRE( graph.node_length( 6 ) == 3 );
+      REQUIRE( graph.node_length( 7 ) == 5 );
+      REQUIRE( graph.node_length( 8 ) == 4 );
+      REQUIRE( graph.get_node_prop( )[ 1 ].name == "1" );
+      REQUIRE( graph.get_node_prop( )[ 2 ].name == "2" );
+      REQUIRE( graph.get_node_prop( )[ 3 ].name == "3" );
+      REQUIRE( graph.get_node_prop( )[ 4 ].name == "4" );
+      REQUIRE( graph.get_node_prop( )[ 5 ].name == "5" );
+      REQUIRE( graph.get_node_prop( )[ 6 ].name == "6" );
+      REQUIRE( graph.get_node_prop( )[ 7 ].name == "7" );
+      REQUIRE( graph.get_node_prop( )[ 8 ].name == "8" );
+      REQUIRE( graph.get_edge_prop( )[ link_type( { 1, true, 2, false } ) ].overlap == 0 );
+      REQUIRE( graph.get_edge_prop( )[ link_type( { 1, true, 3, true } ) ].overlap == 0 );
+      REQUIRE( graph.get_edge_prop( )[ link_type( { 1, true, 4, false } ) ].overlap == 0 );
+      REQUIRE( graph.get_edge_prop( )[ link_type( { 2, true, 5, false } ) ].overlap == 0 );
+      REQUIRE( graph.get_edge_prop( )[ link_type( { 3, false, 5, false } ) ].overlap == 1 );
+      REQUIRE( graph.get_edge_prop( )[ link_type( { 4, true, 5, true } ) ].overlap == 0 );
+      REQUIRE( graph.get_edge_prop( )[ link_type( { 5, false, 6, false } ) ].overlap == 1 );
+      REQUIRE( graph.get_edge_prop( )[ link_type( { 5, false, 7, false } ) ].overlap == 0 );
+      REQUIRE( graph.get_edge_prop( )[ link_type( { 5, true, 8, false } ) ].overlap == 0 );
+    };
+
+    WHEN( "Loaded from a file in GFA 2.0 format" )
+    {
+      gum::util::extend( graph, test_data_dir + "/graph_simple_v2.gfa" );
+      THEN( "The resulting graph should pass integrity tests" )
+      {
+        integrity_test( graph );
+      }
+    }
+
+    WHEN( "Loaded from a file in vg format" )
+    {
+      gum::util::extend( graph, test_data_dir + "/graph_simple.vg" );
+      THEN( "The resulting graph should pass integrity tests" )
+      {
+        integrity_test( graph );
       }
     }
   }
