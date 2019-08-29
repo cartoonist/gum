@@ -324,5 +324,17 @@ SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[seqgraph]" 
         integrity_test( graph );
       }
     }
+
+    WHEN( "Adding existing edge" )
+    {
+      graph.set_nodes( nodes );
+      for ( auto const& edge : edges ) graph.add_edge( edge );
+      THEN( "The method should silently ignore it" )
+      {
+        graph.add_edge( { 1, true, 2, false } );
+        graph.add_edge( { 10344, false, 92, false } );
+        REQUIRE( graph.get_edge_count() == edges.size() );
+      }
+    }
   }
 }
