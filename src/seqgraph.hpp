@@ -338,9 +338,15 @@ namespace gum {
         operator[]( rank_type rank ) const
         {
           return this->nodes[ rank - 1 ];
-        }
+        }  /* -----  end of method NodeProperty::operator[]  ----- */
 
         /* === METHODS === */
+          inline value_type const&
+        at( rank_type rank ) const
+        {
+          return this->nodes.at( rank - 1 );
+        }  /* -----  end of method NodeProperty::at  ----- */
+
           inline void
         add_node( value_type node )
         {
@@ -367,6 +373,7 @@ namespace gum {
         using trait_type = EdgePropertyTrait< spec_type, TDir, TWidths... >;
         using id_type = typename trait_type::id_type;
         using offset_type = typename trait_type::offset_type;
+        using link_type = typename trait_type::link_type;
         using edge_type = typename trait_type::edge_type;
         using key_type = typename trait_type::key_type;
         using value_type = typename trait_type::value_type;
@@ -399,6 +406,14 @@ namespace gum {
         }  /* -----  end of method EdgeProperty::operator[]  ----- */
 
         /* === METHODS === */
+          inline edge_type const&
+        at( key_type sides ) const
+        {
+          auto found = this->edges.find( sides );
+          if ( found == this->edges.end() ) throw std::runtime_error( "no such edge" );
+          return found->second;
+        }  /* -----  end of method EdgeProperty::at  ----- */
+
           inline void
         add_edge( key_type sides, value_type edge )
         {
