@@ -467,6 +467,12 @@ namespace gum {
           this->edge_prop.add_edge( sides, edge );
         }  /* -----  end of method SeqGraph::add_edge  ----- */
 
+          inline void
+        add_edge( side_type from, side_type to, edge_type edge=edge_type() )
+        {
+          this->add_edge( base_type::merge_sides( from, to ), edge );
+        }  /* -----  end of method SeqGraph::add_edge  ----- */
+
           inline bool
         has_edge( link_type sides ) const
         {
