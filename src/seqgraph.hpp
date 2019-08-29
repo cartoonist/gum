@@ -118,10 +118,7 @@ namespace gum {
           inline void
         add_node( id_type id )
         {
-          if ( id <= 0 ) throw std::runtime_error( "non-positive node ID");
-          if ( this->has_node( id ) ) return;
-          this->nodes.push_back( id );
-          this->set_last_rank();
+          this->add_node_imp( id );
         }  /* -----  end of method DirectedGraph::add_node  ----- */
 
           inline bool
@@ -236,6 +233,16 @@ namespace gum {
         {
           return this->nodes;
         }  /* -----  end of method DirectedGraph::get_nodes  ----- */
+
+        /* === METHODS === */
+          inline void
+        add_node_imp( id_type id, bool safe=true )
+        {
+          if ( id <= 0 ) throw std::runtime_error( "non-positive node ID");
+          if ( safe && this->has_node( id ) ) return;
+          this->nodes.push_back( id );
+          this->set_last_rank();
+        }  /* -----  end of method DirectedGraph::add_node_imp  ----- */
 
           inline void
         add_edge_imp( side_type from, side_type to, bool safe=true )
@@ -455,7 +462,7 @@ namespace gum {
         add_node( id_type id, node_type node=node_type() )
         {
           if ( this->has_node( id ) ) return;
-          base_type::add_node( id );
+          base_type::add_node_imp( id, false );
           this->node_prop.add_node( node );
         }  /* -----  end of method SeqGraph::add_node  ----- */
 
