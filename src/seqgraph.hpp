@@ -67,6 +67,25 @@ namespace gum {
           return this->nodes;
         }  /* -----  end of method DirectedGraph::get_nodes  ----- */
 
+          inline rank_type
+        get_max_node_rank( ) const
+        {
+          assert( this->max_rank == this->get_node_count() );
+          return this->max_rank;
+        }  /* -----  end of method DirectedGraph::get_max_node_rank  ----- */
+
+          inline rank_type
+        get_node_count( ) const
+        {
+          return this->nodes.size();
+        }  /* -----  end of method DirectedGraph::get_node_count  ----- */
+
+          inline rank_type
+        get_edge_count( ) const
+        {
+          return this->edge_count;
+        }  /* -----  end of method DirectedGraph::get_edge_count  ----- */
+
         /* === MUTATORS === */
           inline void
         set_nodes( nodes_type value )
@@ -95,25 +114,6 @@ namespace gum {
           if ( rank <= 0 ) throw std::runtime_error( "non-positive node rank");
           return this->nodes[ rank - 1 ];
         }  /* -----  end of method DirectedGraph::rank_to_id  ----- */
-
-          inline rank_type
-        get_max_node_rank( ) const
-        {
-          assert( this->max_rank == this->get_node_count() );
-          return this->max_rank;
-        }  /* -----  end of method DirectedGraph::get_max_node_rank  ----- */
-
-          inline rank_type
-        get_node_count( ) const
-        {
-          return this->nodes.size();
-        }  /* -----  end of method DirectedGraph::get_node_count  ----- */
-
-          inline rank_type
-        get_edge_count( ) const
-        {
-          return this->edge_count;
-        }  /* -----  end of method DirectedGraph::get_edge_count  ----- */
 
           inline void
         add_node( id_type id )
@@ -433,6 +433,19 @@ namespace gum {
         SeqGraph( SeqGraph&& other ) noexcept = default;       /* move constructor */
         ~SeqGraph() noexcept = default;                        /* destructor       */
 
+        /* === ACCESSORS === */
+          inline node_prop_type const&
+        get_node_prop( ) const
+        {
+          return this->node_prop;
+        }  /* -----  end of method SeqGraph::get_node_prop  ----- */
+
+          inline edge_prop_type const&
+        get_edge_prop( ) const
+        {
+          return this->edge_prop;
+        }  /* -----  end of method SeqGraph::get_edge_prop  ----- */
+
         /* === OPERATORS === */
         SeqGraph& operator=( SeqGraph const& other ) = default;      /* copy assignment operator */
         SeqGraph& operator=( SeqGraph&& other ) noexcept = default;  /* move assignment operator */
@@ -478,6 +491,20 @@ namespace gum {
         {
           return this->node_sequence( id ).size();
         }  /* -----  end of method SeqGraph::node_length  ----- */
+
+      protected:
+        /* === ACCESSORS === */
+          inline node_prop_type&
+        get_node_prop( )
+        {
+          return this->node_prop;
+        }  /* -----  end of method SeqGraph::get_node_prop  ----- */
+
+          inline edge_prop_type&
+        get_edge_prop( )
+        {
+          return this->edge_prop;
+        }  /* -----  end of method SeqGraph::get_edge_prop  ----- */
 
       private:
         /* === DATA MEMBERS === */
