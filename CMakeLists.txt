@@ -10,6 +10,9 @@ find_package(GFAKluge)
 find_package(VGio)
 find_package(OpenMP)
 
+# Force CMake to use `-I` instead of `-isystem`
+set(CMAKE_NO_SYSTEM_FROM_IMPORTED TRUE)
+
 # Adding test submodule.
 add_subdirectory(test)
 
