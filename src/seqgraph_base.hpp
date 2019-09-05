@@ -74,7 +74,7 @@ namespace gum {
    *  the node if required; i.e.:
    *
    *              ─┬──────╮     ╭───────┬────┬──────╮     ╭───────┬─
-   *           ... │ true ├────➤│ false │ ID │ true ├────➤│ false │ ...
+   *           ... │ true ├────⯈│ false │ ID │ true ├────⯈│ false │ ...
    *              ─┴──────╯     ╰───────┴────┴──────╯     ╰───────┴─
    */
   template< uint8_t ...TWidths >

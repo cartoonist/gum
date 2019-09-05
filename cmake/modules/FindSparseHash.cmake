@@ -1,5 +1,5 @@
 # Find libsparsehash library and set SPARSEHASH_FOUND and define
-# SPARSEHASH_INCLUDE_DIRS as the sparsehash include directories.
+# SPARSEHASH_INCLUDE_DIRS as the libsparsehash include directories.
 
 if(SPARSEHASH_INCLUDE_DIRS)
   set(SPARSEHASH_FIND_QUIETLY TRUE)
