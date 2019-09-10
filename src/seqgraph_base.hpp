@@ -39,10 +39,10 @@ namespace gum {
   struct Bidirected;
 
   template< typename TSpec, uint8_t TIdWidth = 64, uint8_t TOffsetWidth = 64 >
-    class GraphTrait;
+    class GraphBaseTrait;
 
   template< uint8_t TIdWidth, uint8_t TOffsetWidth >
-    class GraphTrait< Dynamic, TIdWidth, TOffsetWidth > {
+    class GraphBaseTrait< Dynamic, TIdWidth, TOffsetWidth > {
       public:
         using id_type = integer_t< TIdWidth >;
         using offset_type = integer_t< TOffsetWidth >;
@@ -55,8 +55,132 @@ namespace gum {
         {
           // `dense_hash_map` requires to set empty key before any `insert` call.
           //m.set_empty_key( 0 );  // ID cannot be zero, so it can be used as empty key.
-        }  /* -----  end of method GraphTrait::init_rank_map  ----- */
-    };  /* ----------  end of template class GraphTrait  ---------- */
+        }  /* -----  end of method GraphBaseTrait::init_rank_map  ----- */
+    };  /* ----------  end of template class GraphBaseTrait  ---------- */
+
+  template< typename TDir >
+    class DirectedGraphBaseTrait;
+
+  template< >
+    class DirectedGraphBaseTrait< Bidirected > {
+      public:
+        using side_type = std::pair< id_type, bool >;
+        using link_type = std::tuple< id_type, bool, id_type, bool >;
+        using linktype_type = unsigned char;
+
+        constexpr static side_type dummy_side = { 0, false };
+
+          constexpr static inline side_type
+        from_side( link_type sides )
+        {
+          return side_type( std::get<0>( sides ), std::get<1>( sides ) );
+        }  /* -----  end of method DirectedGraphBaseTrait::from_side  ----- */
+
+          constexpr static inline side_type
+        to_side( link_type sides )
+        {
+          return side_type( std::get<2>( sides ), std::get<3>( sides ) );
+        }  /* -----  end of method DirectedGraphBaseTrait::to_side  ----- */
+
+          constexpr static inline link_type
+        merge_sides( side_type from, side_type to )
+        {
+          return link_type( from.first, from.second, to.first, to.second );
+        }  /* -----  end of method DirectedGraphBaseTrait::merge_sides  ----- */
+
+        /**
+         *  @brief  Get the integer representation of a link.
+         *
+         *  Return integer representation of the link type:
+         *
+         *     Link            Type
+         *    ----------------------
+         *     start -> start   0
+         *     start -> end     1
+         *     end -> start     2
+         *     end -> end       3
+         */
+          constexpr static inline linktype_type
+        get_type( link_type sides )
+        {
+          return static_cast< linktype_type >( std::get<1>( sides ) ) * 2 +
+              static_cast< linktype_type >( std::get< 3 >( sides ) );
+        } /* ----- end of method DirectedGraphBaseTrait::get_type ----- */
+
+          constexpr static inline side_type
+        opposite_side( side_type side )
+        {
+          return side_type( side.first, !side.second );
+        } /* ----- end of method DirectedGraphBaseTrait::opposite_side ----- */
+
+          constexpr static inline side_type
+        get_dummy_side( )
+        {
+          return dummy_side;
+        }  /* -----  end of method DirectedGraphBaseTrait::get_dummy_side  ----- */
+
+          constexpr static inline link_type
+        get_dummy_link( )
+        {
+          return DirectedGraphBaseTrait::merge_sides(
+              DirectedGraphBaseTrait::get_dummy_side(),
+              DirectedGraphBaseTrait::get_dummy_side() );
+        }  /* -----  end of method DirectedGraphBaseTrait::get_dummy_link  ----- */
+    };  /* ---------- end of template class DirectedGraphBaseTrait ---------- */
+
+  template< >
+    class DirectedGraphBaseTrait< Directed > {
+      public:
+        using side_type = id_type;
+        using link_type = std::pair< id_type, id_type >;
+        using linktype_type = unsigned char;
+
+        constexpr static side_type dummy_side = 0;
+
+          constexpr static inline side_type
+        from_side( link_type sides )
+        {
+          return sides.first;
+        }  /* -----  end of method DirectedGraphBaseTrait::from_side  ----- */
+
+          constexpr static inline side_type
+        to_side( link_type sides )
+        {
+          return sides.second;
+        }  /* -----  end of method DirectedGraphBaseTrait::to_side  ----- */
+
+          constexpr static inline link_type
+        merge_sides( side_type from, side_type to )
+        {
+          return link_type( from, to );
+        }  /* -----  end of method DirectedGraphBaseTrait::merge_sides  ----- */
+
+          constexpr static inline linktype_type
+        get_type( link_type sides )
+        {
+          return 0;
+        }  /* ----- end of method DirectedGraphBaseTrait::get_type ----- */
+
+          constexpr static inline side_type
+        opposite_side( side_type side )
+        {
+          return side;
+        }  /* ----- end of method DirectedGraphBaseTrait::opposite_type ----- */
+
+          constexpr static inline side_type
+        get_dummy_side( )
+        {
+          return dummy_side;
+        }  /* -----  end of method DirectedGraphBaseTrait::get_dummy_side  ----- */
+
+          constexpr static inline link_type
+        get_dummy_link( )
+        {
+          return DirectedGraphBaseTrait::merge_sides(
+              DirectedGraphBaseTrait::get_dummy_side(),
+              DirectedGraphBaseTrait::get_dummy_side() );
+        }  /* -----  end of method DirectedGraphBaseTrait::get_dummy_link  ----- */
+    };  /* ---------- end of template class DirectedGraphBaseTrait ---------- */
 
   template< typename TSpec, typename TDir, uint8_t ...TWidths >
     class DirectedGraphTrait;
@@ -79,17 +203,22 @@ namespace gum {
    */
   template< uint8_t ...TWidths >
     class DirectedGraphTrait< Dynamic, Bidirected, TWidths... >
-    : public GraphTrait< Dynamic, TWidths... > {
+    : public GraphBaseTrait< Dynamic, TWidths... >,
+      public DirectedGraphBaseTrait< Bidirected > {
       private:
-        using base_type = GraphTrait< Dynamic, TWidths... >;
+        using spec_type = Dynamic;
+        using dir_type = Bidirected;
+        using graph_type = GraphBaseTrait< spec_type, TWidths... >;
+        using base_type = DirectedGraphBaseTrait< dir_type >;
       public:
-        using typename base_type::id_type;
-        using typename base_type::offset_type;
-        using typename base_type::rank_type;
-        using typename base_type::nodes_type;
-        using typename base_type::rank_map_type;
-        using side_type = std::pair< id_type, bool >;
-        using link_type = std::tuple< id_type, bool, id_type, bool >;
+        using typename graph_type::id_type;
+        using typename graph_type::offset_type;
+        using typename graph_type::rank_type;
+        using typename graph_type::nodes_type;
+        using typename graph_type::rank_map_type;
+        using typename base_type::side_type;
+        using typename base_type::link_type;
+        using typename base_type::linktype_type;
         using adjs_type = std::vector< side_type >;
 
         struct hash_side {
@@ -105,74 +234,40 @@ namespace gum {
             inline std::size_t
           operator()( link_type const& sides ) const
           {
-            auto hash1 = hash_side{}( DirectedGraphTrait::from_side( sides ) );
-            auto hash2 = hash_side{}( DirectedGraphTrait::to_side( sides ) );
+            auto hash1 = hash_side{}( base_type::from_side( sides ) );
+            auto hash2 = hash_side{}( base_type::to_side( sides ) );
             return hash1 ^ hash2;
           }
         };
 
         using adj_map_type = google::sparse_hash_map< side_type, adjs_type, hash_side >;
 
-        constexpr static side_type dummy_side = { 0, false };
-
-          constexpr static inline side_type
-        get_dummy_side( )
-        {
-          return dummy_side;
-        }  /* -----  end of method DirectedGraphTrait::get_dummy_side  ----- */
-
-          constexpr static inline link_type
-        get_dummy_link( )
-        {
-          return DirectedGraphTrait::merge_sides( DirectedGraphTrait::get_dummy_side(),
-              DirectedGraphTrait::get_dummy_side() );
-        }  /* -----  end of method DirectedGraphTrait::get_dummy_link  ----- */
-
           static inline void
         init_adj_map( adj_map_type& m )
         {
           // `dense_hash_map` requires to set empty key before any `insert` call.
-          //m.set_empty_key( DirectedGraphTrait::get_dummy_side() );
+          //m.set_empty_key( base_type::get_dummy_side() );
         }  /* -----  end of method DirectedGraphTrait::init_adj_map  ----- */
-
-          constexpr static inline side_type
-        from_side( link_type sides )
-        {
-          return side_type( std::get<0>( sides ), std::get<1>( sides ) );
-        }  /* -----  end of method DirectedGraphTrait::from_side  ----- */
-
-          constexpr static inline side_type
-        to_side( link_type sides )
-        {
-          return side_type( std::get<2>( sides ), std::get<3>( sides ) );
-        }  /* -----  end of method DirectedGraphTrait::to_side  ----- */
-
-          constexpr static inline link_type
-        merge_sides( side_type from, side_type to )
-        {
-          return link_type( from.first, from.second, to.first, to.second );
-        }  /* -----  end of method DirectedGraphTrait::merge_sides  ----- */
-
-          constexpr static inline side_type
-        opposite_side( side_type side )
-        {
-          return side_type( side.first, !side.second );
-        }
     };  /* ----------  end of template class DirectedGraphTrait  ---------- */
 
   template< uint8_t ...TWidths >
     class DirectedGraphTrait< Dynamic, Directed, TWidths... >
-    : public GraphTrait< Dynamic, TWidths... > {
+    : public GraphBaseTrait< Dynamic, TWidths... >,
+      public DirectedGraphBaseTrait< Directed > {
       private:
-        using base_type = GraphTrait< Dynamic, TWidths... >;
+        using spec_type = Dynamic;
+        using dir_type = Directed;
+        using graph_type = GraphBaseTrait< spec_type, TWidths... >;
+        using base_type = DirectedGraphBaseTrait< dir_type >;
       public:
-        using typename base_type::id_type;
-        using typename base_type::offset_type;
-        using typename base_type::rank_type;
-        using typename base_type::nodes_type;
-        using typename base_type::rank_map_type;
-        using side_type = id_type;
-        using link_type = std::pair< id_type, id_type >;
+        using typename graph_type::id_type;
+        using typename graph_type::offset_type;
+        using typename graph_type::rank_type;
+        using typename graph_type::nodes_type;
+        using typename graph_type::rank_map_type;
+        using typename base_type::side_type;
+        using typename base_type::link_type;
+        using typename base_type::linktype_type;
         using adjs_type = nodes_type;
         using hash_side = std::hash< side_type >;
 
@@ -180,59 +275,20 @@ namespace gum {
             inline std::size_t
           operator()( link_type const& sides ) const
           {
-            auto hash1 = hash_side{}( DirectedGraphTrait::from_side( sides ) );
-            auto hash2 = hash_side{}( DirectedGraphTrait::to_side( sides ) );
+            auto hash1 = hash_side{}( base_type::from_side( sides ) );
+            auto hash2 = hash_side{}( base_type::to_side( sides ) );
             return hash1 ^ hash2;
           }
         };
 
         using adj_map_type = google::sparse_hash_map< side_type, adjs_type >;
 
-        constexpr static side_type dummy_side = 0;
-
-          constexpr static inline side_type
-        get_dummy_side( )
-        {
-          return dummy_side;
-        }  /* -----  end of method DirectedGraphTrait::get_dummy_side  ----- */
-
-          constexpr static inline link_type
-        get_dummy_link( )
-        {
-          return DirectedGraphTrait::merge_sides( DirectedGraphTrait::get_dummy_side(),
-              DirectedGraphTrait::get_dummy_side() );
-        }  /* -----  end of method DirectedGraphTrait::get_dummy_link  ----- */
-
           static inline void
         init_adj_map( adj_map_type& m )
         {
           // `dense_hash_map` requires to set empty key before any `insert` call.
-          //m.set_empty_key( DirectedGraphTrait::get_dummy_side() );
+          //m.set_empty_key( base_type::get_dummy_side() );
         }  /* -----  end of method DirectedGraphTrait::init_adj_map  ----- */
-
-          constexpr static inline side_type
-        from_side( link_type sides )
-        {
-          return sides.first;
-        }  /* -----  end of method DirectedGraphTrait::from_side  ----- */
-
-          constexpr static inline side_type
-        to_side( link_type sides )
-        {
-          return sides.second;
-        }  /* -----  end of method DirectedGraphTrait::to_side  ----- */
-
-          constexpr static inline link_type
-        merge_sides( side_type from, side_type to )
-        {
-          return link_type( from, to );
-        }  /* -----  end of method DirectedGraphTrait::merge_sides  ----- */
-
-          constexpr static inline side_type
-        opposite_side( side_type side )
-        {
-          return side;
-        }
     };  /* ----------  end of template class DirectedGraphTrait  ---------- */
 
   template< typename TSpec, typename TDir = Bidirected, uint8_t ...TWidths >
@@ -245,7 +301,7 @@ namespace gum {
     class NodePropertyTrait< Dynamic, TWidths... > {
       private:
         using spec_type = Dynamic;
-        using trait_type = GraphTrait< spec_type, TWidths... >;
+        using trait_type = GraphBaseTrait< spec_type, TWidths... >;
       public:
         using id_type = typename trait_type::id_type;
         using offset_type = typename trait_type::offset_type;
@@ -270,7 +326,7 @@ namespace gum {
         using sequence_type = typename value_type::sequence_type;
         using name_type = typename value_type::name_type;
         using container_type = std::vector< value_type >;
-    };
+    };  /* ---------- end of template class NodePropertyTrait ---------- */
 
   template< typename TSpec, uint8_t ...TWidths >
     class NodeProperty;
@@ -311,7 +367,7 @@ namespace gum {
         {
           //c.set_empty_key( trait_type::get_dummy_link( ) );
         }  /* -----  end of method EdgePropertyTrait::init_container  ----- */
-    };
+    };  /* ---------- end of template class EdgePropertyTrait ---------- */
 
   template< typename TSpec, typename TDir, uint8_t ...TWidths >
     class EdgeProperty;
