@@ -24,6 +24,7 @@
 #include <tuple>
 
 #include <sparsehash/sparse_hash_map>
+#include <sdsl/int_vector.hpp>
 
 #include "basic_types.hpp"
 
@@ -64,6 +65,68 @@ namespace gum {
       // `dense_hash_map` requires to set empty key before any `insert` call.
       //m.set_empty_key( 0 );  // ID cannot be zero, so it can be used as empty key.
     }
+
+    static inline void
+    check_id( id_type id )
+    {
+      if ( id <= 0 ) throw std::runtime_error( "non-positive node ID" );
+    }
+
+    static inline void
+    check_rank( rank_type )
+    {
+      if ( rank <= 0 ) throw std::runtime_error( "non-positive node rank");
+    }
+  };  /* --- end of template class GraphBaseTrait --- */
+
+  /**
+   *  @brief  Succinct graph trait.
+   *
+   *  The graph is stored as an integer vector with two given
+   *  parameters: `np_padding` and `ep_padding`. These two parameters
+   *  indicates the number of entries required by extra information about nodes
+   *  and edges to be reserved and populated later with the information from
+   *  node/edge properties in the graph.
+   *
+   *  GRAPH := NODES
+   *  NODES := {HEADER, EDGES_TO, EDGES_FROM}
+   *  HEADER = {id, outdegree, indegree, NODE_PROPS}
+   *  EDGES_TO = {EDGE_TO, ...}
+   *  EDGES_FROM = {EDGE_FROM, ...}
+   *  EDGE_TO(*) = {id, type?, EDGE_PROPS}
+   *  EDGE_FROM(*) = {id, type?, EDGE_PROPS}
+   *  NODE_PROPS = {node_prop, ...}  // of size np_padding
+   *  EDGE_PROPS = {edge_prop, ...}  // of size ep_padding
+   *
+   *  id = integer
+   *  outdegree = integer
+   *  indegree = integer
+   *  type = integer
+   *  node_prop = integer
+   *  edge_prop = integer
+   *
+   *  (*) NOTE that the `type` field is only for Bidirected graphs and will be
+   *  omitted for directed graphs.
+   *
+   *  NOTE: The node/edge property values should fit in the `common_type`.
+   */
+  template< uint8_t TIdWidth, uint8_t TOffsetWidth >
+  class GraphBaseTrait< Succinct, TIdWidth, TOffsetWidth > {
+  public:
+    using id_type = integer_t< TIdWidth >;
+    using offset_type = integer_t< TOffsetWidth >;
+    using common_type = common_t< TIdWidth, TOffsetWidth >;
+    using nodes_type = sdsl::int_vector< common_type >;
+    using size_type = typename nodes_type::size_type;
+    using rank_type = typename nodes_type::size_type;
+    using bv_type = sdsl::bit_vector;
+    using rank_map_type = typename bv_type::rank_1_type;
+    using id_map_type = typename bv_type::select_1_type;
+    using padding_type = unsigned char;
+
+    constexpr static size_type HEADER_CORE_LEN = 3;
+    constexpr static size_type OUTDEGREE_OFFSET = 1;
+    constexpr static size_type INDEGREE_OFFSET = 2;
 
     static inline void
     check_id( id_type id )
@@ -579,6 +642,58 @@ namespace gum {
       // `dense_hash_map` requires to set empty key before any `insert` call.
       //m.set_empty_key( base_type::get_dummy_side() );
     }
+  };  /* --- end of template class DirectedGraphTrait --- */
+
+  template< uint8_t ...TWidths >
+  class DirectedGraphTrait< Succinct, Bidirected, TWidths... >
+    : public GraphBaseTrait< Succinct, TWidths... >,
+      public DirectedGraphBaseTrait< Succinct, Bidirected, TWidths... > {
+  private:
+    using spec_type = Succinct;
+    using dir_type = Bidirected;
+    using graph_type = GraphBaseTrait< spec_type, TWidths... >;
+    using base_type = DirectedGraphBaseTrait< spec_type, dir_type, TWidths... >;
+  public:
+    using typename graph_type::id_type;
+    using typename graph_type::offset_type;
+    using typename graph_type::common_type;
+    using typename graph_type::nodes_type;
+    using typename graph_type::size_type;
+    using typename graph_type::rank_type;
+    using typename graph_type::bv_type;
+    using typename graph_type::rank_map_type;
+    using typename graph_type::id_map_type;
+    using typename base_type::side_type;
+    using typename base_type::link_type;
+    using typename base_type::linktype_type;
+
+    constexpr static size_type EDGE_CORE_LEN = 2;
+  };  /* --- end of template class DirectedGraphTrait --- */
+
+  template< uint8_t ...TWidths >
+  class DirectedGraphTrait< Succinct, Directed, TWidths... >
+    : public GraphBaseTrait< Succinct, TWidths... >,
+      public DirectedGraphBaseTrait< Succinct, Directed, TWidths... > {
+  private:
+    using spec_type = Succinct;
+    using dir_type = Directed;
+    using graph_type = GraphBaseTrait< spec_type, TWidths... >;
+    using base_type = DirectedGraphBaseTrait< spec_type, dir_type, TWidths... >;
+  public:
+    using typename graph_type::id_type;
+    using typename graph_type::offset_type;
+    using typename graph_type::common_type;
+    using typename graph_type::nodes_type;
+    using typename graph_type::size_type;
+    using typename graph_type::rank_type;
+    using typename graph_type::bv_type;
+    using typename graph_type::rank_map_type;
+    using typename graph_type::id_map_type;
+    using typename base_type::side_type;
+    using typename base_type::link_type;
+    using typename base_type::linktype_type;
+
+    constexpr static size_type EDGE_CORE_LEN = 1;
   };  /* --- end of template class DirectedGraphTrait --- */
 
   template< typename TSpec, typename TDir = Bidirected, uint8_t ...TWidths >
