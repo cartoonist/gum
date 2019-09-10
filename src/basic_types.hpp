@@ -79,6 +79,34 @@ namespace gum {
 
   template< uint8_t TWidth >
     using uinteger_t = typename uinteger< TWidth >::type;
+
+  /**
+   *  @brief  Get the common type of `integer_t< T1 >` and `integer_t< T2 >`.
+   *
+   *  The type would be `integer_t< T1 >` if T1 >= T2; otherwise it would be
+   *  `integer_t< T2 >`.
+   */
+  template< uint8_t T1, uint8_t T2 >
+    struct common {
+      using type = integer_t< std::max( T1, T2 ) >;
+    };
+
+    /**
+    *  @brief  Get the common type of `uinteger_t< T1 >` and `uinteger_t< T2 >`.
+    *
+    *  The type would be `uinteger_t< T1 >` if T1 >= T2; otherwise it would be
+    *  `uinteger_t< T2 >`.
+    */
+    template< uint8_t T1, uint8_t T2 >
+      struct ucommon {
+        using type = uinteger_t< std::max( T1, T2 ) >;
+      };
+
+  template< uint8_t T1, uint8_t T2 >
+    using common_t = typename common< T1, T2 >::type;
+
+  template< uint8_t T1, uint8_t T2 >
+    using ucommon_t = typename ucommon< T1, T2 >::type;
 }  /* -----  end of namespace gum  ----- */
 
 #endif  /* ----- #ifndef GUM_BASIC_TYPES_HPP__  ----- */
