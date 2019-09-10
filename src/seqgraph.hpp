@@ -48,12 +48,12 @@ namespace gum {
         using adj_map_type = typename trait_type::adj_map_type;
 
         /* === LIFECYCLE === */
-        DirectedGraph( ) {                                          /* constructor      */
+        DirectedGraph( )                                            /* constructor      */
+          : max_id( 0 ), max_rank( 0 ), edge_count( 0 )
+        {
           trait_type::init_rank_map( this->node_rank );
           trait_type::init_adj_map( this->adj_from );
           trait_type::init_adj_map( this->adj_to );
-          this->max_rank = 0;
-          this->edge_count = 0;
         }
 
         DirectedGraph( DirectedGraph const& other ) = default;      /* copy constructor */
@@ -115,10 +115,10 @@ namespace gum {
           return this->nodes[ rank - 1 ];
         }  /* -----  end of method DirectedGraph::rank_to_id  ----- */
 
-          inline void
-        add_node( id_type id )
+          inline id_type
+        add_node( )
         {
-          this->add_node_imp( id );
+          return this->add_node_imp( );
         }  /* -----  end of method DirectedGraph::add_node  ----- */
 
           inline bool
@@ -235,13 +235,12 @@ namespace gum {
         }  /* -----  end of method DirectedGraph::get_nodes  ----- */
 
         /* === METHODS === */
-          inline void
-        add_node_imp( id_type id, bool safe=true )
+          inline id_type
+        add_node_imp( )
         {
-          if ( id <= 0 ) throw std::runtime_error( "non-positive node ID");
-          if ( safe && this->has_node( id ) ) return;
-          this->nodes.push_back( id );
+          this->nodes.push_back( ++this->max_id );
           this->set_last_rank();
+          return this->max_id;
         }  /* -----  end of method DirectedGraph::add_node_imp  ----- */
 
           inline void
@@ -265,6 +264,7 @@ namespace gum {
         rank_map_type node_rank;
         adj_map_type adj_to;
         adj_map_type adj_from;
+        id_type max_id;
         rank_type edge_count;
         rank_type max_rank;
 
@@ -479,12 +479,11 @@ namespace gum {
         SeqGraph& operator=( SeqGraph&& other ) noexcept = default;  /* move assignment operator */
 
         /* === METHODS === */
-          inline void
-        add_node( id_type id, node_type node=node_type() )
+          inline id_type
+        add_node( node_type node=node_type() )
         {
-          if ( this->has_node( id ) ) return;
-          base_type::add_node_imp( id, false );
           this->node_prop.add_node( node );
+          return base_type::add_node_imp( );
         }  /* -----  end of method SeqGraph::add_node  ----- */
 
           inline void
