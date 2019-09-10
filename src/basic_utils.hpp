@@ -33,15 +33,15 @@ namespace gum {
      *  NOTE: The string type should have `size` method and support reversed iterator.
      */
     template< typename TText >
-        inline bool
-      ends_with( TText const& str, TText const& suf )
-      {
-        if ( suf.size() <= str.size() &&
-            std::equal( std::rbegin( suf ), std::rend( suf ), std::rbegin( str ) ) ) {
-          return true;
-        }
-        return false;
-      }  /* -----  end of template function ends_with  ----- */
+    inline bool
+    ends_with( TText const& str, TText const& suf )
+    {
+      if ( suf.size() <= str.size() &&
+           std::equal( std::rbegin( suf ), std::rend( suf ), std::rbegin( str ) ) ) {
+        return true;
+      }
+      return false;
+    }
 
     /**
      *  @brief  Check whether a string starts with another string.
@@ -53,16 +53,16 @@ namespace gum {
      *  NOTE: The string type should have `size` method and support forward iterator.
      */
     template< typename TText >
-        inline bool
-      starts_with( TText const& str, TText const& pre )
-      {
-        if ( pre.size() <= str.size() &&
-            std::equal( std::begin( pre ), std::end( pre ), std::begin( str ) ) ) {
-          return true;
-        }
-        return false;
-      }  /* -----  end of template function starts_with  ----- */
-  }  /* -----  end of namespace util  ----- */
-}  /* -----  end of namespace gum  ----- */
+    inline bool
+    starts_with( TText const& str, TText const& pre )
+    {
+      if ( pre.size() <= str.size() &&
+           std::equal( std::begin( pre ), std::end( pre ), std::begin( str ) ) ) {
+        return true;
+      }
+      return false;
+    }
+  }  /* --- end of namespace util --- */
+}  /* --- end of namespace gum --- */
 
-#endif  /* ----- #ifndef GUM_BASIC_UTILS_HPP__  ----- */
+#endif  /* --- #ifndef GUM_BASIC_UTILS_HPP__ --- */

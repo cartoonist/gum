@@ -22,9 +22,9 @@
 #include <iostream>
 
 #define BINARY_NAME "gum"
-#define ASSERT(expr)							\
-  ((expr)								\
-   ? __ASSERT_VOID_CAST (0)						\
+#define ASSERT(expr)                                                    \
+  ((expr)                                                               \
+   ? __ASSERT_VOID_CAST (0)                                             \
    : assert_fail (#expr, BINARY_NAME, __FILE__, __LINE__, __PRETTY_FUNCTION__))
 
 
@@ -39,14 +39,14 @@
  *
  *  Print the message and exit with error code 134.
  */
-  inline void
+inline void
 assert_fail( std::string const& expr, std::string const& outfile,
-    std::string const& file, int line, std::string const& func )
+             std::string const& file, int line, std::string const& func )
 {
   std::cout << outfile << ": " << file << ":" << line << ": " << func
-    << ": Assertion `" << expr << "' failed." << "\n"
-    << "Aborted." << std::endl;
+            << ": Assertion `" << expr << "' failed." << "\n"
+            << "Aborted." << std::endl;
   std::exit( 134 );
 }
 
-#endif  /* ----- #ifndef GUM_BASE_HPP__  ----- */
+#endif  /* --- #ifndef GUM_BASE_HPP__ --- */

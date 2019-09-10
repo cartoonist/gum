@@ -22,4 +22,4 @@
 #cmakedefine PROJECT_SOURCE_DIR "@PROJECT_SOURCE_DIR@"
 #cmakedefine TEST_DATA_DIR "@TEST_DATA_DIR@_
 
-#endif  /* ----- #ifndef GUM_TEST_CONFIG_HPP__  ----- */
+#endif  /* --- #ifndef GUM_TEST_CONFIG_HPP__ --- */

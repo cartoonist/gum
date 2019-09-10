@@ -25,22 +25,23 @@
 namespace gum {
   namespace util {
     template< template< class, uint8_t ... > class TNodeProp,
-      template< class, class, uint8_t ... > class TEdgeProp,
-      typename ...TArgs, uint8_t ...TWidths >
-        inline void
-      extend( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >& graph,
-          std::string fname,
-          TArgs&&... args )
-      {
-        if ( util::ends_with( fname, VG_FILE_EXT ) ) {
-          extend_vg( graph, fname, std::forward< TArgs >( args )... );
-        }
-        else if ( util::ends_with( fname, GFA_FILE_EXT ) ) {
-          extend_gfa( graph, fname, std::forward< TArgs >( args )... );
-        }
-        else throw std::runtime_error( "unsupported input file format" );
-      }  /* -----  end of template function extend  ----- */
-  }  /* -----  end of namespace util  ----- */
-}  /* -----  end of namespace gum  ----- */
+              template< class, class, uint8_t ... > class TEdgeProp,
+              typename ...TArgs,
+              uint8_t ...TWidths >
+    inline void
+    extend( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >& graph,
+            std::string fname,
+            TArgs&&... args )
+    {
+      if ( util::ends_with( fname, VG_FILE_EXT ) ) {
+        extend_vg( graph, fname, std::forward< TArgs >( args )... );
+      }
+      else if ( util::ends_with( fname, GFA_FILE_EXT ) ) {
+        extend_gfa( graph, fname, std::forward< TArgs >( args )... );
+      }
+      else throw std::runtime_error( "unsupported input file format" );
+    }
+  }  /* --- end of namespace util --- */
+}  /* --- end of namespace gum --- */
 
-#endif  /* ----- #ifndef GUM_IO_UTILS_HPP__  ----- */
+#endif  /* --- #ifndef GUM_IO_UTILS_HPP__ --- */

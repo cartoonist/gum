@@ -32,4 +32,4 @@
 
 static const std::string test_data_dir( TEST_DATA_DIR );
 
-#endif  /* ----- #ifndef GUM_TEST_BASE_HPP__  ----- */
+#endif  /* --- #ifndef GUM_TEST_BASE_HPP__ --- */

@@ -23,7 +23,7 @@
 using namespace gum;
 
 TEMPLATE_SCENARIO( "Prefix and suffix check of a string", "[utils][template]",
-    std::string, ( std::vector< char > ) )
+                   std::string, ( std::vector< char > ) )
 {
   GIVEN( "A non-empty string" )
   {

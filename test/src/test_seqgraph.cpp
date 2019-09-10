@@ -25,11 +25,11 @@
 
 
 TEMPLATE_SCENARIO( "Generic functionality of DirectedGraph", "[seqgraph][template]",
-   ( gum::DirectedGraph< gum::Dynamic, gum::Directed > ),
-   ( gum::DirectedGraph< gum::Dynamic, gum::Directed, 32, 32 > ),
-   ( gum::DirectedGraph< gum::Dynamic, gum::Bidirected, 64, 32 > ),
-   ( gum::DirectedGraph< gum::Dynamic, gum::Bidirected, 32, 64 > ),
-   ( gum::SeqGraph< gum::Dynamic > ) )
+                   ( gum::DirectedGraph< gum::Dynamic, gum::Directed > ),
+                   ( gum::DirectedGraph< gum::Dynamic, gum::Directed, 32, 32 > ),
+                   ( gum::DirectedGraph< gum::Dynamic, gum::Bidirected, 64, 32 > ),
+                   ( gum::DirectedGraph< gum::Dynamic, gum::Bidirected, 32, 64 > ),
+                   ( gum::SeqGraph< gum::Dynamic > ) )
 {
   GIVEN( "A DirectedGraph with some nodes and edges" )
   {
@@ -40,15 +40,16 @@ TEMPLATE_SCENARIO( "Generic functionality of DirectedGraph", "[seqgraph][templat
     graph_type graph;
     id_type abs_id = 66;
     std::vector< id_type > nodes( { 1, 2, 3, 72, 23, 6, 401, 10344, 92 } );
-    auto integrity_test = [&nodes, abs_id]( graph_type const& graph ) {
-      REQUIRE( graph.get_node_count() == nodes.size() );
-      REQUIRE( graph.get_max_node_rank( ) == nodes.size() );
-      for ( rank_type i = 1; i < graph.get_max_node_rank(); ++i ) {
-        REQUIRE( graph.id_to_rank( graph.rank_to_id( i ) ) == i );
-        REQUIRE( graph.has_node( nodes[ i - 1 ] ) );
-      }
-      REQUIRE( !graph.has_node( abs_id ) );
-    };
+    auto integrity_test =
+        [&nodes, abs_id]( graph_type const& graph ) {
+          REQUIRE( graph.get_node_count() == nodes.size() );
+          REQUIRE( graph.get_max_node_rank( ) == nodes.size() );
+          for ( rank_type i = 1; i < graph.get_max_node_rank(); ++i ) {
+            REQUIRE( graph.id_to_rank( graph.rank_to_id( i ) ) == i );
+            REQUIRE( graph.has_node( nodes[ i - 1 ] ) );
+          }
+          REQUIRE( !graph.has_node( abs_id ) );
+        };
 
     WHEN( "It is constructed incrementally" )
     {
@@ -116,57 +117,58 @@ SCENARIO( "Specialised functionality of DirectedGraph", "[seqgraph]" )
       { 72, 10344 },
       { 10344, 92 }
     };
-    auto integrity_test = [&edges, abs_id]( graph_type const& graph ) {
-      REQUIRE( graph.get_edge_count() == edges.size() );
-      for ( auto const& edge: edges ) {
-        REQUIRE( graph.has_edge( edge.first, edge.second ) );
-        REQUIRE( !graph.has_edge( edge.second, edge.first ) );
-        REQUIRE( !graph.has_edge( abs_id, edge.second ) );
-        REQUIRE( graph.has_edge( edge ) );
-      }
-      auto adjs = graph.adjacents_to( 2 );
-      std::vector< side_type > truth = { 23, 6, 401 };
-      REQUIRE( adjs.size() == truth.size() );
-      for ( auto const& side : truth ) {
-        REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
-      }
-      adjs = graph.adjacents_to( 10344 );
-      truth = { 92 };
-      REQUIRE( adjs.size() == truth.size() );
-      for ( auto const& side : truth ) {
-        REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
-      }
-      adjs = graph.adjacents_to( abs_id );
-      REQUIRE( adjs.empty() );
-      adjs = graph.adjacents_from( 2 );
-      truth = { 1 };
-      REQUIRE( adjs.size() == truth.size() );
-      for ( auto const& side : truth ) {
-        REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
-      }
-      adjs = graph.adjacents_from( 10344 );
-      truth = { 23, 6, 401, 72 };
-      REQUIRE( adjs.size() == truth.size() );
-      for ( auto const& side : truth ) {
-        REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
-      }
-      REQUIRE( graph.outdegree( 1 ) == 2 );
-      REQUIRE( graph.outdegree( 2 ) == 3 );
-      REQUIRE( graph.outdegree( 6 ) == 1 );
-      REQUIRE( graph.outdegree( abs_id ) == 0 );
-      REQUIRE( graph.indegree( 92 ) == 1 );
-      REQUIRE( graph.indegree( 10344 ) == 4 );
-      REQUIRE( graph.indegree( 6 ) == 1 );
-      REQUIRE( graph.indegree( abs_id ) == 0 );
-      REQUIRE( !graph.has_edges_from( 1 ) );
-      REQUIRE( graph.has_edges_from( 2 ) );
-      REQUIRE( graph.has_edges_from( 10344 ) );
-      REQUIRE( graph.has_edges_from( 92 ) );
-      REQUIRE( graph.has_edges_to( 1 ) );
-      REQUIRE( graph.has_edges_to( 2 ) );
-      REQUIRE( graph.has_edges_to( 10344 ) );
-      REQUIRE( !graph.has_edges_to( 92 ) );
-    };
+    auto integrity_test =
+        [&edges, abs_id]( graph_type const& graph ) {
+          REQUIRE( graph.get_edge_count() == edges.size() );
+          for ( auto const& edge: edges ) {
+            REQUIRE( graph.has_edge( edge.first, edge.second ) );
+            REQUIRE( !graph.has_edge( edge.second, edge.first ) );
+            REQUIRE( !graph.has_edge( abs_id, edge.second ) );
+            REQUIRE( graph.has_edge( edge ) );
+          }
+          auto adjs = graph.adjacents_to( 2 );
+          std::vector< side_type > truth = { 23, 6, 401 };
+          REQUIRE( adjs.size() == truth.size() );
+          for ( auto const& side : truth ) {
+            REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
+          }
+          adjs = graph.adjacents_to( 10344 );
+          truth = { 92 };
+          REQUIRE( adjs.size() == truth.size() );
+          for ( auto const& side : truth ) {
+            REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
+          }
+          adjs = graph.adjacents_to( abs_id );
+          REQUIRE( adjs.empty() );
+          adjs = graph.adjacents_from( 2 );
+          truth = { 1 };
+          REQUIRE( adjs.size() == truth.size() );
+          for ( auto const& side : truth ) {
+            REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
+          }
+          adjs = graph.adjacents_from( 10344 );
+          truth = { 23, 6, 401, 72 };
+          REQUIRE( adjs.size() == truth.size() );
+          for ( auto const& side : truth ) {
+            REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
+          }
+          REQUIRE( graph.outdegree( 1 ) == 2 );
+          REQUIRE( graph.outdegree( 2 ) == 3 );
+          REQUIRE( graph.outdegree( 6 ) == 1 );
+          REQUIRE( graph.outdegree( abs_id ) == 0 );
+          REQUIRE( graph.indegree( 92 ) == 1 );
+          REQUIRE( graph.indegree( 10344 ) == 4 );
+          REQUIRE( graph.indegree( 6 ) == 1 );
+          REQUIRE( graph.indegree( abs_id ) == 0 );
+          REQUIRE( !graph.has_edges_from( 1 ) );
+          REQUIRE( graph.has_edges_from( 2 ) );
+          REQUIRE( graph.has_edges_from( 10344 ) );
+          REQUIRE( graph.has_edges_from( 92 ) );
+          REQUIRE( graph.has_edges_to( 1 ) );
+          REQUIRE( graph.has_edges_to( 2 ) );
+          REQUIRE( graph.has_edges_to( 10344 ) );
+          REQUIRE( !graph.has_edges_to( 92 ) );
+        };
 
     WHEN( "It is constructed incrementally" )
     {
@@ -191,8 +193,8 @@ SCENARIO( "Specialised functionality of DirectedGraph", "[seqgraph]" )
 }
 
 TEMPLATE_SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[seqgraph]",
-   ( gum::DirectedGraph< gum::Dynamic, gum::Bidirected > ),
-   ( gum::SeqGraph< gum::Dynamic > ) )
+                   ( gum::DirectedGraph< gum::Dynamic, gum::Bidirected > ),
+                   ( gum::SeqGraph< gum::Dynamic > ) )
 {
   GIVEN( "A Bidirected DirectedGraph with some nodes and edges" )
   {
@@ -217,94 +219,95 @@ TEMPLATE_SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[se
       { 72, true, 10344, false },
       { 10344, false, 92, false }
     };
-    auto integrity_test = [&edges, abs_id]( graph_type const& graph ) {
-      REQUIRE( graph.get_edge_count() == edges.size() );
-      for ( auto const& edge: edges ) {
-        REQUIRE( graph.has_edge( graph.from_side( edge ), graph.to_side( edge ) ) );
-        REQUIRE( !graph.has_edge( graph.to_side( edge ), graph.from_side( edge ) ) );
-        REQUIRE( !graph.has_edge( { abs_id, false }, graph.to_side( edge ) ) );
-        REQUIRE( !graph.has_edge( { abs_id, true }, graph.to_side( edge ) ) );
-        REQUIRE( graph.has_edge( edge ) );
-        REQUIRE( !graph.has_edge( graph.opposite_side( graph.from_side( edge ) ),
-              graph.opposite_side( graph.to_side( edge ) ) ) );
-        REQUIRE( !graph.has_edge( graph.from_side( edge ),
-              graph.opposite_side( graph.to_side( edge ) ) ) );
-        REQUIRE( !graph.has_edge( graph.opposite_side( graph.from_side( edge ) ),
-              graph.to_side( edge ) ) );
-      }
-      auto adjs = graph.adjacents_to( { 2, true } );
-      std::vector< side_type > truth = { { 23, false }, { 6, true }, { 401, false } };
-      REQUIRE( adjs.size() == truth.size() );
-      for ( auto const& side : truth ) {
-        REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
-      }
-      adjs = graph.adjacents_to( { 10344, false } );
-      truth = { { 92, false } };
-      REQUIRE( adjs.size() == truth.size() );
-      for ( auto const& side : truth ) {
-        REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
-      }
-      adjs = graph.adjacents_to( { 10344, true } );
-      REQUIRE( adjs.empty() );
-      adjs = graph.adjacents_to( { abs_id, true } );
-      REQUIRE( adjs.empty() );
-      adjs = graph.adjacents_from( { 2, false } );
-      truth = { { 1, true } };
-      REQUIRE( adjs.size() == truth.size() );
-      for ( auto const& side : truth ) {
-        REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
-      }
-      adjs = graph.adjacents_from( { 2, true } );
-      REQUIRE( adjs.empty() );
-      adjs = graph.adjacents_from( { 10344, false } );
-      truth = { { 23, true }, { 401, true }, { 72, true } };
-      REQUIRE( adjs.size() == truth.size() );
-      for ( auto const& side : truth ) {
-        REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
-      }
-      adjs = graph.adjacents_from( { 10344, true } );
-      truth = { { 6, false } };
-      REQUIRE( adjs.size() == truth.size() );
-      for ( auto const& side : truth ) {
-        REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
-      }
-      REQUIRE( graph.outdegree( { 1, true } ) == 2 );
-      REQUIRE( graph.outdegree( { 1, false } ) == 0 );
-      REQUIRE( graph.outdegree( { 2, true } ) == 3 );
-      REQUIRE( graph.outdegree( { 2, false } ) == 0 );
-      REQUIRE( graph.outdegree( { 6, true } ) == 0 );
-      REQUIRE( graph.outdegree( { 6, false } ) == 1 );
-      REQUIRE( graph.outdegree( { abs_id, true } ) == 0 );
-      REQUIRE( graph.outdegree( { abs_id, false } ) == 0 );
-      REQUIRE( graph.indegree( { 92, true } ) == 0 );
-      REQUIRE( graph.indegree( { 92, false } ) == 1 );
-      REQUIRE( graph.indegree( { 6, true } ) == 1 );
-      REQUIRE( graph.indegree( { 6, false } ) == 0 );
-      REQUIRE( graph.indegree( { 10344, true } ) == 1 );
-      REQUIRE( graph.indegree( { 10344, false } ) == 3 );
-      REQUIRE( graph.indegree( { abs_id, true } ) == 0 );
-      REQUIRE( graph.indegree( { abs_id, false } ) == 0 );
-      REQUIRE( !graph.has_edges_from( { 1, true } ) );
-      REQUIRE( !graph.has_edges_from( { 1, false } ) );
-      REQUIRE( !graph.has_edges_from( { 2, true } ) );
-      REQUIRE( graph.has_edges_from( { 2, false } ) );
-      REQUIRE( graph.has_edges_from( { 10344, true } ) );
-      REQUIRE( graph.has_edges_from( { 10344, false } ) );
-      REQUIRE( !graph.has_edges_from( { 92, true } ) );
-      REQUIRE( graph.has_edges_from( { 92, false } ) );
-      REQUIRE( !graph.has_edges_from( { abs_id, true } ) );
-      REQUIRE( !graph.has_edges_from( { abs_id, false } ) );
-      REQUIRE( graph.has_edges_to( { 1, true } ) );
-      REQUIRE( !graph.has_edges_to( { 1, false } ) );
-      REQUIRE( graph.has_edges_to( { 2, true } ) );
-      REQUIRE( !graph.has_edges_to( { 2, false } ) );
-      REQUIRE( !graph.has_edges_to( { 10344, true } ) );
-      REQUIRE( graph.has_edges_to( { 10344, false } ) );
-      REQUIRE( !graph.has_edges_to( { 92, true } ) );
-      REQUIRE( !graph.has_edges_to( { 92, false } ) );
-      REQUIRE( !graph.has_edges_to( { abs_id, true } ) );
-      REQUIRE( !graph.has_edges_to( { abs_id, false } ) );
-    };
+    auto integrity_test =
+        [&edges, abs_id]( graph_type const& graph ) {
+          REQUIRE( graph.get_edge_count() == edges.size() );
+          for ( auto const& edge: edges ) {
+            REQUIRE( graph.has_edge( graph.from_side( edge ), graph.to_side( edge ) ) );
+            REQUIRE( !graph.has_edge( graph.to_side( edge ), graph.from_side( edge ) ) );
+            REQUIRE( !graph.has_edge( { abs_id, false }, graph.to_side( edge ) ) );
+            REQUIRE( !graph.has_edge( { abs_id, true }, graph.to_side( edge ) ) );
+            REQUIRE( graph.has_edge( edge ) );
+            REQUIRE( !graph.has_edge( graph.opposite_side( graph.from_side( edge ) ),
+                                      graph.opposite_side( graph.to_side( edge ) ) ) );
+            REQUIRE( !graph.has_edge( graph.from_side( edge ),
+                                      graph.opposite_side( graph.to_side( edge ) ) ) );
+            REQUIRE( !graph.has_edge( graph.opposite_side( graph.from_side( edge ) ),
+                                      graph.to_side( edge ) ) );
+          }
+          auto adjs = graph.adjacents_to( { 2, true } );
+          std::vector< side_type > truth = { { 23, false }, { 6, true }, { 401, false } };
+          REQUIRE( adjs.size() == truth.size() );
+          for ( auto const& side : truth ) {
+            REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
+          }
+          adjs = graph.adjacents_to( { 10344, false } );
+          truth = { { 92, false } };
+          REQUIRE( adjs.size() == truth.size() );
+          for ( auto const& side : truth ) {
+            REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
+          }
+          adjs = graph.adjacents_to( { 10344, true } );
+          REQUIRE( adjs.empty() );
+          adjs = graph.adjacents_to( { abs_id, true } );
+          REQUIRE( adjs.empty() );
+          adjs = graph.adjacents_from( { 2, false } );
+          truth = { { 1, true } };
+          REQUIRE( adjs.size() == truth.size() );
+          for ( auto const& side : truth ) {
+            REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
+          }
+          adjs = graph.adjacents_from( { 2, true } );
+          REQUIRE( adjs.empty() );
+          adjs = graph.adjacents_from( { 10344, false } );
+          truth = { { 23, true }, { 401, true }, { 72, true } };
+          REQUIRE( adjs.size() == truth.size() );
+          for ( auto const& side : truth ) {
+            REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
+          }
+          adjs = graph.adjacents_from( { 10344, true } );
+          truth = { { 6, false } };
+          REQUIRE( adjs.size() == truth.size() );
+          for ( auto const& side : truth ) {
+            REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
+          }
+          REQUIRE( graph.outdegree( { 1, true } ) == 2 );
+          REQUIRE( graph.outdegree( { 1, false } ) == 0 );
+          REQUIRE( graph.outdegree( { 2, true } ) == 3 );
+          REQUIRE( graph.outdegree( { 2, false } ) == 0 );
+          REQUIRE( graph.outdegree( { 6, true } ) == 0 );
+          REQUIRE( graph.outdegree( { 6, false } ) == 1 );
+          REQUIRE( graph.outdegree( { abs_id, true } ) == 0 );
+          REQUIRE( graph.outdegree( { abs_id, false } ) == 0 );
+          REQUIRE( graph.indegree( { 92, true } ) == 0 );
+          REQUIRE( graph.indegree( { 92, false } ) == 1 );
+          REQUIRE( graph.indegree( { 6, true } ) == 1 );
+          REQUIRE( graph.indegree( { 6, false } ) == 0 );
+          REQUIRE( graph.indegree( { 10344, true } ) == 1 );
+          REQUIRE( graph.indegree( { 10344, false } ) == 3 );
+          REQUIRE( graph.indegree( { abs_id, true } ) == 0 );
+          REQUIRE( graph.indegree( { abs_id, false } ) == 0 );
+          REQUIRE( !graph.has_edges_from( { 1, true } ) );
+          REQUIRE( !graph.has_edges_from( { 1, false } ) );
+          REQUIRE( !graph.has_edges_from( { 2, true } ) );
+          REQUIRE( graph.has_edges_from( { 2, false } ) );
+          REQUIRE( graph.has_edges_from( { 10344, true } ) );
+          REQUIRE( graph.has_edges_from( { 10344, false } ) );
+          REQUIRE( !graph.has_edges_from( { 92, true } ) );
+          REQUIRE( graph.has_edges_from( { 92, false } ) );
+          REQUIRE( !graph.has_edges_from( { abs_id, true } ) );
+          REQUIRE( !graph.has_edges_from( { abs_id, false } ) );
+          REQUIRE( graph.has_edges_to( { 1, true } ) );
+          REQUIRE( !graph.has_edges_to( { 1, false } ) );
+          REQUIRE( graph.has_edges_to( { 2, true } ) );
+          REQUIRE( !graph.has_edges_to( { 2, false } ) );
+          REQUIRE( !graph.has_edges_to( { 10344, true } ) );
+          REQUIRE( graph.has_edges_to( { 10344, false } ) );
+          REQUIRE( !graph.has_edges_to( { 92, true } ) );
+          REQUIRE( !graph.has_edges_to( { 92, false } ) );
+          REQUIRE( !graph.has_edges_to( { abs_id, true } ) );
+          REQUIRE( !graph.has_edges_to( { abs_id, false } ) );
+        };
 
     WHEN( "It is constructed incrementally" )
     {
@@ -350,41 +353,42 @@ SCENARIO( "Specialised functionality of Dynamic SeqGraph", "[seqgraph]" )
     using link_type = typename graph_type::link_type;
 
     graph_type graph;
-    auto integrity_test = []( graph_type const& graph ) {
-      REQUIRE( graph.node_sequence( 1 ) == "TGGTCAAC" );
-      REQUIRE( graph.node_sequence( 2 ) == "T" );
-      REQUIRE( graph.node_sequence( 3 ) == "GCC" );
-      REQUIRE( graph.node_sequence( 4 ) == "A" );
-      REQUIRE( graph.node_sequence( 5 ) == "CTTAAA" );
-      REQUIRE( graph.node_sequence( 6 ) == "GCG" );
-      REQUIRE( graph.node_sequence( 7 ) == "CTTTT" );
-      REQUIRE( graph.node_sequence( 8 ) == "AAAT" );
-      REQUIRE( graph.node_length( 1 ) == 8 );
-      REQUIRE( graph.node_length( 2 ) == 1 );
-      REQUIRE( graph.node_length( 3 ) == 3 );
-      REQUIRE( graph.node_length( 4 ) == 1 );
-      REQUIRE( graph.node_length( 5 ) == 6 );
-      REQUIRE( graph.node_length( 6 ) == 3 );
-      REQUIRE( graph.node_length( 7 ) == 5 );
-      REQUIRE( graph.node_length( 8 ) == 4 );
-      REQUIRE( graph.get_node_prop( )[ 1 ].name == "1" );
-      REQUIRE( graph.get_node_prop( )[ 2 ].name == "2" );
-      REQUIRE( graph.get_node_prop( )[ 3 ].name == "3" );
-      REQUIRE( graph.get_node_prop( )[ 4 ].name == "4" );
-      REQUIRE( graph.get_node_prop( )[ 5 ].name == "5" );
-      REQUIRE( graph.get_node_prop( )[ 6 ].name == "6" );
-      REQUIRE( graph.get_node_prop( )[ 7 ].name == "7" );
-      REQUIRE( graph.get_node_prop( )[ 8 ].name == "8" );
-      REQUIRE( graph.get_edge_prop( )[ link_type( { 1, true, 2, false } ) ].overlap == 0 );
-      REQUIRE( graph.get_edge_prop( )[ link_type( { 1, true, 3, true } ) ].overlap == 0 );
-      REQUIRE( graph.get_edge_prop( )[ link_type( { 1, true, 4, false } ) ].overlap == 0 );
-      REQUIRE( graph.get_edge_prop( )[ link_type( { 2, true, 5, false } ) ].overlap == 0 );
-      REQUIRE( graph.get_edge_prop( )[ link_type( { 3, false, 5, false } ) ].overlap == 1 );
-      REQUIRE( graph.get_edge_prop( )[ link_type( { 4, true, 5, true } ) ].overlap == 0 );
-      REQUIRE( graph.get_edge_prop( )[ link_type( { 5, false, 6, false } ) ].overlap == 1 );
-      REQUIRE( graph.get_edge_prop( )[ link_type( { 5, false, 7, false } ) ].overlap == 0 );
-      REQUIRE( graph.get_edge_prop( )[ link_type( { 5, true, 8, false } ) ].overlap == 0 );
-    };
+    auto integrity_test =
+        []( graph_type const& graph ) {
+          REQUIRE( graph.node_sequence( 1 ) == "TGGTCAAC" );
+          REQUIRE( graph.node_sequence( 2 ) == "T" );
+          REQUIRE( graph.node_sequence( 3 ) == "GCC" );
+          REQUIRE( graph.node_sequence( 4 ) == "A" );
+          REQUIRE( graph.node_sequence( 5 ) == "CTTAAA" );
+          REQUIRE( graph.node_sequence( 6 ) == "GCG" );
+          REQUIRE( graph.node_sequence( 7 ) == "CTTTT" );
+          REQUIRE( graph.node_sequence( 8 ) == "AAAT" );
+          REQUIRE( graph.node_length( 1 ) == 8 );
+          REQUIRE( graph.node_length( 2 ) == 1 );
+          REQUIRE( graph.node_length( 3 ) == 3 );
+          REQUIRE( graph.node_length( 4 ) == 1 );
+          REQUIRE( graph.node_length( 5 ) == 6 );
+          REQUIRE( graph.node_length( 6 ) == 3 );
+          REQUIRE( graph.node_length( 7 ) == 5 );
+          REQUIRE( graph.node_length( 8 ) == 4 );
+          REQUIRE( graph.get_node_prop( )[ 1 ].name == "1" );
+          REQUIRE( graph.get_node_prop( )[ 2 ].name == "2" );
+          REQUIRE( graph.get_node_prop( )[ 3 ].name == "3" );
+          REQUIRE( graph.get_node_prop( )[ 4 ].name == "4" );
+          REQUIRE( graph.get_node_prop( )[ 5 ].name == "5" );
+          REQUIRE( graph.get_node_prop( )[ 6 ].name == "6" );
+          REQUIRE( graph.get_node_prop( )[ 7 ].name == "7" );
+          REQUIRE( graph.get_node_prop( )[ 8 ].name == "8" );
+          REQUIRE( graph.get_edge_prop( )[ link_type( { 1, true, 2, false } ) ].overlap == 0 );
+          REQUIRE( graph.get_edge_prop( )[ link_type( { 1, true, 3, true } ) ].overlap == 0 );
+          REQUIRE( graph.get_edge_prop( )[ link_type( { 1, true, 4, false } ) ].overlap == 0 );
+          REQUIRE( graph.get_edge_prop( )[ link_type( { 2, true, 5, false } ) ].overlap == 0 );
+          REQUIRE( graph.get_edge_prop( )[ link_type( { 3, false, 5, false } ) ].overlap == 1 );
+          REQUIRE( graph.get_edge_prop( )[ link_type( { 4, true, 5, true } ) ].overlap == 0 );
+          REQUIRE( graph.get_edge_prop( )[ link_type( { 5, false, 6, false } ) ].overlap == 1 );
+          REQUIRE( graph.get_edge_prop( )[ link_type( { 5, false, 7, false } ) ].overlap == 0 );
+          REQUIRE( graph.get_edge_prop( )[ link_type( { 5, true, 8, false } ) ].overlap == 0 );
+        };
 
     WHEN( "Loaded from a file in GFA 2.0 format" )
     {

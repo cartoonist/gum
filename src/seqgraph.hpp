@@ -32,268 +32,268 @@ namespace gum {
    *  `succinct` specialization which is immutable.
    */
   template< typename TDir, uint8_t ...TWidths >
-    class DirectedGraph< Dynamic, TDir, TWidths... > {
-      public:
-        /* === TYPEDEFS  === */
-        using spec_type = Dynamic;
-        using trait_type = DirectedGraphTrait< spec_type, TDir, TWidths... >;
-        using id_type = typename trait_type::id_type;
-        using offset_type = typename trait_type::offset_type;
-        using rank_type = typename trait_type::rank_type;
-        using nodes_type = typename trait_type::nodes_type;
-        using rank_map_type = typename trait_type::rank_map_type;
-        using side_type = typename trait_type::side_type;
-        using link_type = typename trait_type::link_type;
-        using adjs_type = typename trait_type::adjs_type;
-        using adj_map_type = typename trait_type::adj_map_type;
+  class DirectedGraph< Dynamic, TDir, TWidths... > {
+  public:
+    /* === TYPEDEFS === */
+    using spec_type = Dynamic;
+    using trait_type = DirectedGraphTrait< spec_type, TDir, TWidths... >;
+    using id_type = typename trait_type::id_type;
+    using offset_type = typename trait_type::offset_type;
+    using rank_type = typename trait_type::rank_type;
+    using nodes_type = typename trait_type::nodes_type;
+    using rank_map_type = typename trait_type::rank_map_type;
+    using side_type = typename trait_type::side_type;
+    using link_type = typename trait_type::link_type;
+    using adjs_type = typename trait_type::adjs_type;
+    using adj_map_type = typename trait_type::adj_map_type;
 
-        /* === LIFECYCLE === */
-        DirectedGraph( )                                            /* constructor      */
-          : max_id( 0 ), max_rank( 0 ), edge_count( 0 )
-        {
-          trait_type::init_rank_map( this->node_rank );
-          trait_type::init_adj_map( this->adj_from );
-          trait_type::init_adj_map( this->adj_to );
-        }
+    /* === LIFECYCLE === */
+    DirectedGraph( )                                            /* constructor      */
+      : max_id( 0 ), max_rank( 0 ), edge_count( 0 )
+    {
+      trait_type::init_rank_map( this->node_rank );
+      trait_type::init_adj_map( this->adj_from );
+      trait_type::init_adj_map( this->adj_to );
+    }
 
-        DirectedGraph( DirectedGraph const& other ) = default;      /* copy constructor */
-        DirectedGraph( DirectedGraph&& other ) noexcept = default;  /* move constructor */
-        ~DirectedGraph() noexcept = default;                        /* destructor       */
+    DirectedGraph( DirectedGraph const& other ) = default;      /* copy constructor */
+    DirectedGraph( DirectedGraph&& other ) noexcept = default;  /* move constructor */
+    ~DirectedGraph() noexcept = default;                        /* destructor       */
 
-        /* === ACCESSORS === */
-          inline nodes_type const&
-        get_nodes( ) const
-        {
-          return this->nodes;
-        }  /* -----  end of method DirectedGraph::get_nodes  ----- */
+    /* === ACCESSORS === */
+    inline nodes_type const&
+    get_nodes( ) const
+    {
+      return this->nodes;
+    }
 
-          inline rank_type
-        get_max_node_rank( ) const
-        {
-          assert( this->max_rank == this->get_node_count() );
-          return this->max_rank;
-        }  /* -----  end of method DirectedGraph::get_max_node_rank  ----- */
+    inline rank_type
+    get_max_node_rank( ) const
+    {
+      assert( this->max_rank == this->get_node_count() );
+      return this->max_rank;
+    }
 
-          inline rank_type
-        get_node_count( ) const
-        {
-          return this->nodes.size();
-        }  /* -----  end of method DirectedGraph::get_node_count  ----- */
+    inline rank_type
+    get_node_count( ) const
+    {
+      return this->nodes.size();
+    }
 
-          inline rank_type
-        get_edge_count( ) const
-        {
-          return this->edge_count;
-        }  /* -----  end of method DirectedGraph::get_edge_count  ----- */
+    inline rank_type
+    get_edge_count( ) const
+    {
+      return this->edge_count;
+    }
 
-        /* === MUTATORS === */
-          inline void
-        set_nodes( nodes_type value )
-        {
-          this->nodes = std::move( value );
-          this->set_rank();
-        }  /* -----  end of method DirectedGraph::set_nodes  ----- */
+    /* === MUTATORS === */
+    inline void
+    set_nodes( nodes_type value )
+    {
+      this->nodes = std::move( value );
+      this->set_rank();
+    }
 
-        /* === OPERATORS === */
-        DirectedGraph& operator=( DirectedGraph const& other ) = default;      /* copy assignment operator */
-        DirectedGraph& operator=( DirectedGraph&& other ) noexcept = default;  /* move assignment operator */
+    /* === OPERATORS === */
+    DirectedGraph& operator=( DirectedGraph const& other ) = default;      /* copy assignment operator */
+    DirectedGraph& operator=( DirectedGraph&& other ) noexcept = default;  /* move assignment operator */
 
-        /* === METHODS === */
-          inline rank_type
-        id_to_rank( id_type id ) const
-        {
-          if ( id <= 0 ) throw std::runtime_error( "non-positive node ID");
-          auto found = this->node_rank.find( id );
-          if ( found == this->node_rank.end() ) return 0;
-          return found->second;
-        }  /* -----  end of method DirectedGraph::id_to_rank  ----- */
+    /* === METHODS === */
+    inline rank_type
+    id_to_rank( id_type id ) const
+    {
+      if ( id <= 0 ) throw std::runtime_error( "non-positive node ID");
+      auto found = this->node_rank.find( id );
+      if ( found == this->node_rank.end() ) return 0;
+      return found->second;
+    }
 
-          inline id_type
-        rank_to_id( rank_type rank ) const
-        {
-          if ( rank <= 0 ) throw std::runtime_error( "non-positive node rank");
-          return this->nodes[ rank - 1 ];
-        }  /* -----  end of method DirectedGraph::rank_to_id  ----- */
+    inline id_type
+    rank_to_id( rank_type rank ) const
+    {
+      if ( rank <= 0 ) throw std::runtime_error( "non-positive node rank");
+      return this->nodes[ rank - 1 ];
+    }
 
-          inline id_type
-        add_node( )
-        {
-          return this->add_node_imp( );
-        }  /* -----  end of method DirectedGraph::add_node  ----- */
+    inline id_type
+    add_node( )
+    {
+      return this->add_node_imp( );
+    }
 
-          inline bool
-        has_node( id_type id ) const
-        {
-          return this->id_to_rank( id ) != 0;
-        }  /* -----  end of method DirectedGraph::has_node  ----- */
+    inline bool
+    has_node( id_type id ) const
+    {
+      return this->id_to_rank( id ) != 0;
+    }
 
-          constexpr inline side_type
-        from_side( link_type sides ) const
-        {
-          return trait_type::from_side( sides );
-        }  /* -----  end of method DirectedGraph::from_side  ----- */
+    constexpr inline side_type
+    from_side( link_type sides ) const
+    {
+      return trait_type::from_side( sides );
+    }
 
-          constexpr inline side_type
-        to_side( link_type sides ) const
-        {
-          return trait_type::to_side( sides );
-        }  /* -----  end of method DirectedGraph::to_side  ----- */
+    constexpr inline side_type
+    to_side( link_type sides ) const
+    {
+      return trait_type::to_side( sides );
+    }
 
-          constexpr inline link_type
-        merge_sides( side_type from, side_type to ) const
-        {
-          return trait_type::merge_sides( from, to );
-        }  /* -----  end of method DirectedGraph::merge_sides  ----- */
+    constexpr inline link_type
+    merge_sides( side_type from, side_type to ) const
+    {
+      return trait_type::merge_sides( from, to );
+    }
 
-          constexpr inline side_type
-        opposite_side( side_type side ) const
-        {
-          return trait_type::opposite_side( side );
-        }
+    constexpr inline side_type
+    opposite_side( side_type side ) const
+    {
+      return trait_type::opposite_side( side );
+    }
 
-          inline void
-        add_edge( side_type from, side_type to )
-        {
-          this->add_edge_imp( from, to );
-        }  /* -----  end of method DirectedGraph::add_edge  ----- */
+    inline void
+    add_edge( side_type from, side_type to )
+    {
+      this->add_edge_imp( from, to );
+    }
 
-          inline void
-        add_edge( link_type sides )
-        {
-          this->add_edge( this->from_side( sides ), this->to_side( sides ) );
-        }  /* -----  end of method DirectedGraph::add_edge  ----- */
+    inline void
+    add_edge( link_type sides )
+    {
+      this->add_edge( this->from_side( sides ), this->to_side( sides ) );
+    }
 
-          inline bool
-        has_edge( side_type from, side_type to ) const
-        {
-          auto oit = this->adj_to.find( from );
-          auto iit = this->adj_from.find( to );
-          auto const& outs = oit->second;
-          auto const& ins = iit->second;
-          if ( oit == this->adj_to.end() || iit == this->adj_from.end() ) return false;
-          if ( outs.size() < ins.size() )
-            return std::find( outs.begin(), outs.end(), to ) != outs.end();
-          return std::find( ins.begin(), ins.end(), from ) != ins.end();
-        }  /* -----  end of method DirectedGraph::has_edge  ----- */
+    inline bool
+    has_edge( side_type from, side_type to ) const
+    {
+      auto oit = this->adj_to.find( from );
+      auto iit = this->adj_from.find( to );
+      auto const& outs = oit->second;
+      auto const& ins = iit->second;
+      if ( oit == this->adj_to.end() || iit == this->adj_from.end() ) return false;
+      if ( outs.size() < ins.size() )
+        return std::find( outs.begin(), outs.end(), to ) != outs.end();
+      return std::find( ins.begin(), ins.end(), from ) != ins.end();
+    }
 
-          inline bool
-        has_edge( link_type sides ) const
-        {
-          return this->has_edge( this->from_side( sides ), this->to_side( sides ) );
-        }  /* -----  end of method DirectedGraph::has_edge  ----- */
+    inline bool
+    has_edge( link_type sides ) const
+    {
+      return this->has_edge( this->from_side( sides ), this->to_side( sides ) );
+    }
 
-          inline adjs_type
-        adjacents_to( side_type from ) const
-        {
-          auto found = this->adj_to.find( from );
-          if ( found == this->adj_to.end() ) return adjs_type();
-          return found->second;
-        }  /* -----  end of method DirectedGraph::adjacents_to  ----- */
+    inline adjs_type
+    adjacents_to( side_type from ) const
+    {
+      auto found = this->adj_to.find( from );
+      if ( found == this->adj_to.end() ) return adjs_type();
+      return found->second;
+    }
 
-          inline adjs_type
-        adjacents_from( side_type to ) const
-        {
-          auto found = this->adj_from.find( to );
-          if ( found == this->adj_from.end() ) return adjs_type();
-          return found->second;
-        }  /* -----  end of method DirectedGraph::adjacents_from  ----- */
+    inline adjs_type
+    adjacents_from( side_type to ) const
+    {
+      auto found = this->adj_from.find( to );
+      if ( found == this->adj_from.end() ) return adjs_type();
+      return found->second;
+    }
 
-          inline rank_type
-        outdegree( side_type side ) const
-        {
-          auto found = this->adj_to.find( side );
-          if ( found == this->adj_to.end() ) return 0;
-          return found->second.size();
-        }  /* -----  end of method DirectedGraph::outdegree  ----- */
+    inline rank_type
+    outdegree( side_type side ) const
+    {
+      auto found = this->adj_to.find( side );
+      if ( found == this->adj_to.end() ) return 0;
+      return found->second.size();
+    }
 
-          inline rank_type
-        indegree( side_type side ) const
-        {
-          auto found = this->adj_from.find( side );
-          if ( found == this->adj_from.end() ) return 0;
-          return found->second.size();
-        }  /* -----  end of method DirectedGraph::indegree  ----- */
+    inline rank_type
+    indegree( side_type side ) const
+    {
+      auto found = this->adj_from.find( side );
+      if ( found == this->adj_from.end() ) return 0;
+      return found->second.size();
+    }
 
-          inline bool
-        has_edges_from( side_type side ) const
-        {
-          return this->indegree( side ) != 0;
-        }  /* -----  end of method DirectedGraph::has_edges_from  ----- */
+    inline bool
+    has_edges_from( side_type side ) const
+    {
+      return this->indegree( side ) != 0;
+    }
 
-          inline bool
-        has_edges_to( side_type side ) const
-        {
-          return this->outdegree( side ) != 0;
-        }  /* -----  end of method DirectedGraph::has_edges_to  ----- */
+    inline bool
+    has_edges_to( side_type side ) const
+    {
+      return this->outdegree( side ) != 0;
+    }
 
-      protected:
-        /* === ACCESSORS === */
-          inline nodes_type&
-        get_nodes( )
-        {
-          return this->nodes;
-        }  /* -----  end of method DirectedGraph::get_nodes  ----- */
+  protected:
+    /* === ACCESSORS === */
+    inline nodes_type&
+    get_nodes( )
+    {
+      return this->nodes;
+    }
 
-        /* === METHODS === */
-          inline id_type
-        add_node_imp( )
-        {
-          this->nodes.push_back( ++this->max_id );
-          this->set_last_rank();
-          return this->max_id;
-        }  /* -----  end of method DirectedGraph::add_node_imp  ----- */
+    /* === METHODS === */
+    inline id_type
+    add_node_imp( )
+    {
+      this->nodes.push_back( ++this->max_id );
+      this->set_last_rank();
+      return this->max_id;
+    }
 
-          inline void
-        add_edge_imp( side_type from, side_type to, bool safe=true )
-        {
-          if ( safe && this->has_edge( from, to ) ) return;
-          this->adj_to[ from ].push_back( to );
-          this->adj_from[ to ].push_back( from );
-          ++this->edge_count;
-        }  /* -----  end of method DirectedGraph::add_edge_imp  ----- */
+    inline void
+    add_edge_imp( side_type from, side_type to, bool safe=true )
+    {
+      if ( safe && this->has_edge( from, to ) ) return;
+      this->adj_to[ from ].push_back( to );
+      this->adj_from[ to ].push_back( from );
+      ++this->edge_count;
+    }
 
-          inline void
-        add_edge_imp( link_type sides, bool safe=true )
-        {
-          this->add_edge_imp( this->from_side( sides ), this->to_side( sides ), safe );
-        }  /* -----  end of method DirectedGraph::add_edge_imp  ----- */
+    inline void
+    add_edge_imp( link_type sides, bool safe=true )
+    {
+      this->add_edge_imp( this->from_side( sides ), this->to_side( sides ), safe );
+    }
 
-      private:
-        /* === DATA MEMBERS === */
-        nodes_type nodes;
-        rank_map_type node_rank;
-        adj_map_type adj_to;
-        adj_map_type adj_from;
-        id_type max_id;
-        rank_type edge_count;
-        rank_type max_rank;
+  private:
+    /* === DATA MEMBERS === */
+    nodes_type nodes;
+    rank_map_type node_rank;
+    adj_map_type adj_to;
+    adj_map_type adj_from;
+    id_type max_id;
+    rank_type edge_count;
+    rank_type max_rank;
 
-        /* === METHODS === */
-          inline void
-        set_rank( typename nodes_type::const_iterator begin,
-            typename nodes_type::const_iterator end )
-        {
-          assert( end - begin + this->max_rank == this->nodes.size() );
-          for ( ; begin != end; ++begin ) {
-            bool inserted;
-            std::tie( std::ignore, inserted ) =
-              this->node_rank.insert( { *begin, ++this->max_rank } );
-            assert( inserted );  // avoid duplicate insersion from upstream.
-          }
-        }  /* -----  end of method DirectedGraph::set_rank  ----- */
+    /* === METHODS === */
+    inline void
+    set_rank( typename nodes_type::const_iterator begin,
+              typename nodes_type::const_iterator end )
+    {
+      assert( end - begin + this->max_rank == this->nodes.size() );
+      for ( ; begin != end; ++begin ) {
+        bool inserted;
+        std::tie( std::ignore, inserted ) =
+            this->node_rank.insert( { *begin, ++this->max_rank } );
+        assert( inserted );  // avoid duplicate insersion from upstream.
+      }
+    }
 
-          inline void
-        set_rank( )
-        {
-          this->set_rank( this->nodes.begin(), this->nodes.end() );
-        }  /* -----  end of method DirectedGraph::set_rank  ----- */
+    inline void
+    set_rank( )
+    {
+      this->set_rank( this->nodes.begin(), this->nodes.end() );
+    }
 
-          inline void
-        set_last_rank( )
-        {
-          this->set_rank( this->nodes.end() - 1, this->nodes.end() );
-        }  /* -----  end of method DirectedGraph::set_last_rank  ----- */
-    };  /* -----  end of template class DirectedGraph  ----- */
+    inline void
+    set_last_rank( )
+    {
+      this->set_rank( this->nodes.end() - 1, this->nodes.end() );
+    }
+  };  /* --- end of template class DirectedGraph --- */
 
   /**
    *  @brief  Node property class (dynamic).
@@ -303,60 +303,60 @@ namespace gum {
    *  order.
    */
   template< uint8_t ...TWidths >
-    class NodeProperty< Dynamic, TWidths... > {
-      public:
-        /* === TYPEDEFS  === */
-        using spec_type = Dynamic;
-        using trait_type = NodePropertyTrait< spec_type, TWidths... >;
-        using id_type = typename trait_type::id_type;
-        using offset_type = typename trait_type::offset_type;
-        using rank_type = typename trait_type::rank_type;
-        using node_type = typename trait_type::node_type;
-        using value_type = typename trait_type::value_type;
-        using container_type = typename trait_type::container_type;
-        using sequence_type = typename trait_type::sequence_type;
-        using name_type = typename trait_type::name_type;
+  class NodeProperty< Dynamic, TWidths... > {
+  public:
+    /* === TYPEDEFS === */
+    using spec_type = Dynamic;
+    using trait_type = NodePropertyTrait< spec_type, TWidths... >;
+    using id_type = typename trait_type::id_type;
+    using offset_type = typename trait_type::offset_type;
+    using rank_type = typename trait_type::rank_type;
+    using node_type = typename trait_type::node_type;
+    using value_type = typename trait_type::value_type;
+    using container_type = typename trait_type::container_type;
+    using sequence_type = typename trait_type::sequence_type;
+    using name_type = typename trait_type::name_type;
 
-        /* === LIFECYCLE === */
-        NodeProperty() = default;                                 /* constructor      */
-        NodeProperty( NodeProperty const& other ) = default;      /* copy constructor */
-        NodeProperty( NodeProperty&& other ) noexcept = default;  /* move constructor */
-        ~NodeProperty() noexcept = default;                       /* destructor       */
+    /* === LIFECYCLE === */
+    NodeProperty() = default;                                 /* constructor      */
+    NodeProperty( NodeProperty const& other ) = default;      /* copy constructor */
+    NodeProperty( NodeProperty&& other ) noexcept = default;  /* move constructor */
+    ~NodeProperty() noexcept = default;                       /* destructor       */
 
-        /* === ACCESSORS === */
-          inline container_type const&
-        get_nodes( ) const
-        {
-          return this->nodes;
-        }  /* -----  end of method NodeProperty::get_nodes  ----- */
+    /* === ACCESSORS === */
+    inline container_type const&
+    get_nodes( ) const
+    {
+      return this->nodes;
+    }
 
-        /* === OPERATORS === */
-        NodeProperty& operator=( NodeProperty const& other ) = default;      /* copy assignment operator */
-        NodeProperty& operator=( NodeProperty&& other ) noexcept = default;  /* move assignment operator */
+    /* === OPERATORS === */
+    NodeProperty& operator=( NodeProperty const& other ) = default;      /* copy assignment operator */
+    NodeProperty& operator=( NodeProperty&& other ) noexcept = default;  /* move assignment operator */
 
-          inline value_type const&
-        operator[]( rank_type rank ) const
-        {
-          return this->nodes[ rank - 1 ];
-        }  /* -----  end of method NodeProperty::operator[]  ----- */
+    inline value_type const&
+    operator[]( rank_type rank ) const
+    {
+      return this->nodes[ rank - 1 ];
+    }
 
-        /* === METHODS === */
-          inline value_type const&
-        at( rank_type rank ) const
-        {
-          return this->nodes.at( rank - 1 );
-        }  /* -----  end of method NodeProperty::at  ----- */
+    /* === METHODS === */
+    inline value_type const&
+    at( rank_type rank ) const
+    {
+      return this->nodes.at( rank - 1 );
+    }
 
-          inline void
-        add_node( value_type node )
-        {
-          this->nodes.push_back( std::move( node ) );
-        }  /* -----  end of method NodeProperty::add_node  ----- */
+    inline void
+    add_node( value_type node )
+    {
+      this->nodes.push_back( std::move( node ) );
+    }
 
-      private:
-        /* === DATA MEMBERS === */
-        container_type nodes;
-    };  /* ----------  end of template class NodeProperty  ---------- */
+  private:
+    /* === DATA MEMBERS === */
+    container_type nodes;
+  };  /* --- end of template class NodeProperty --- */
 
   /**
    *  @brief  Edge property class (dynamic).
@@ -366,70 +366,71 @@ namespace gum {
    *  pairs as keys.
    */
   template< typename TDir, uint8_t ...TWidths >
-    class EdgeProperty< Dynamic, TDir, TWidths... > {
-      public:
-        /* === TYPEDEFS  === */
-        using spec_type = Dynamic;
-        using trait_type = EdgePropertyTrait< spec_type, TDir, TWidths... >;
-        using id_type = typename trait_type::id_type;
-        using offset_type = typename trait_type::offset_type;
-        using link_type = typename trait_type::link_type;
-        using edge_type = typename trait_type::edge_type;
-        using key_type = typename trait_type::key_type;
-        using value_type = typename trait_type::value_type;
-        using container_type = typename trait_type::container_type;
+  class EdgeProperty< Dynamic, TDir, TWidths... > {
+  public:
+    /* === TYPEDEFS === */
+    using spec_type = Dynamic;
+    using trait_type = EdgePropertyTrait< spec_type, TDir, TWidths... >;
+    using id_type = typename trait_type::id_type;
+    using offset_type = typename trait_type::offset_type;
+    using link_type = typename trait_type::link_type;
+    using edge_type = typename trait_type::edge_type;
+    using key_type = typename trait_type::key_type;
+    using value_type = typename trait_type::value_type;
+    using container_type = typename trait_type::container_type;
 
-        /* === LIFECYCLE === */
-        EdgeProperty( ) {                                         /* constructor      */
-          trait_type::init_container( this->edges );
-        }
+    /* === LIFECYCLE === */
+    EdgeProperty( )
+    {                                         /* constructor      */
+      trait_type::init_container( this->edges );
+    }
 
-        EdgeProperty( EdgeProperty const& other ) = default;      /* copy constructor */
-        EdgeProperty( EdgeProperty&& other ) noexcept = default;  /* move constructor */
-        ~EdgeProperty() noexcept = default;                       /* destructor       */
+    EdgeProperty( EdgeProperty const& other ) = default;      /* copy constructor */
+    EdgeProperty( EdgeProperty&& other ) noexcept = default;  /* move constructor */
+    ~EdgeProperty() noexcept = default;                       /* destructor       */
 
-        /* === ACCESSORS === */
-          inline container_type const&
-        get_edges( ) const
-        {
-          return this->edges;
-        }  /* -----  end of method EdgeProperty::get_edges  ----- */
+    /* === ACCESSORS === */
+    inline container_type const&
+    get_edges( ) const
+    {
+      return this->edges;
+    }
 
-        /* === OPERATORS === */
-        EdgeProperty& operator=( EdgeProperty const& other ) = default;      /* copy assignment operator */
-        EdgeProperty& operator=( EdgeProperty&& other ) noexcept = default;  /* move assignment operator */
+    /* === OPERATORS === */
+    EdgeProperty& operator=( EdgeProperty const& other ) = default;      /* copy assignment operator */
+    EdgeProperty& operator=( EdgeProperty&& other ) noexcept = default;  /* move assignment operator */
 
-          inline edge_type const&
-        operator[]( key_type sides ) const
-        {
-          return this->edges.find( sides )->second;
-        }  /* -----  end of method EdgeProperty::operator[]  ----- */
+    inline edge_type const&
+    operator[]( key_type sides ) const
+    {
+      return this->edges.find( sides )->second;
+    }
 
-        /* === METHODS === */
-          inline edge_type const&
-        at( key_type sides ) const
-        {
-          auto found = this->edges.find( sides );
-          if ( found == this->edges.end() ) throw std::runtime_error( "no such edge" );
-          return found->second;
-        }  /* -----  end of method EdgeProperty::at  ----- */
+    /* === METHODS === */
+    inline edge_type const&
+    at( key_type sides ) const
+    {
+      auto found = this->edges.find( sides );
+      if ( found == this->edges.end() ) throw std::runtime_error( "no such edge" );
+      return found->second;
+    }
 
-          inline void
-        add_edge( key_type sides, value_type edge )
-        {
-          this->edges[ sides ] = edge;
-        }  /* -----  end of method EdgeProperty::add_edge  ----- */
+    inline void
+    add_edge( key_type sides, value_type edge )
+    {
+      this->edges[ sides ] = edge;
+    }
 
-          inline bool
-        has_edge( key_type sides ) const
-        {
-          return this->edges.find( sides ) != this->edges.end();
-        }  /* -----  end of method EdgeProperty::has_edge  ----- */
+    inline bool
+    has_edge( key_type sides ) const
+    {
+      return this->edges.find( sides ) != this->edges.end();
+    }
 
-      private:
-        /* === DATA MEMBERS === */
-        container_type edges;
-    };  /* -----  end of template class EdgeProperty  ----- */
+  private:
+    /* === DATA MEMBERS === */
+    container_type edges;
+  };  /* --- end of template class EdgeProperty --- */
 
   /**
    *  @brief  Bidirected sequence graph representation (dynamic).
@@ -437,113 +438,114 @@ namespace gum {
    *  Represent a sequence graph (node-labeled bidirected graph).
    */
   template< template< class, uint8_t ... > class TNodeProp,
-    template< class, class, uint8_t ... > class TEdgeProp,
-    uint8_t ...TWidths >
-    class SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >
+            template< class, class, uint8_t ... > class TEdgeProp,
+            uint8_t ...TWidths >
+  class SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >
     : public DirectedGraph< Dynamic, Bidirected, TWidths... > {
-      public:
-        /* === TYPEDEFS  === */
-        using spec_type = Dynamic;
-        using dir_type = Bidirected;
-        using base_type = DirectedGraph< spec_type, dir_type, TWidths... >;
-        using node_prop_type = TNodeProp< spec_type, TWidths... >;
-        using edge_prop_type = TEdgeProp< spec_type, dir_type, TWidths ... >;
-        using typename base_type::id_type;
-        using typename base_type::offset_type;
-        using typename base_type::rank_type;
-        using typename base_type::side_type;
-        using typename base_type::link_type;
-        using node_type = typename node_prop_type::node_type;
-        using edge_type = typename edge_prop_type::edge_type;
-        /* === LIFECYCLE === */
-        SeqGraph() = default;                                  /* constructor      */
-        SeqGraph( SeqGraph const& other ) = default;           /* copy constructor */
-        SeqGraph( SeqGraph&& other ) noexcept = default;       /* move constructor */
-        ~SeqGraph() noexcept = default;                        /* destructor       */
+  public:
+    /* === TYPEDEFS === */
+    using spec_type = Dynamic;
+    using dir_type = Bidirected;
+    using base_type = DirectedGraph< spec_type, dir_type, TWidths... >;
+    using node_prop_type = TNodeProp< spec_type, TWidths... >;
+    using edge_prop_type = TEdgeProp< spec_type, dir_type, TWidths ... >;
+    using typename base_type::id_type;
+    using typename base_type::offset_type;
+    using typename base_type::rank_type;
+    using typename base_type::side_type;
+    using typename base_type::link_type;
+    using node_type = typename node_prop_type::node_type;
+    using edge_type = typename edge_prop_type::edge_type;
 
-        /* === ACCESSORS === */
-          inline node_prop_type const&
-        get_node_prop( ) const
-        {
-          return this->node_prop;
-        }  /* -----  end of method SeqGraph::get_node_prop  ----- */
+    /* === LIFECYCLE === */
+    SeqGraph() = default;                                  /* constructor      */
+    SeqGraph( SeqGraph const& other ) = default;           /* copy constructor */
+    SeqGraph( SeqGraph&& other ) noexcept = default;       /* move constructor */
+    ~SeqGraph() noexcept = default;                        /* destructor       */
 
-          inline edge_prop_type const&
-        get_edge_prop( ) const
-        {
-          return this->edge_prop;
-        }  /* -----  end of method SeqGraph::get_edge_prop  ----- */
+    /* === ACCESSORS === */
+    inline node_prop_type const&
+    get_node_prop( ) const
+    {
+      return this->node_prop;
+    }
 
-        /* === OPERATORS === */
-        SeqGraph& operator=( SeqGraph const& other ) = default;      /* copy assignment operator */
-        SeqGraph& operator=( SeqGraph&& other ) noexcept = default;  /* move assignment operator */
+    inline edge_prop_type const&
+    get_edge_prop( ) const
+    {
+      return this->edge_prop;
+    }
 
-        /* === METHODS === */
-          inline id_type
-        add_node( node_type node=node_type() )
-        {
-          this->node_prop.add_node( node );
-          return base_type::add_node_imp( );
-        }  /* -----  end of method SeqGraph::add_node  ----- */
+    /* === OPERATORS === */
+    SeqGraph& operator=( SeqGraph const& other ) = default;      /* copy assignment operator */
+    SeqGraph& operator=( SeqGraph&& other ) noexcept = default;  /* move assignment operator */
 
-          inline void
-        add_edge( link_type sides, edge_type edge=edge_type() )
-        {
-          if ( this->has_edge( sides ) ) return;
-          base_type::add_edge_imp( sides, false );
-          this->edge_prop.add_edge( sides, edge );
-        }  /* -----  end of method SeqGraph::add_edge  ----- */
+    /* === METHODS === */
+    inline id_type
+    add_node( node_type node=node_type() )
+    {
+      this->node_prop.add_node( node );
+      return base_type::add_node_imp( );
+    }
 
-          inline void
-        add_edge( side_type from, side_type to, edge_type edge=edge_type() )
-        {
-          this->add_edge( base_type::merge_sides( from, to ), edge );
-        }  /* -----  end of method SeqGraph::add_edge  ----- */
+    inline void
+    add_edge( link_type sides, edge_type edge=edge_type() )
+    {
+      if ( this->has_edge( sides ) ) return;
+      base_type::add_edge_imp( sides, false );
+      this->edge_prop.add_edge( sides, edge );
+    }
 
-          inline bool
-        has_edge( link_type sides ) const
-        {
-          return this->edge_prop.has_edge( sides );
-        }  /* -----  end of method SeqGraph::has_edge  ----- */
+    inline void
+    add_edge( side_type from, side_type to, edge_type edge=edge_type() )
+    {
+      this->add_edge( base_type::merge_sides( from, to ), edge );
+    }
 
-          inline bool
-        has_edge( side_type from, side_type to ) const
-        {
-          return this->has_edge( base_type::merge_sides( from, to ) );
-        }  /* -----  end of method SeqGraph::has_edge  ----- */
+    inline bool
+    has_edge( link_type sides ) const
+    {
+      return this->edge_prop.has_edge( sides );
+    }
 
-          inline typename node_type::sequence_type
-        node_sequence( id_type id ) const
-        {
-          rank_type rank = base_type::id_to_rank( id );
-          return this->node_prop[ rank ].sequence;
-        }  /* -----  end of method SeqGraph::node_sequence  ----- */
+    inline bool
+    has_edge( side_type from, side_type to ) const
+    {
+      return this->has_edge( base_type::merge_sides( from, to ) );
+    }
 
-          inline typename node_type::sequence_type::size_type
-        node_length( id_type id ) const
-        {
-          return this->node_sequence( id ).size();
-        }  /* -----  end of method SeqGraph::node_length  ----- */
+    inline typename node_type::sequence_type
+    node_sequence( id_type id ) const
+    {
+      rank_type rank = base_type::id_to_rank( id );
+      return this->node_prop[ rank ].sequence;
+    }
 
-      protected:
-        /* === ACCESSORS === */
-          inline node_prop_type&
-        get_node_prop( )
-        {
-          return this->node_prop;
-        }  /* -----  end of method SeqGraph::get_node_prop  ----- */
+    inline typename node_type::sequence_type::size_type
+    node_length( id_type id ) const
+    {
+      return this->node_sequence( id ).size();
+    }
 
-          inline edge_prop_type&
-        get_edge_prop( )
-        {
-          return this->edge_prop;
-        }  /* -----  end of method SeqGraph::get_edge_prop  ----- */
+  protected:
+    /* === ACCESSORS === */
+    inline node_prop_type&
+    get_node_prop( )
+    {
+      return this->node_prop;
+    }
 
-      private:
-        /* === DATA MEMBERS === */
-        node_prop_type node_prop;
-        edge_prop_type edge_prop;
-    };  /* -----  end of template class SeqGraph  ----- */
+    inline edge_prop_type&
+    get_edge_prop( )
+    {
+      return this->edge_prop;
+    }
+
+  private:
+    /* === DATA MEMBERS === */
+    node_prop_type node_prop;
+    edge_prop_type edge_prop;
+  };  /* --- end of template class SeqGraph --- */
 
   /**
    *  @brief  Directed sequence graph representation (dynamic).
@@ -551,9 +553,9 @@ namespace gum {
    *  Represent a sequence graph (node-labeled bidirected graph).
    */
   template< uint8_t ...TWidths >
-    class DiSeqGraph< Dynamic, TWidths... >
+  class DiSeqGraph< Dynamic, TWidths... >
     : public DirectedGraph< Dynamic, Directed, TWidths... > {
-    };
+  };
 
   /**
    *  @brief  Directed sequence graph representation (succinct).
@@ -561,9 +563,9 @@ namespace gum {
    *  Represent a sequence graph (node-labeled bidirected graph).
    */
   template< uint8_t ...TWidths >
-    class DiSeqGraph< Succinct, TWidths... >
+  class DiSeqGraph< Succinct, TWidths... >
     : public DirectedGraph< Succinct, Directed, TWidths... > {
-    };
-}  /* -----  end of namespace gum  ----- */
+  };
+}  /* --- end of namespace gum --- */
 
-#endif  /* ----- #ifndef GUM_SEQGRAPH_HPP__  ----- */
+#endif  /* --- #ifndef GUM_SEQGRAPH_HPP__ --- */
