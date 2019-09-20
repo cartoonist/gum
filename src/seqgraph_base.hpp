@@ -104,7 +104,7 @@ namespace gum {
     using link_type = std::tuple< id_type, bool, id_type, bool >;
     using linktype_type = unsigned char;
 
-    constexpr static side_type dummy_side = { 0, false };
+    constexpr static side_type DUMMY_SIDE = { 0, false };
 
     constexpr static inline side_type
     from_side( link_type sides )
@@ -140,7 +140,7 @@ namespace gum {
     constexpr static inline side_type
     get_dummy_side( )
     {
-      return dummy_side;
+      return DUMMY_SIDE;
     }
 
     constexpr static inline link_type
@@ -159,7 +159,7 @@ namespace gum {
     using link_type = std::pair< id_type, id_type >;
     using linktype_type = unsigned char;
 
-    constexpr static side_type dummy_side = 0;
+    constexpr static side_type DUMMY_SIDE = 0;
 
     constexpr static inline side_type
     from_side( link_type sides )
@@ -194,7 +194,7 @@ namespace gum {
     constexpr static inline side_type
     get_dummy_side( )
     {
-      return dummy_side;
+      return DUMMY_SIDE;
     }
 
     constexpr static inline link_type
