@@ -52,7 +52,9 @@ namespace gum {
   public:
     using id_type = integer_t< TIdWidth >;
     using offset_type = integer_t< TOffsetWidth >;
+    using common_type = common_t< TIdWidth, TOffsetWidth >;
     using nodes_type = std::vector< id_type >;
+    using size_type = typename nodes_type::size_type;
     using rank_type = typename nodes_type::size_type;
     using rank_map_type = google::sparse_hash_map< id_type, rank_type >;
 

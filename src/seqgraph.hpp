@@ -39,11 +39,14 @@ namespace gum {
     using trait_type = DirectedGraphTrait< spec_type, TDir, TWidths... >;
     using id_type = typename trait_type::id_type;
     using offset_type = typename trait_type::offset_type;
-    using rank_type = typename trait_type::rank_type;
+    using common_type = typename trait_type::common_type;
     using nodes_type = typename trait_type::nodes_type;
+    using size_type = typename trait_type::size_type;
+    using rank_type = typename trait_type::rank_type;
     using rank_map_type = typename trait_type::rank_map_type;
     using side_type = typename trait_type::side_type;
     using link_type = typename trait_type::link_type;
+    using linktype_type = typename trait_type::linktype_type;
     using adjs_type = typename trait_type::adjs_type;
     using adj_map_type = typename trait_type::adj_map_type;
 
@@ -108,6 +111,18 @@ namespace gum {
       return this->nodes[ rank - 1 ];
     }
 
+    /**
+     *  @brief  Return the ID of the successor node in rank.
+     *
+     *  @param  id A node id.
+     *  @return The node ID of the successor node of a node whose ID is `id` in the rank.
+     */
+    inline id_type
+    successor_id( id_type id ) const
+    {
+      return this->rank_to_id( this->id_to_rank( id ) + 1 );
+    }
+
     inline id_type
     add_node( )
     {
@@ -118,6 +133,25 @@ namespace gum {
     has_node( id_type id ) const
     {
       return this->id_to_rank( id ) != 0;
+    }
+
+    /**
+     *  @brief  Call a callback on each nodes in rank order.
+     *
+     *  @param  callback The callback function.
+     *  @return `true` if it has iterated over all nodes, and `false` if the
+     *  iteration has been interrupted by `callback`.
+     */
+    template< typename TCallback >
+    inline bool
+    for_each_node( TCallback callback ) const
+    {
+      rank_type rank = 1;
+      for ( id_type id : this->nodes ) {
+        if ( !callback( rank, id ) ) return false;
+        ++rank;
+      }
+      return true;
     }
 
     inline void
@@ -278,6 +312,13 @@ namespace gum {
       return this->has_edge( this->from_side( sides ), this->to_side( sides ) );
     }
 
+    inline bool
+    has_edge( id_type from, id_type to, linktype_type type=get_default_linktype() )
+    {
+      this->check_linktype( type );
+      return this->has_edge( this->from_side( from, type ), this->to_side( to, type ) );
+    }
+
     inline adjs_type
     adjacents_to( side_type from ) const
     {
@@ -294,12 +335,128 @@ namespace gum {
       return found->second;
     }
 
+    /**
+     *  @brief  Call a `callback` on each outgoing edges from `from` side.
+     *
+     *  The `callback` function should get the outgoing side and return `true`
+     *  to continue the iteration, and `false` to stop it.
+     *
+     *  @param  from  The side whose outgoing edges are considered.
+     *  @param  callback  The `callback` function.
+     *  @return `true` if it has iterated over all edges, and `false` if the
+     *  iteration has been interrupted by `callback`.
+     */
+    template< typename TCallback >
+    inline bool
+    for_each_edges_to( side_type from, TCallback callback ) const
+    {
+      auto found = this->adj_to.find( from );
+      if ( found == this->adj_to.end() ) return true;
+      for ( side_type to : found->second ) {
+        if ( !callback( to ) ) return false;
+      }
+      return true;
+    }
+
+    /**
+     *  @brief  Call a `callback` on each outgoing edges from each side of a node.
+     *
+     *  The `callback` function should get the outgoing node ID and the edge
+     *  type; and return `true` to continue the iteration, and `false` to stop
+     *  it.
+     *
+     *  @param  id  The node ID whose outgoing edges are considered.
+     *  @param  callback  The `callback` function.
+     *  @return `true` if it has iterated over all edges, and `false` if the
+     *  iteration has been interrupted by `callback`.
+     */
+    template< typename TCallback >
+    inline bool
+    for_each_edges_to( id_type id, TCallback callback ) const
+    {
+      return this->for_each_side(
+          id,
+          [this, callback]( side_type from ) {
+            auto found = this->adj_to.find( from );
+            if ( found == this->adj_to.end() ) return true;
+            for ( side_type to : found->second ) {
+              if ( !callback( to.first, this->linktype( from, to ) ) ) return false;
+            }
+            return true;
+          } );
+    }
+
+    /**
+     *  @brief  Call a `callback` on each incoming edges to `to` side.
+     *
+     *  The `callback` function should get the incoming side and return `true`
+     *  to continue the iteration, and `false` to stop it.
+     *
+     *  @param  to  The side whose incoming edges are considered.
+     *  @param  callback  The `callback` function.
+     *  @return `true` if it has iterated over all edges, and `false` if the
+     *  iteration has been interrupted by `callback`.
+     */
+    template< typename TCallback >
+    inline bool
+    for_each_edges_from( side_type to, TCallback callback ) const
+    {
+      auto found = this->adj_from.find( to );
+      if ( found == this->adj_from.end() ) return true;
+      for ( side_type from : found->second ) {
+        if ( !callback( from ) ) return false;
+      }
+      return true;
+    }
+
+    /**
+     *  @brief  Call a `callback` on each incoming edges to each side of a node.
+     *
+     *  The `callback` function should get the incoming node ID and the edge
+     *  type; and return `true` to continue the iteration, and `false` to stop
+     *  it.
+     *
+     *  @param  id  The node ID whose incoming edges are considered.
+     *  @param  callback  The `callback` function.
+     *  @return `true` if it has iterated over all edges, and `false` if the
+     *  iteration has been interrupted by `callback`.
+     */
+    template< typename TCallback >
+    inline bool
+    for_each_edges_from( id_type id, TCallback callback ) const
+    {
+      return this->for_each_side(
+          id,
+          [this, callback]( side_type to ) {
+            auto found = this->adj_from.find( to );
+            if ( found == this->adj_from.end() ) return true;
+            for ( side_type from : found->second ) {
+              if ( !callback( from.first, this->linktype( from, to ) ) ) return false;
+            }
+            return true;
+          } );
+    }
+
     inline rank_type
     outdegree( side_type side ) const
     {
       auto found = this->adj_to.find( side );
       if ( found == this->adj_to.end() ) return 0;
       return found->second.size();
+    }
+
+    inline rank_type
+    outdegree( id_type id ) const
+    {
+      rank_type retval = 0;
+      this->for_each_side(
+          id,
+          [&retval]( side_type side ) {
+            retval += this->outdegree( side );
+            return true;
+          }
+        );
+      return retval;
     }
 
     inline rank_type
@@ -310,6 +467,20 @@ namespace gum {
       return found->second.size();
     }
 
+    inline rank_type
+    indegree( id_type id ) const
+    {
+      rank_type retval = 0;
+      this->for_each_side(
+          id,
+          [&retval]( side_type side ) {
+            retval += this->indegree( side );
+            return true;
+          }
+        );
+      return retval;
+    }
+
     inline bool
     has_edges_from( side_type side ) const
     {
@@ -317,9 +488,21 @@ namespace gum {
     }
 
     inline bool
+    has_edges_from( id_type id ) const
+    {
+      return this->indegree( id ) != 0;
+    }
+
+    inline bool
     has_edges_to( side_type side ) const
     {
       return this->outdegree( side ) != 0;
+    }
+
+    inline bool
+    has_edges_to( id_type id ) const
+    {
+      return this->outdegree( id ) != 0;
     }
 
   protected:
