@@ -95,7 +95,7 @@ namespace gum {
     inline rank_type
     id_to_rank( id_type id ) const
     {
-      if ( id <= 0 ) throw std::runtime_error( "non-positive node ID");
+      this->check_id( id );
       auto found = this->node_rank.find( id );
       if ( found == this->node_rank.end() ) return 0;
       return found->second;
@@ -104,7 +104,7 @@ namespace gum {
     inline id_type
     rank_to_id( rank_type rank ) const
     {
-      if ( rank <= 0 ) throw std::runtime_error( "non-positive node rank");
+      this->check_rank( rank );
       return this->nodes[ rank - 1 ];
     }
 
@@ -118,6 +118,24 @@ namespace gum {
     has_node( id_type id ) const
     {
       return this->id_to_rank( id ) != 0;
+    }
+
+    inline void
+    check_id( id_type id ) const
+    {
+      trait_type::check_id( id );
+    }
+
+    inline void
+    check_rank( rank_type rank ) const
+    {
+      trait_type::check_rank( rank );
+    }
+
+    inline void
+    check_linktype( linktype_type type ) const
+    {
+      trait_type::check_linktype( type );
     }
 
     constexpr inline id_type
