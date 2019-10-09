@@ -94,14 +94,19 @@ namespace gum {
    *           │ end    │ end    │ 3    │
    *           ╰────────┴────────┴──────╯
    */
-  template< typename TDir >
+  template< typename TSpec, typename TDir, uint8_t ...TWidths >
   class DirectedGraphBaseTrait;
 
-  template< >
-  class DirectedGraphBaseTrait< Bidirected > {
+  template< typename TSpec, uint8_t ...TWidths >
+  class DirectedGraphBaseTrait< TSpec, Bidirected, TWidths... > {
+  private:
+    using spec_type = TSpec;
+    using graph_type = GraphBaseTrait< spec_type, TWidths... >;
+    using id_type = graph_type::id_type;
+    using sidetype_type = bool;
   public:
-    using side_type = std::pair< id_type, bool >;
-    using link_type = std::tuple< id_type, bool, id_type, bool >;
+    using side_type = std::pair< id_type, sidetype_type >;
+    using link_type = std::tuple< id_type, sidetype_type, id_type, sidetype_type >;
     using linktype_type = unsigned char;
 
     constexpr static side_type DUMMY_SIDE = { 0, false };
@@ -152,11 +157,15 @@ namespace gum {
     }
   };  /* --- end of template class DirectedGraphBaseTrait --- */
 
-  template< >
-  class DirectedGraphBaseTrait< Directed > {
+  template< typename TSpec, uint8_t ...TWidths >
+  class DirectedGraphBaseTrait< TSpec, Directed, TWidths... > {
+  private:
+    using spec_type = TSpec;
+    using graph_type = GraphBaseTrait< TSpec, TWidths... >;
+    using id_type = graph_type::id_type;
   public:
     using side_type = id_type;
-    using link_type = std::pair< id_type, id_type >;
+    using link_type = std::pair< side_type, side_type >;
     using linktype_type = unsigned char;
 
     constexpr static side_type DUMMY_SIDE = 0;
@@ -215,17 +224,19 @@ namespace gum {
   template< uint8_t ...TWidths >
   class DirectedGraphTrait< Dynamic, Bidirected, TWidths... >
     : public GraphBaseTrait< Dynamic, TWidths... >,
-      public DirectedGraphBaseTrait< Bidirected > {
+      public DirectedGraphBaseTrait< Dynamic, Bidirected, TWidths... > {
   private:
     using spec_type = Dynamic;
     using dir_type = Bidirected;
     using graph_type = GraphBaseTrait< spec_type, TWidths... >;
-    using base_type = DirectedGraphBaseTrait< dir_type >;
+    using base_type = DirectedGraphBaseTrait< spec_type, dir_type, TWidths... >;
   public:
     using typename graph_type::id_type;
     using typename graph_type::offset_type;
-    using typename graph_type::rank_type;
+    using typename graph_type::common_type;
     using typename graph_type::nodes_type;
+    using typename graph_type::size_type;
+    using typename graph_type::rank_type;
     using typename graph_type::rank_map_type;
     using typename base_type::side_type;
     using typename base_type::link_type;
@@ -264,17 +275,19 @@ namespace gum {
   template< uint8_t ...TWidths >
   class DirectedGraphTrait< Dynamic, Directed, TWidths... >
     : public GraphBaseTrait< Dynamic, TWidths... >,
-      public DirectedGraphBaseTrait< Directed > {
+      public DirectedGraphBaseTrait< Dynamic, Directed, TWidths... > {
   private:
     using spec_type = Dynamic;
     using dir_type = Directed;
     using graph_type = GraphBaseTrait< spec_type, TWidths... >;
-    using base_type = DirectedGraphBaseTrait< dir_type >;
+    using base_type = DirectedGraphBaseTrait< spec_type, dir_type, TWidths... >;
   public:
     using typename graph_type::id_type;
     using typename graph_type::offset_type;
-    using typename graph_type::rank_type;
+    using typename graph_type::common_type;
     using typename graph_type::nodes_type;
+    using typename graph_type::size_type;
+    using typename graph_type::rank_type;
     using typename graph_type::rank_map_type;
     using typename base_type::side_type;
     using typename base_type::link_type;
