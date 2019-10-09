@@ -110,36 +110,76 @@ namespace gum {
     using linktype_type = unsigned char;
 
     constexpr static side_type DUMMY_SIDE = { 0, false };
+    constexpr static linktype_type DEFAULT_LINKTYPE =
+        DirectedGraphBaseTrait::get_default_linktype();
 
+    /* === ID === */
+    constexpr static inline id_type
+    from_id( link_type sides )
+    {
+      return std::get<0>( sides );
+    }
+
+    constexpr static inline id_type
+    to_id( link_type sides )
+    {
+      return std::get<2>( sides );
+    }
+
+    constexpr static inline id_type
+    id_of( side_type side )
+    {
+      return side.first;
+    }
+
+    /* === Side === */
     constexpr static inline side_type
     from_side( link_type sides )
     {
-      return side_type( std::get<0>( sides ), std::get<1>( sides ) );
+      return side_type( DirectedGraphBaseTrait::from_id( sides ),
+                        DirectedGraphBaseTrait::from_sidetype( sides ) );
+    }
+
+    constexpr static inline side_type
+    from_side( id_type id, linktype_type type )
+    {
+      assert( DirectedGraphBaseTrait::is_valid( type ) );
+      return side_type( id, from_sidetype( type ) );
     }
 
     constexpr static inline side_type
     to_side( link_type sides )
     {
-      return side_type( std::get<2>( sides ), std::get<3>( sides ) );
+      return side_type( DirectedGraphBaseTrait::to_id( sides ),
+                        DirectedGraphBaseTrait::to_sidetype( sides ) );
     }
 
-    constexpr static inline link_type
-    merge_sides( side_type from, side_type to )
+    constexpr static inline side_type
+    to_side( id_type id, linktype_type type )
     {
-      return link_type( from.first, from.second, to.first, to.second );
+      assert( DirectedGraphBaseTrait::is_valid( type ) );
+      return side_type( id, to_sidetype( type ) );
     }
 
-    constexpr static inline linktype_type
-    get_type( link_type sides )
+    constexpr static inline side_type
+    start_side( id_type id )
     {
-      return static_cast< linktype_type >( std::get<1>( sides ) ) * 2 +
-          static_cast< linktype_type >( std::get< 3 >( sides ) );
+      return side_type( id, DirectedGraphBaseTrait::start_sidetype() );
+    }
+
+    constexpr static inline side_type
+    end_side( id_type id )
+    {
+      return side_type( id, DirectedGraphBaseTrait::end_sidetype() );
     }
 
     constexpr static inline side_type
     opposite_side( side_type side )
     {
-      return side_type( side.first, !side.second );
+      return side_type(
+          DirectedGraphBaseTrait::id_of( side ),
+          DirectedGraphBaseTrait::opposite_side(
+              DirectedGraphBaseTrait::sidetype_of( side ) ) );
     }
 
     constexpr static inline side_type
@@ -148,12 +188,136 @@ namespace gum {
       return DUMMY_SIDE;
     }
 
+    template< typename TCallback >
+    static inline bool
+    for_each_side( id_type id, TCallback callback )
+    {
+      side_type side = { id, false };
+      if ( !callback( side ) ) return false;
+      if ( !callback( DirectedGraphBaseTrait::opposite_side( side ) ) ) return false;
+      return true;
+    }
+
+    /* === Link === */
+    constexpr static inline link_type
+    make_link( side_type from, side_type to )
+    {
+      return link_type( DirectedGraphBaseTrait::id_of( from ),
+                        DirectedGraphBaseTrait::sidetype_of( from ),
+                        DirectedGraphBaseTrait::id_of( to ),
+                        DirectedGraphBaseTrait::sidetype_of( to ) );
+    }
+
     constexpr static inline link_type
     get_dummy_link( )
     {
-      return DirectedGraphBaseTrait::merge_sides(
+      return DirectedGraphBaseTrait::make_link(
           DirectedGraphBaseTrait::get_dummy_side(),
           DirectedGraphBaseTrait::get_dummy_side() );
+    }
+
+    /* === Link type === */
+    constexpr static inline linktype_type
+    get_default_linktype( )
+    {
+      return DirectedGraphBaseTrait::_linktype(
+          DirectedGraphBaseTrait::end_sidetype(),
+          DirectedGraphBaseTrait::start_sidetype() );
+    }
+
+    constexpr static inline linktype_type
+    linktype( side_type from, side_type to )
+    {
+      return DirectedGraphBaseTrait::_linktype(
+          DirectedGraphBaseTrait::sidetype_of( from ),
+          DirectedGraphBaseTrait::sidetype_of( to ) );
+    }
+
+    constexpr static inline linktype_type
+    linktype( link_type sides )
+    {
+      return DirectedGraphBaseTrait::_linktype(
+          DirectedGraphBaseTrait::from_sidetype( sides ),
+          DirectedGraphBaseTrait::to_sidetype( sides ) );
+    }
+
+    constexpr static inline bool
+    is_valid( linktype_type type )
+    {
+      return 0 <= type && type <= 3;
+    }
+
+    constexpr static inline bool
+    is_valid_from( side_type from, linktype_type type )
+    {
+      return DirectedGraphBaseTrait::sidetype_of( from ) ==
+          DirectedGraphBaseTrait::from_sidetype( type );
+    }
+
+    constexpr static inline bool
+    is_valid_to( side_type to, linktype_type type )
+    {
+      return DirectedGraphBaseTrait::sidetype_of( to ) ==
+          DirectedGraphBaseTrait::to_sidetype( type );
+    }
+
+  private:
+    /* === Side type === */
+    constexpr static inline sidetype_type
+    start_sidetype( )
+    {
+      return false;
+    }
+
+    constexpr static inline sidetype_type
+    end_sidetype( )
+    {
+      return true;
+    }
+
+    constexpr static inline sidetype_type
+    from_sidetype( link_type sides )
+    {
+      return std::get<1>( sides );
+    }
+
+    constexpr static inline sidetype_type
+    to_sidetype( link_type sides )
+    {
+      return std::get<3>( sides );
+    }
+
+    constexpr static inline sidetype_type
+    sidetype_of( side_type side )
+    {
+      return side.second;
+    }
+
+    constexpr static inline side_type
+    opposite_side( sidetype_type stype )
+    {
+      return !stype;
+    }
+
+    /* === Link type <-> Side type === */
+    constexpr static inline sidetype_type
+    from_sidetype( linktype_type type )
+    {
+      assert( DirectedGraphBaseTrait::is_valid( type ) );
+      return type >> 1;
+    }
+
+    constexpr static inline sidetype_type
+    to_sidetype( linktype_type type )
+    {
+      assert( DirectedGraphBaseTrait::is_valid( type ) );
+      return type % 2;
+    }
+
+    constexpr static inline linktype_type
+    _linktype( sidetype_type from, sidetype_type to )
+    {
+      return static_cast< linktype_type >( from )*2 + static_cast< linktype_type >( to );
     }
   };  /* --- end of template class DirectedGraphBaseTrait --- */
 
@@ -169,11 +333,39 @@ namespace gum {
     using linktype_type = unsigned char;
 
     constexpr static side_type DUMMY_SIDE = 0;
+    constexpr static linktype_type DEFAULT_LINKTYPE = 0;
 
+    /* === ID === */
+    constexpr static inline id_type
+    from_id( link_type sides )
+    {
+      return static_cast< id_type >( sides.first );
+    }
+
+    constexpr static inline id_type
+    to_id( link_type sides )
+    {
+      return static_cast< id_type >( sides.second );
+    }
+
+    constexpr static inline id_type
+    id_of( side_type side )
+    {
+      return static_cast< id_type >( side );
+    }
+
+    /* === Side === */
     constexpr static inline side_type
     from_side( link_type sides )
     {
       return sides.first;
+    }
+
+    constexpr static inline side_type
+    from_side( id_type id, linktype_type type )
+    {
+      assert( DirectedGraphBaseTrait::is_valid( type ) );
+      return static_cast< side_type >( id );
     }
 
     constexpr static inline side_type
@@ -182,16 +374,11 @@ namespace gum {
       return sides.second;
     }
 
-    constexpr static inline link_type
-    merge_sides( side_type from, side_type to )
+    constexpr static inline side_type
+    to_side( id_type id, linktype_type type )
     {
-      return link_type( from, to );
-    }
-
-    constexpr static inline linktype_type
-    get_type( link_type sides )
-    {
-      return 0;
+      assert( DirectedGraphBaseTrait::is_valid( type ) );
+      return static_cast< side_type >( id );
     }
 
     constexpr static inline side_type
@@ -206,12 +393,63 @@ namespace gum {
       return DUMMY_SIDE;
     }
 
+    template< typename TCallback >
+    static inline bool
+    for_each_side( id_type id, TCallback callback )
+    {
+      return callback( static_cast< side_type >( id ) );
+    }
+
+    /* === Link === */
+    constexpr static inline link_type
+    make_link( side_type from, side_type to )
+    {
+      return link_type( from, to );
+    }
+
     constexpr static inline link_type
     get_dummy_link( )
     {
-      return DirectedGraphBaseTrait::merge_sides(
+      return DirectedGraphBaseTrait::make_link(
           DirectedGraphBaseTrait::get_dummy_side(),
           DirectedGraphBaseTrait::get_dummy_side() );
+    }
+
+    /* === Link type === */
+    constexpr static inline linktype_type
+    get_default_linktype( )
+    {
+      return DEFAULT_LINKTYPE;
+    }
+
+    constexpr static inline linktype_type
+    linktype( side_type, side_type )
+    {
+      return DirectedGraphBaseTrait::get_default_linktype();
+    }
+
+    constexpr static inline linktype_type
+    linktype( link_type )
+    {
+      return DirectedGraphBaseTrait::get_default_linktype();
+    }
+
+    constexpr static inline bool
+    is_valid( linktype_type type )
+    {
+      return type == 0;
+    }
+
+    constexpr static inline bool
+    is_valid_from( side_type from, linktype_type type )
+    {
+      return true;
+    }
+
+    constexpr static inline bool
+    is_valid_to( side_type to, linktype_type type )
+    {
+      return true;
     }
   };  /* --- end of template class DirectedGraphBaseTrait --- */
 

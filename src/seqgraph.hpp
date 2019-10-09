@@ -127,10 +127,34 @@ namespace gum {
       return this->id_to_rank( id ) != 0;
     }
 
+    constexpr inline id_type
+    from_id( link_type sides ) const
+    {
+      return trait_type::from_id( sides );
+    }
+
+    constexpr inline id_type
+    to_id( link_type sides ) const
+    {
+      return trait_type::to_id( sides );
+    }
+
+    constexpr inline id_type
+    id_of( side_type side ) const
+    {
+      return trait_type::id_of( side );
+    }
+
     constexpr inline side_type
     from_side( link_type sides ) const
     {
       return trait_type::from_side( sides );
+    }
+
+    constexpr inline side_type
+    from_side( id_type id, linktype_type type=get_default_linktype() ) const
+    {
+      return trait_type::from_side( id, type );
     }
 
     constexpr inline side_type
@@ -139,16 +163,77 @@ namespace gum {
       return trait_type::to_side( sides );
     }
 
-    constexpr inline link_type
-    merge_sides( side_type from, side_type to ) const
+    constexpr inline side_type
+    to_side( id_type id, linktype_type type=get_default_linktype() ) const
     {
-      return trait_type::merge_sides( from, to );
+      return trait_type::to_side( id, type );
+    }
+
+    constexpr inline side_type
+    start_side( id_type id ) const
+    {
+      return trait_type::start_side( id );
+    }
+
+    constexpr inline side_type
+    end_side( id_type id ) const
+    {
+      return trait_type::end_side( id );
     }
 
     constexpr inline side_type
     opposite_side( side_type side ) const
     {
       return trait_type::opposite_side( side );
+    }
+
+    template< typename TCallback >
+    inline bool
+    for_each_side( id_type id, TCallback callback ) const
+    {
+      return trait_type::for_each_side( id, callback );
+    }
+
+    constexpr inline link_type
+    make_link( side_type from, side_type to ) const
+    {
+      return trait_type::make_link( from, to );
+    }
+
+    constexpr inline linktype_type
+    get_default_linktype( ) const
+    {
+      return trait_type::get_default_linktype();
+    }
+
+    constexpr inline linktype_type
+    linktype( side_type from, side_type to ) const
+    {
+      return trait_type::linktype( from, to );
+    }
+
+    constexpr inline linktype_type
+    linktype( link_type sides ) const
+    {
+      return trait_type::linktype( sides );
+    }
+
+    constexpr inline bool
+    is_valid( linktype_type type ) const
+    {
+      return trait_type::is_valid( type );
+    }
+
+    constexpr inline bool
+    is_valid_from( side_type from, linktype_type type ) const
+    {
+      return trait_type::is_valid_from( from, type );
+    }
+
+    constexpr inline bool
+    is_valid_to( side_type to, linktype_type type ) const
+    {
+      return trait_type::is_valid_to( to, type );
     }
 
     inline void
@@ -499,7 +584,7 @@ namespace gum {
     inline void
     add_edge( side_type from, side_type to, edge_type edge=edge_type() )
     {
-      this->add_edge( base_type::merge_sides( from, to ), edge );
+      this->add_edge( base_type::make_link( from, to ), edge );
     }
 
     inline bool
@@ -511,7 +596,7 @@ namespace gum {
     inline bool
     has_edge( side_type from, side_type to ) const
     {
-      return this->has_edge( base_type::merge_sides( from, to ) );
+      return this->has_edge( base_type::make_link( from, to ) );
     }
 
     inline typename node_type::sequence_type
