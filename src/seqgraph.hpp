@@ -49,7 +49,7 @@ namespace gum {
 
     /* === LIFECYCLE === */
     DirectedGraph( )                                            /* constructor      */
-      : max_id( 0 ), max_rank( 0 ), edge_count( 0 )
+      : max_id( 0 ), node_count( 0 ), edge_count( 0 )
     {
       trait_type::init_rank_map( this->node_rank );
       trait_type::init_adj_map( this->adj_from );
@@ -68,16 +68,9 @@ namespace gum {
     }
 
     inline rank_type
-    get_max_node_rank( ) const
-    {
-      assert( this->max_rank == this->get_node_count() );
-      return this->max_rank;
-    }
-
-    inline rank_type
     get_node_count( ) const
     {
-      return this->nodes.size();
+      return this->node_count;
     }
 
     inline rank_type
@@ -350,19 +343,19 @@ namespace gum {
     adj_map_type adj_to;
     adj_map_type adj_from;
     id_type max_id;
+    rank_type node_count;
     rank_type edge_count;
-    rank_type max_rank;
 
     /* === METHODS === */
     inline void
     set_rank( typename nodes_type::const_iterator begin,
               typename nodes_type::const_iterator end )
     {
-      assert( end - begin + this->max_rank == this->nodes.size() );
+      assert( end - begin + this->node_count == this->nodes.size() );
       for ( ; begin != end; ++begin ) {
         bool inserted;
         std::tie( std::ignore, inserted ) =
-            this->node_rank.insert( { *begin, ++this->max_rank } );
+            this->node_rank.insert( { *begin, ++this->node_count } );
         assert( inserted );  // avoid duplicate insersion from upstream.
       }
     }
