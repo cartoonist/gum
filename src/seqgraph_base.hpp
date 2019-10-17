@@ -25,6 +25,7 @@
 
 #include <sparsehash/sparse_hash_map>
 #include <sdsl/int_vector.hpp>
+#include <sdsl/bit_vectors.hpp>
 
 #include "basic_types.hpp"
 
@@ -73,7 +74,7 @@ namespace gum {
     }
 
     static inline void
-    check_rank( rank_type )
+    check_rank( rank_type rank )
     {
       if ( rank <= 0 ) throw std::runtime_error( "non-positive node rank");
     }
@@ -135,7 +136,7 @@ namespace gum {
     }
 
     static inline void
-    check_rank( rank_type )
+    check_rank( rank_type rank )
     {
       if ( rank <= 0 ) throw std::runtime_error( "non-positive node rank");
     }
@@ -179,7 +180,7 @@ namespace gum {
   private:
     using spec_type = TSpec;
     using graph_type = GraphBaseTrait< spec_type, TWidths... >;
-    using id_type = graph_type::id_type;
+    using id_type = typename graph_type::id_type;
     using sidetype_type = bool;
   public:
     using side_type = std::pair< id_type, sidetype_type >;
@@ -377,7 +378,7 @@ namespace gum {
       return side.second;
     }
 
-    constexpr static inline side_type
+    constexpr static inline sidetype_type
     opposite_side( sidetype_type stype )
     {
       return !stype;
@@ -410,7 +411,7 @@ namespace gum {
   private:
     using spec_type = TSpec;
     using graph_type = GraphBaseTrait< TSpec, TWidths... >;
-    using id_type = graph_type::id_type;
+    using id_type = typename graph_type::id_type;
   public:
     using side_type = id_type;
     using link_type = std::pair< side_type, side_type >;
@@ -663,6 +664,7 @@ namespace gum {
     using typename graph_type::bv_type;
     using typename graph_type::rank_map_type;
     using typename graph_type::id_map_type;
+    using typename graph_type::padding_type;
     using typename base_type::side_type;
     using typename base_type::link_type;
     using typename base_type::linktype_type;
@@ -689,6 +691,7 @@ namespace gum {
     using typename graph_type::bv_type;
     using typename graph_type::rank_map_type;
     using typename graph_type::id_map_type;
+    using typename graph_type::padding_type;
     using typename base_type::side_type;
     using typename base_type::link_type;
     using typename base_type::linktype_type;

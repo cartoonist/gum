@@ -451,7 +451,7 @@ namespace gum {
       rank_type retval = 0;
       this->for_each_side(
           id,
-          [&retval]( side_type side ) {
+          [this, &retval]( side_type side ) {
             retval += this->outdegree( side );
             return true;
           }
@@ -473,7 +473,7 @@ namespace gum {
       rank_type retval = 0;
       this->for_each_side(
           id,
-          [&retval]( side_type side ) {
+          [this, &retval]( side_type side ) {
             retval += this->indegree( side );
             return true;
           }
@@ -602,6 +602,7 @@ namespace gum {
     using bv_type = typename trait_type::bv_type;
     using rank_map_type = typename trait_type::rank_map_type;
     using id_map_type = typename trait_type::id_map_type;
+    using padding_type = typename trait_type::padding_type;
     using side_type = typename trait_type::side_type;
     using link_type = typename trait_type::link_type;
     using linktype_type = typename trait_type::linktype_type;
@@ -893,8 +894,8 @@ namespace gum {
     has_edge( id_type from, id_type to, linktype_type type=get_default_linktype() ) const
     {
       this->check_linktype( type );
-      fod = this->outdegree( from );
-      tod = this->outdegree( to );
+      auto fod = this->outdegree( from );
+      auto tod = this->outdegree( to );
       auto findto =
           [to, type]( id_type tid, linktype_type ttype ) {
             if ( tid == to && ttype == type ) return false;
