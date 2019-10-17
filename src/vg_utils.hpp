@@ -37,13 +37,17 @@ namespace gum {
     template< template< class, uint8_t ... > class TNodeProp,
               template< class, class, uint8_t ... > class TEdgeProp,
               uint8_t ...TWidths >
-    inline void
+    inline typename SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >::id_type
     add( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >& graph,
-         vg::Node const& node )
+         vg::Node const& node,
+         bool id_as_name=false )
     {
       using graph_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >;
       using node_type = typename graph_type::node_type;
-      graph.add_node( node.id(), node_type( node.sequence(), node.name() ) );
+      if ( node.name().empty() ) id_as_name = true;
+      return graph.add_node( node_type( node.sequence(), ( id_as_name ?
+                                                           std::to_string( node.id() ) :
+                                                           node.name() ) ) );
     }
 
     template< template< class, uint8_t ... > class TNodeProp,
@@ -51,13 +55,15 @@ namespace gum {
               uint8_t ...TWidths >
     inline void
     add( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >& graph,
+         typename SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >::id_type src_id,
+         typename SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >::id_type sink_id,
          vg::Edge const& edge )
     {
       using graph_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >;
       using link_type = typename graph_type::link_type;
       using edge_type = typename graph_type::edge_type;
       graph.add_edge(
-          link_type( edge.from(), !edge.from_start(), edge.to(), edge.to_end() ),
+          link_type( src_id, !edge.from_start(), sink_id, edge.to_end() ),
           edge_type( edge.overlap() ) );
     }
 
@@ -66,16 +72,18 @@ namespace gum {
               uint8_t ...TWidths >
     inline void
     extend( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >& graph,
-            vg::Graph& other )
+            vg::Graph& other,
+            bool id_as_name=false )
     {
-      using node_size_type = decltype( other.node_size() );
-      using edge_size_type = decltype( other.edge_size() );
+      using graph_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >;
+      using id_type = typename graph_type::id_type;
 
-      for ( node_size_type i = 0; i < other.node_size(); ++i ) {
-        add( graph, other.node( i ) );
+      google::sparse_hash_map< decltype( vg::Node().id() ), id_type > ids;
+      for ( const auto& node : other.node() ) {
+        ids.insert( { node.id(), add( graph, node ) } );
       }
-      for ( edge_size_type i = 0; i < other.edge_size(); ++i ) {
-        add( graph, other.edge( i ) );
+      for ( const auto& edge : other.edge() ) {
+        add( graph, ids[ edge.from() ], ids[ edge.to() ], edge );
       }
       // :TODO:Tue Jul 30 18:33:\@cartoonist:
       // Add paths
