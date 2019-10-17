@@ -412,30 +412,39 @@ namespace gum {
     using graph_type = GraphBaseTrait< TSpec, TWidths... >;
     using id_type = typename graph_type::id_type;
   public:
-    using side_type = id_type;
+    struct Side {
+      id_type id;
+      constexpr Side( id_type i=0 ) : id( i ) { }
+      constexpr bool
+      operator==( const Side& other ) const
+      {
+        return this->id == other.id;
+      }
+    };
+    using side_type = Side;
     using link_type = std::pair< side_type, side_type >;
     using linktype_type = unsigned char;
 
-    constexpr static side_type DUMMY_SIDE = 0;
+    constexpr static side_type DUMMY_SIDE =  { 0 };
     constexpr static linktype_type DEFAULT_LINKTYPE = 0;
 
     /* === ID === */
     constexpr static inline id_type
     from_id( link_type sides )
     {
-      return static_cast< id_type >( sides.first );
+      return sides.first.id;
     }
 
     constexpr static inline id_type
     to_id( link_type sides )
     {
-      return static_cast< id_type >( sides.second );
+      return sides.second.id;
     }
 
     constexpr static inline id_type
     id_of( side_type side )
     {
-      return static_cast< id_type >( side );
+      return side.id;
     }
 
     /* === Side === */
@@ -449,7 +458,7 @@ namespace gum {
     from_side( id_type id, linktype_type type )
     {
       assert( DirectedGraphBaseTrait::is_valid( type ) );
-      return static_cast< side_type >( id );
+      return side_type( id );
     }
 
     constexpr static inline side_type
@@ -462,7 +471,7 @@ namespace gum {
     to_side( id_type id, linktype_type type )
     {
       assert( DirectedGraphBaseTrait::is_valid( type ) );
-      return static_cast< side_type >( id );
+      return side_type( id );
     }
 
     constexpr static inline side_type
@@ -480,7 +489,7 @@ namespace gum {
     static inline bool
     for_each_side( id_type id, std::function< bool( side_type ) > callback )
     {
-      return callback( static_cast< side_type >( id ) );
+      return callback( side_type( id ) );
     }
 
     /* === Link === */
@@ -620,8 +629,15 @@ namespace gum {
     using typename base_type::side_type;
     using typename base_type::link_type;
     using typename base_type::linktype_type;
-    using adjs_type = nodes_type;
-    using hash_side = std::hash< side_type >;
+    using adjs_type = std::vector< side_type >;
+
+    struct hash_side {
+      inline std::size_t
+      operator()( side_type const& side ) const
+      {
+        return std::hash< id_type >{}( side.id );
+      }
+    };  /* --- end of struct hash_side --- */
 
     struct hash_link {
       inline std::size_t
@@ -633,7 +649,7 @@ namespace gum {
       }
     };  /* --- end of struct hash_link --- */
 
-    using adj_map_type = google::sparse_hash_map< side_type, adjs_type >;
+    using adj_map_type = google::sparse_hash_map< side_type, adjs_type, hash_side >;
 
     static inline void
     init_adj_map( adj_map_type& m )
