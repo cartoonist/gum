@@ -88,7 +88,13 @@ namespace gum {
    */
   template< uint8_t T1, uint8_t T2 >
   struct common {
-    using type = integer_t< std::max( T1, T2 ) >;
+    constexpr static uint8_t value = std::max( T1, T2 );
+    using type = integer_t< common::value >;
+
+    constexpr uint8_t operator()( ) const noexcept
+    {
+      return common::value;
+    }
   };
 
   /**
@@ -99,7 +105,13 @@ namespace gum {
    */
   template< uint8_t T1, uint8_t T2 >
   struct ucommon {
-    using type = uinteger_t< std::max( T1, T2 ) >;
+    constexpr static uint8_t value = std::max( T1, T2 );
+    using type = uinteger_t< ucommon::value >;
+
+    constexpr uint8_t operator()( ) const noexcept
+    {
+      return ucommon::value;
+    }
   };
 
   template< uint8_t T1, uint8_t T2 >

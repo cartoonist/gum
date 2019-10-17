@@ -116,7 +116,7 @@ namespace gum {
     using id_type = integer_t< TIdWidth >;
     using offset_type = integer_t< TOffsetWidth >;
     using common_type = common_t< TIdWidth, TOffsetWidth >;
-    using nodes_type = sdsl::int_vector< common_type >;
+    using nodes_type = sdsl::int_vector< common_type::value >;
     using size_type = typename nodes_type::size_type;
     using rank_type = typename nodes_type::size_type;
     using bv_type = sdsl::bit_vector;
