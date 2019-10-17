@@ -266,9 +266,8 @@ namespace gum {
       return DUMMY_SIDE;
     }
 
-    template< typename TCallback >
     static inline bool
-    for_each_side( id_type id, TCallback callback )
+    for_each_side( id_type id, std::function< bool( side_type ) > callback )
     {
       side_type side = { id, false };
       if ( !callback( side ) ) return false;
@@ -478,9 +477,8 @@ namespace gum {
       return DUMMY_SIDE;
     }
 
-    template< typename TCallback >
     static inline bool
-    for_each_side( id_type id, TCallback callback )
+    for_each_side( id_type id, std::function< bool( side_type ) > callback )
     {
       return callback( static_cast< side_type >( id ) );
     }

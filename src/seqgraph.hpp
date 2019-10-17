@@ -144,9 +144,8 @@ namespace gum {
      *  @return `true` if it has iterated over all nodes, and `false` if the
      *  iteration has been interrupted by `callback`.
      */
-    template< typename TCallback >
     inline bool
-    for_each_node( TCallback callback ) const
+    for_each_node( std::function< bool( rank_type, id_type ) > callback ) const
     {
       rank_type rank = 1;
       for ( id_type id : this->nodes ) {
@@ -234,9 +233,8 @@ namespace gum {
       return trait_type::opposite_side( side );
     }
 
-    template< typename TCallback >
     inline bool
-    for_each_side( id_type id, TCallback callback ) const
+    for_each_side( id_type id, std::function< bool( side_type ) > callback ) const
     {
       return trait_type::for_each_side( id, callback );
     }
@@ -348,9 +346,9 @@ namespace gum {
      *  @return `true` if it has iterated over all edges, and `false` if the
      *  iteration has been interrupted by `callback`.
      */
-    template< typename TCallback >
     inline bool
-    for_each_edges_to( side_type from, TCallback callback ) const
+    for_each_edges_to( side_type from,
+                       std::function< bool( side_type ) > callback ) const
     {
       auto found = this->adj_to.find( from );
       if ( found == this->adj_to.end() ) return true;
@@ -372,9 +370,9 @@ namespace gum {
      *  @return `true` if it has iterated over all edges, and `false` if the
      *  iteration has been interrupted by `callback`.
      */
-    template< typename TCallback >
     inline bool
-    for_each_edges_to( id_type id, TCallback callback ) const
+    for_each_edges_to( id_type id,
+                       std::function< bool( id_type, linktype_type ) > callback ) const
     {
       return this->for_each_side(
           id,
@@ -382,7 +380,8 @@ namespace gum {
             auto found = this->adj_to.find( from );
             if ( found == this->adj_to.end() ) return true;
             for ( side_type to : found->second ) {
-              if ( !callback( to.first, this->linktype( from, to ) ) ) return false;
+              if ( !callback( this->id_of( to ), this->linktype( from, to ) ) )
+                return false;
             }
             return true;
           } );
@@ -399,9 +398,9 @@ namespace gum {
      *  @return `true` if it has iterated over all edges, and `false` if the
      *  iteration has been interrupted by `callback`.
      */
-    template< typename TCallback >
     inline bool
-    for_each_edges_from( side_type to, TCallback callback ) const
+    for_each_edges_from( side_type to,
+                         std::function< bool( side_type ) > callback ) const
     {
       auto found = this->adj_from.find( to );
       if ( found == this->adj_from.end() ) return true;
@@ -423,9 +422,9 @@ namespace gum {
      *  @return `true` if it has iterated over all edges, and `false` if the
      *  iteration has been interrupted by `callback`.
      */
-    template< typename TCallback >
     inline bool
-    for_each_edges_from( id_type id, TCallback callback ) const
+    for_each_edges_from( id_type id,
+                         std::function< bool( id_type, linktype_type ) > callback ) const
     {
       return this->for_each_side(
           id,
@@ -433,7 +432,8 @@ namespace gum {
             auto found = this->adj_from.find( to );
             if ( found == this->adj_from.end() ) return true;
             for ( side_type from : found->second ) {
-              if ( !callback( from.first, this->linktype( from, to ) ) ) return false;
+              if ( !callback( this->id_of( from ), this->linktype( from, to ) ) )
+                return false;
             }
             return true;
           } );
@@ -749,9 +749,8 @@ namespace gum {
      *  @return `true` if it has iterated over all nodes, and `false` if the
      *  iteration has been interrupted by `callback`.
      */
-    template< typename TCallback >
     inline bool
-    for_each_node( TCallback callback ) const
+    for_each_node( std::function< bool( rank_type, id_type ) > callback ) const
     {
       id_type id = 1;
       rank_type rank = 1;
@@ -842,9 +841,8 @@ namespace gum {
       return trait_type::opposite_side( side );
     }
 
-    template< typename TCallback >
     inline bool
-    for_each_side( id_type id, TCallback callback ) const
+    for_each_side( id_type id, std::function< bool( side_type ) > callback ) const
     {
       return trait_type::for_each_side( id, callback );
     }
@@ -934,9 +932,9 @@ namespace gum {
      *  @return `true` if it has iterated over all edges, and `false` if the
      *  iteration has been interrupted by `callback`.
      */
-    template< typename TCallback >
     inline bool
-    for_each_edges_to( side_type from, TCallback callback ) const
+    for_each_edges_to( side_type from,
+                       std::function< bool( side_type ) > callback ) const
     {
       return this->for_each_edges_to(
           this->id_of( from ),
@@ -960,9 +958,9 @@ namespace gum {
      *  @return `true` if it has iterated over all edges, and `false` if the
      *  iteration has been interrupted by `callback`.
      */
-    template< typename TCallback >
     inline bool
-    for_each_edges_to( id_type id, TCallback callback ) const
+    for_each_edges_to( id_type id,
+                       std::function< bool( id_type, linktype_type ) > callback ) const
     {
       if ( !this->has_edges_to( id ) ) return true;
       return this->for_each_edges_to_pos(
@@ -987,9 +985,9 @@ namespace gum {
      *  @return `true` if it has iterated over all edges, and `false` if the
      *  iteration has been interrupted by `callback`.
      */
-    template< typename TCallback >
     inline bool
-    for_each_edges_from( side_type to, TCallback callback ) const
+    for_each_edges_from( side_type to,
+                         std::function< bool( side_type ) > callback ) const
     {
       return this->for_each_edges_from(
           this->id_of( to ),
@@ -1013,9 +1011,9 @@ namespace gum {
      *  @return `true` if it has iterated over all edges, and `false` if the
      *  iteration has been interrupted by `callback`.
      */
-    template< typename TCallback >
     inline bool
-    for_each_edges_from( id_type id, TCallback callback ) const
+    for_each_edges_from( id_type id,
+                         std::function< bool( id_type, linktype_type ) > callback ) const
     {
       if ( !this->has_edges_from( id ) ) return true;
       return this->for_each_edges_from_pos(
@@ -1137,9 +1135,9 @@ namespace gum {
           this->outdegree( id ) * this->edge_entry_len();
     }
 
-    template< typename TCallback >
     inline bool
-    for_each_edges_to_pos( id_type id, TCallback callback ) const
+    for_each_edges_to_pos( id_type id,
+                           std::function< bool( size_type ) > callback ) const
     {
       size_type pos = this->edges_to_pos( id );
       for ( rank_type i = 0; i < this->outdegree( id ); ++i ) {
@@ -1149,9 +1147,9 @@ namespace gum {
       return true;
     }
 
-    template< typename TCallback >
     inline bool
-    for_each_edges_from_pos( id_type id, TCallback callback ) const
+    for_each_edges_from_pos( id_type id,
+                             std::function< bool( size_type ) > callback ) const
     {
       size_type pos = this->edges_from_pos( id );
       for ( rank_type i = 0; i < this->indegree( id ); ++i ) {
