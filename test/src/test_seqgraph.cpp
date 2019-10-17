@@ -39,12 +39,12 @@ TEMPLATE_SCENARIO( "Generic functionality of DirectedGraph", "[seqgraph][templat
 
     graph_type graph;
     id_type abs_id = 66;
-    std::vector< id_type > nodes( { 1, 2, 3, 72, 23, 6, 401, 10344, 92 } );
+    std::vector< id_type > nodes;
+    rank_type node_count = 9;
     auto integrity_test =
-        [&nodes, abs_id]( graph_type const& graph ) {
-          REQUIRE( graph.get_node_count() == nodes.size() );
-          REQUIRE( graph.get_max_node_rank( ) == nodes.size() );
-          for ( rank_type i = 1; i < graph.get_max_node_rank(); ++i ) {
+        [&nodes, node_count, abs_id]( graph_type const& graph ) {
+          REQUIRE( graph.get_node_count() == node_count );
+          for ( rank_type i = 1; i < graph.get_node_count(); ++i ) {
             REQUIRE( graph.id_to_rank( graph.rank_to_id( i ) ) == i );
             REQUIRE( graph.has_node( nodes[ i - 1 ] ) );
           }
@@ -53,7 +53,8 @@ TEMPLATE_SCENARIO( "Generic functionality of DirectedGraph", "[seqgraph][templat
 
     WHEN( "It is constructed incrementally" )
     {
-      for ( auto const& id : nodes ) graph.add_node( id );
+      for ( rank_type i = 1; i <= node_count; ++i )
+        nodes.push_back( graph.add_node( ) );
       THEN( "The resulting graph should pass integrity tests" )
       {
         integrity_test( graph );
@@ -62,31 +63,12 @@ TEMPLATE_SCENARIO( "Generic functionality of DirectedGraph", "[seqgraph][templat
 
     WHEN( "It is constructed by passing nodes list" )
     {
-      graph.set_nodes( nodes );
+      graph.add_nodes( node_count, [&nodes]( id_type id ) {
+                                     nodes.push_back( id );
+                                   } );
       THEN( "The resulting graph should pass integrity tests" )
       {
         integrity_test( graph );
-      }
-    }
-
-    WHEN( "Adding non-positive node ID" )
-    {
-      THEN( "The method should throw an exception" )
-      {
-        REQUIRE_THROWS( graph.add_node( 0 ) );
-        REQUIRE_THROWS( graph.add_node( -1 ) );
-      }
-    }
-
-    WHEN( "Adding existing node ID" )
-    {
-      graph.set_nodes( nodes );
-      THEN( "The method should silently ignore it" )
-      {
-        graph.add_node( nodes[ 0 ] );
-        graph.add_node( nodes[ 2 ] );
-        graph.add_node( nodes[ 5 ] );
-        REQUIRE( graph.get_node_count() == nodes.size() );
       }
     }
   }
@@ -98,27 +80,41 @@ SCENARIO( "Specialised functionality of DirectedGraph", "[seqgraph]" )
   {
     using graph_type = gum::DirectedGraph< gum::Dynamic, gum::Directed >;
     using id_type = typename graph_type::id_type;
+    using rank_type = typename graph_type::rank_type;
     using side_type = typename graph_type::side_type;
     using link_type = typename graph_type::link_type;
 
     graph_type graph;
     id_type abs_id = 66;
-    std::vector< id_type > nodes( { 1, 2, 3, 72, 23, 6, 401, 10344, 92 } );
+    std::vector< id_type > nodes;
+    rank_type node_count = 9;
     std::vector< link_type > edges = {
       { 1, 2 },
       { 1, 3 },
-      { 2, 23 },
+      { 2, 5 },
       { 2, 6 },
-      { 2, 401 },
-      { 3, 72 },
-      { 23, 10344 },
-      { 6, 10344 },
-      { 401, 10344 },
-      { 72, 10344 },
-      { 10344, 92 }
+      { 2, 7 },
+      { 3, 4 },
+      { 5, 8 },
+      { 6, 8 },
+      { 7, 8 },
+      { 4, 8 },
+      { 8, 9 }
     };
+    auto rtoi =
+        [&graph]( rank_type rank ) {
+          return graph.rank_to_id( rank );
+        };
+    auto update_edges =
+        [&graph, &nodes, &edges, rtoi]( ) {
+          for ( std::size_t i = 0; i < edges.size(); ++i ) {
+            link_type e = edges[ i ];
+            edges[ i ] = link_type( rtoi( graph.from_id( e ) ),
+                                    rtoi( graph.to_id( e ) ) );
+          }
+        };
     auto integrity_test =
-        [&edges, abs_id]( graph_type const& graph ) {
+        [&edges, abs_id, rtoi]( graph_type const& graph ) {
           REQUIRE( graph.get_edge_count() == edges.size() );
           for ( auto const& edge: edges ) {
             REQUIRE( graph.has_edge( edge.first, edge.second ) );
@@ -126,53 +122,55 @@ SCENARIO( "Specialised functionality of DirectedGraph", "[seqgraph]" )
             REQUIRE( !graph.has_edge( abs_id, edge.second ) );
             REQUIRE( graph.has_edge( edge ) );
           }
-          auto adjs = graph.adjacents_to( 2 );
-          std::vector< side_type > truth = { 23, 6, 401 };
+          auto adjs = graph.adjacents_to( rtoi(2) );
+          std::vector< side_type > truth = { rtoi(5), rtoi(6), rtoi(7) };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          adjs = graph.adjacents_to( 10344 );
-          truth = { 92 };
+          adjs = graph.adjacents_to( rtoi(8) );
+          truth = { rtoi(9) };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
           adjs = graph.adjacents_to( abs_id );
           REQUIRE( adjs.empty() );
-          adjs = graph.adjacents_from( 2 );
-          truth = { 1 };
+          adjs = graph.adjacents_from( rtoi(2) );
+          truth = { rtoi(1) };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          adjs = graph.adjacents_from( 10344 );
-          truth = { 23, 6, 401, 72 };
+          adjs = graph.adjacents_from( rtoi(8) );
+          truth = { rtoi(5), rtoi(6), rtoi(7), rtoi(4) };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          REQUIRE( graph.outdegree( 1 ) == 2 );
-          REQUIRE( graph.outdegree( 2 ) == 3 );
-          REQUIRE( graph.outdegree( 6 ) == 1 );
+          REQUIRE( graph.outdegree( rtoi(1) ) == 2 );
+          REQUIRE( graph.outdegree( rtoi(2) ) == 3 );
+          REQUIRE( graph.outdegree( rtoi(6) ) == 1 );
           REQUIRE( graph.outdegree( abs_id ) == 0 );
-          REQUIRE( graph.indegree( 92 ) == 1 );
-          REQUIRE( graph.indegree( 10344 ) == 4 );
-          REQUIRE( graph.indegree( 6 ) == 1 );
+          REQUIRE( graph.indegree( rtoi(9) ) == 1 );
+          REQUIRE( graph.indegree( rtoi(8) ) == 4 );
+          REQUIRE( graph.indegree( rtoi(6) ) == 1 );
           REQUIRE( graph.indegree( abs_id ) == 0 );
-          REQUIRE( !graph.has_edges_from( 1 ) );
-          REQUIRE( graph.has_edges_from( 2 ) );
-          REQUIRE( graph.has_edges_from( 10344 ) );
-          REQUIRE( graph.has_edges_from( 92 ) );
-          REQUIRE( graph.has_edges_to( 1 ) );
-          REQUIRE( graph.has_edges_to( 2 ) );
-          REQUIRE( graph.has_edges_to( 10344 ) );
-          REQUIRE( !graph.has_edges_to( 92 ) );
+          REQUIRE( !graph.has_edges_from( rtoi(1) ) );
+          REQUIRE( graph.has_edges_from( rtoi(2) ) );
+          REQUIRE( graph.has_edges_from( rtoi(8) ) );
+          REQUIRE( graph.has_edges_from( rtoi(9) ) );
+          REQUIRE( graph.has_edges_to( rtoi(1) ) );
+          REQUIRE( graph.has_edges_to( rtoi(2) ) );
+          REQUIRE( graph.has_edges_to( rtoi(8) ) );
+          REQUIRE( !graph.has_edges_to( rtoi(9) ) );
         };
 
     WHEN( "It is constructed incrementally" )
     {
-      for ( auto const& id : nodes ) graph.add_node( id );
+      for ( rank_type i = 1; i <= node_count; ++i )
+        nodes.push_back( graph.add_node( ) );
+      update_edges();
       for ( auto const& edge : edges ) graph.add_edge( edge.first, edge.second );
       THEN( "The resulting graph should pass integrity tests" )
       {
@@ -182,7 +180,10 @@ SCENARIO( "Specialised functionality of DirectedGraph", "[seqgraph]" )
 
     WHEN( "It is constructed by passing nodes list" )
     {
-      graph.set_nodes( nodes );
+      graph.add_nodes( node_count, [&nodes]( id_type id ) {
+                                     nodes.push_back( id );
+                                   } );
+      update_edges();
       for ( auto const& edge : edges ) graph.add_edge( edge );
       THEN( "The resulting graph should pass integrity tests" )
       {
@@ -200,27 +201,43 @@ TEMPLATE_SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[se
   {
     using graph_type = TestType;
     using id_type = typename graph_type::id_type;
+    using rank_type = typename graph_type::rank_type;
     using side_type = typename graph_type::side_type;
     using link_type = typename graph_type::link_type;
 
     graph_type graph;
     id_type abs_id = 66;
-    std::vector< id_type > nodes( { 1, 2, 3, 72, 23, 6, 401, 10344, 92 } );
+    std::vector< id_type > nodes;
+    rank_type node_count = 9;
     std::vector< link_type > edges = {
       { 1, true, 2, false },
       { 1, true, 3, true },
-      { 2, true, 23, false },
+      { 2, true, 5, false },
       { 2, true, 6, true },
-      { 2, true, 401, false },
-      { 3, false, 72, false },
-      { 23, true, 10344, false },
-      { 6, false, 10344, true },
-      { 401, true, 10344, false },
-      { 72, true, 10344, false },
-      { 10344, false, 92, false }
+      { 2, true, 7, false },
+      { 3, false, 4, false },
+      { 5, true, 8, false },
+      { 6, false, 8, true },
+      { 7, true, 8, false },
+      { 4, true, 8, false },
+      { 8, false, 9, false }
     };
+    auto rtoi =
+        [&graph]( rank_type rank ) {
+          return graph.rank_to_id( rank );
+        };
+    auto update_edges =
+        [&graph, &nodes, &edges, rtoi]( ) {
+          for ( std::size_t i = 0; i < edges.size(); ++i ) {
+            link_type e = edges[ i ];
+            edges[ i ] = link_type( rtoi( std::get< 0 >( e ) ),
+                                    std::get< 1 >( e ),
+                                    rtoi( std::get< 2 >( e ) ),
+                                    std::get< 3 >( e ) );
+          }
+        };
     auto integrity_test =
-        [&edges, abs_id]( graph_type const& graph ) {
+        [&edges, abs_id, rtoi]( graph_type const& graph ) {
           REQUIRE( graph.get_edge_count() == edges.size() );
           for ( auto const& edge: edges ) {
             REQUIRE( graph.has_edge( graph.from_side( edge ), graph.to_side( edge ) ) );
@@ -235,83 +252,86 @@ TEMPLATE_SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[se
             REQUIRE( !graph.has_edge( graph.opposite_side( graph.from_side( edge ) ),
                                       graph.to_side( edge ) ) );
           }
-          auto adjs = graph.adjacents_to( { 2, true } );
-          std::vector< side_type > truth = { { 23, false }, { 6, true }, { 401, false } };
+          auto adjs = graph.adjacents_to( { rtoi(2), true } );
+          std::vector< side_type > truth =
+              { { rtoi(5), false }, { rtoi(6), true }, { rtoi(7), false } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          adjs = graph.adjacents_to( { 10344, false } );
-          truth = { { 92, false } };
+          adjs = graph.adjacents_to( { rtoi(8), false } );
+          truth = { { rtoi(9), false } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          adjs = graph.adjacents_to( { 10344, true } );
+          adjs = graph.adjacents_to( { rtoi(8), true } );
           REQUIRE( adjs.empty() );
           adjs = graph.adjacents_to( { abs_id, true } );
           REQUIRE( adjs.empty() );
-          adjs = graph.adjacents_from( { 2, false } );
-          truth = { { 1, true } };
+          adjs = graph.adjacents_from( { rtoi(2), false } );
+          truth = { { rtoi(1), true } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          adjs = graph.adjacents_from( { 2, true } );
+          adjs = graph.adjacents_from( { rtoi(2), true } );
           REQUIRE( adjs.empty() );
-          adjs = graph.adjacents_from( { 10344, false } );
-          truth = { { 23, true }, { 401, true }, { 72, true } };
+          adjs = graph.adjacents_from( { rtoi(8), false } );
+          truth = { { rtoi(5), true }, { rtoi(7), true }, { rtoi(4), true } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          adjs = graph.adjacents_from( { 10344, true } );
-          truth = { { 6, false } };
+          adjs = graph.adjacents_from( { rtoi(8), true } );
+          truth = { { rtoi(6), false } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          REQUIRE( graph.outdegree( { 1, true } ) == 2 );
-          REQUIRE( graph.outdegree( { 1, false } ) == 0 );
-          REQUIRE( graph.outdegree( { 2, true } ) == 3 );
-          REQUIRE( graph.outdegree( { 2, false } ) == 0 );
-          REQUIRE( graph.outdegree( { 6, true } ) == 0 );
-          REQUIRE( graph.outdegree( { 6, false } ) == 1 );
+          REQUIRE( graph.outdegree( { rtoi(1), true } ) == 2 );
+          REQUIRE( graph.outdegree( { rtoi(1), false } ) == 0 );
+          REQUIRE( graph.outdegree( { rtoi(2), true } ) == 3 );
+          REQUIRE( graph.outdegree( { rtoi(2), false } ) == 0 );
+          REQUIRE( graph.outdegree( { rtoi(6), true } ) == 0 );
+          REQUIRE( graph.outdegree( { rtoi(6), false } ) == 1 );
           REQUIRE( graph.outdegree( { abs_id, true } ) == 0 );
           REQUIRE( graph.outdegree( { abs_id, false } ) == 0 );
-          REQUIRE( graph.indegree( { 92, true } ) == 0 );
-          REQUIRE( graph.indegree( { 92, false } ) == 1 );
-          REQUIRE( graph.indegree( { 6, true } ) == 1 );
-          REQUIRE( graph.indegree( { 6, false } ) == 0 );
-          REQUIRE( graph.indegree( { 10344, true } ) == 1 );
-          REQUIRE( graph.indegree( { 10344, false } ) == 3 );
+          REQUIRE( graph.indegree( { rtoi(9), true } ) == 0 );
+          REQUIRE( graph.indegree( { rtoi(9), false } ) == 1 );
+          REQUIRE( graph.indegree( { rtoi(6), true } ) == 1 );
+          REQUIRE( graph.indegree( { rtoi(6), false } ) == 0 );
+          REQUIRE( graph.indegree( { rtoi(8), true } ) == 1 );
+          REQUIRE( graph.indegree( { rtoi(8), false } ) == 3 );
           REQUIRE( graph.indegree( { abs_id, true } ) == 0 );
           REQUIRE( graph.indegree( { abs_id, false } ) == 0 );
-          REQUIRE( !graph.has_edges_from( { 1, true } ) );
-          REQUIRE( !graph.has_edges_from( { 1, false } ) );
-          REQUIRE( !graph.has_edges_from( { 2, true } ) );
-          REQUIRE( graph.has_edges_from( { 2, false } ) );
-          REQUIRE( graph.has_edges_from( { 10344, true } ) );
-          REQUIRE( graph.has_edges_from( { 10344, false } ) );
-          REQUIRE( !graph.has_edges_from( { 92, true } ) );
-          REQUIRE( graph.has_edges_from( { 92, false } ) );
+          REQUIRE( !graph.has_edges_from( { rtoi(1), true } ) );
+          REQUIRE( !graph.has_edges_from( { rtoi(1), false } ) );
+          REQUIRE( !graph.has_edges_from( { rtoi(2), true } ) );
+          REQUIRE( graph.has_edges_from( { rtoi(2), false } ) );
+          REQUIRE( graph.has_edges_from( { rtoi(8), true } ) );
+          REQUIRE( graph.has_edges_from( { rtoi(8), false } ) );
+          REQUIRE( !graph.has_edges_from( { rtoi(9), true } ) );
+          REQUIRE( graph.has_edges_from( { rtoi(9), false } ) );
           REQUIRE( !graph.has_edges_from( { abs_id, true } ) );
           REQUIRE( !graph.has_edges_from( { abs_id, false } ) );
-          REQUIRE( graph.has_edges_to( { 1, true } ) );
-          REQUIRE( !graph.has_edges_to( { 1, false } ) );
-          REQUIRE( graph.has_edges_to( { 2, true } ) );
-          REQUIRE( !graph.has_edges_to( { 2, false } ) );
-          REQUIRE( !graph.has_edges_to( { 10344, true } ) );
-          REQUIRE( graph.has_edges_to( { 10344, false } ) );
-          REQUIRE( !graph.has_edges_to( { 92, true } ) );
-          REQUIRE( !graph.has_edges_to( { 92, false } ) );
+          REQUIRE( graph.has_edges_to( { rtoi(1), true } ) );
+          REQUIRE( !graph.has_edges_to( { rtoi(1), false } ) );
+          REQUIRE( graph.has_edges_to( { rtoi(2), true } ) );
+          REQUIRE( !graph.has_edges_to( { rtoi(2), false } ) );
+          REQUIRE( !graph.has_edges_to( { rtoi(8), true } ) );
+          REQUIRE( graph.has_edges_to( { rtoi(8), false } ) );
+          REQUIRE( !graph.has_edges_to( { rtoi(9), true } ) );
+          REQUIRE( !graph.has_edges_to( { rtoi(9), false } ) );
           REQUIRE( !graph.has_edges_to( { abs_id, true } ) );
           REQUIRE( !graph.has_edges_to( { abs_id, false } ) );
         };
 
     WHEN( "It is constructed incrementally" )
     {
-      for ( auto const& id : nodes ) graph.add_node( id );
+      for ( rank_type i = 1; i <= node_count; ++i )
+        nodes.push_back( graph.add_node( ) );
+      update_edges();
       for ( auto const& edge : edges ) {
         graph.add_edge( graph.from_side( edge ), graph.to_side( edge ) );
       }
@@ -323,7 +343,10 @@ TEMPLATE_SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[se
 
     WHEN( "It is constructed by passing nodes list" )
     {
-      graph.set_nodes( nodes );
+      graph.add_nodes( node_count, [&nodes]( id_type id ) {
+                                     nodes.push_back( id );
+                                   } );
+      update_edges();
       for ( auto const& edge : edges ) graph.add_edge( edge );
       THEN( "The resulting graph should pass integrity tests" )
       {
@@ -333,12 +356,15 @@ TEMPLATE_SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[se
 
     WHEN( "Adding existing edge" )
     {
-      graph.set_nodes( nodes );
+      graph.add_nodes( node_count, [&nodes]( id_type id ) {
+                                     nodes.push_back( id );
+                                   } );
+      update_edges();
       for ( auto const& edge : edges ) graph.add_edge( edge );
       THEN( "The method should silently ignore it" )
       {
-        graph.add_edge( { 1, true, 2, false } );
-        graph.add_edge( { 10344, false, 92, false } );
+        graph.add_edge( { rtoi(1), true, rtoi(2), false } );
+        graph.add_edge( { rtoi(8), false, rtoi(9), false } );
         REQUIRE( graph.get_edge_count() == edges.size() );
       }
     }
@@ -350,27 +376,32 @@ SCENARIO( "Specialised functionality of Dynamic SeqGraph", "[seqgraph]" )
   GIVEN( "A simple Dynamic SeqGraph" )
   {
     using graph_type = gum::SeqGraph< gum::Dynamic >;
+    using rank_type = typename graph_type::rank_type;
     using link_type = typename graph_type::link_type;
 
     graph_type graph;
+    auto rtoi =
+        [&graph]( rank_type rank ) {
+          return graph.rank_to_id( rank );
+        };
     auto integrity_test =
-        []( graph_type const& graph ) {
-          REQUIRE( graph.node_sequence( 1 ) == "TGGTCAAC" );
-          REQUIRE( graph.node_sequence( 2 ) == "T" );
-          REQUIRE( graph.node_sequence( 3 ) == "GCC" );
-          REQUIRE( graph.node_sequence( 4 ) == "A" );
-          REQUIRE( graph.node_sequence( 5 ) == "CTTAAA" );
-          REQUIRE( graph.node_sequence( 6 ) == "GCG" );
-          REQUIRE( graph.node_sequence( 7 ) == "CTTTT" );
-          REQUIRE( graph.node_sequence( 8 ) == "AAAT" );
-          REQUIRE( graph.node_length( 1 ) == 8 );
-          REQUIRE( graph.node_length( 2 ) == 1 );
-          REQUIRE( graph.node_length( 3 ) == 3 );
-          REQUIRE( graph.node_length( 4 ) == 1 );
-          REQUIRE( graph.node_length( 5 ) == 6 );
-          REQUIRE( graph.node_length( 6 ) == 3 );
-          REQUIRE( graph.node_length( 7 ) == 5 );
-          REQUIRE( graph.node_length( 8 ) == 4 );
+        [rtoi]( graph_type const& graph ) {
+          REQUIRE( graph.node_sequence( rtoi(1) ) == "TGGTCAAC" );
+          REQUIRE( graph.node_sequence( rtoi(2) ) == "T" );
+          REQUIRE( graph.node_sequence( rtoi(3) ) == "GCC" );
+          REQUIRE( graph.node_sequence( rtoi(4) ) == "A" );
+          REQUIRE( graph.node_sequence( rtoi(5) ) == "CTTAAA" );
+          REQUIRE( graph.node_sequence( rtoi(6) ) == "GCG" );
+          REQUIRE( graph.node_sequence( rtoi(7) ) == "CTTTT" );
+          REQUIRE( graph.node_sequence( rtoi(8) ) == "AAAT" );
+          REQUIRE( graph.node_length( rtoi(1) ) == 8 );
+          REQUIRE( graph.node_length( rtoi(2) ) == 1 );
+          REQUIRE( graph.node_length( rtoi(3) ) == 3 );
+          REQUIRE( graph.node_length( rtoi(4) ) == 1 );
+          REQUIRE( graph.node_length( rtoi(5) ) == 6 );
+          REQUIRE( graph.node_length( rtoi(6) ) == 3 );
+          REQUIRE( graph.node_length( rtoi(7) ) == 5 );
+          REQUIRE( graph.node_length( rtoi(8) ) == 4 );
           REQUIRE( graph.get_node_prop( )[ 1 ].name == "1" );
           REQUIRE( graph.get_node_prop( )[ 2 ].name == "2" );
           REQUIRE( graph.get_node_prop( )[ 3 ].name == "3" );
@@ -379,15 +410,15 @@ SCENARIO( "Specialised functionality of Dynamic SeqGraph", "[seqgraph]" )
           REQUIRE( graph.get_node_prop( )[ 6 ].name == "6" );
           REQUIRE( graph.get_node_prop( )[ 7 ].name == "7" );
           REQUIRE( graph.get_node_prop( )[ 8 ].name == "8" );
-          REQUIRE( graph.get_edge_prop( )[ link_type( { 1, true, 2, false } ) ].overlap == 0 );
-          REQUIRE( graph.get_edge_prop( )[ link_type( { 1, true, 3, true } ) ].overlap == 0 );
-          REQUIRE( graph.get_edge_prop( )[ link_type( { 1, true, 4, false } ) ].overlap == 0 );
-          REQUIRE( graph.get_edge_prop( )[ link_type( { 2, true, 5, false } ) ].overlap == 0 );
-          REQUIRE( graph.get_edge_prop( )[ link_type( { 3, false, 5, false } ) ].overlap == 1 );
-          REQUIRE( graph.get_edge_prop( )[ link_type( { 4, true, 5, true } ) ].overlap == 0 );
-          REQUIRE( graph.get_edge_prop( )[ link_type( { 5, false, 6, false } ) ].overlap == 1 );
-          REQUIRE( graph.get_edge_prop( )[ link_type( { 5, false, 7, false } ) ].overlap == 0 );
-          REQUIRE( graph.get_edge_prop( )[ link_type( { 5, true, 8, false } ) ].overlap == 0 );
+          REQUIRE( graph.get_edge_prop( )[ link_type( { rtoi(1), true, rtoi(2), false } ) ].overlap == 0 );
+          REQUIRE( graph.get_edge_prop( )[ link_type( { rtoi(1), true, rtoi(3), true } ) ].overlap == 0 );
+          REQUIRE( graph.get_edge_prop( )[ link_type( { rtoi(1), true, rtoi(4), false } ) ].overlap == 0 );
+          REQUIRE( graph.get_edge_prop( )[ link_type( { rtoi(2), true, rtoi(5), false } ) ].overlap == 0 );
+          REQUIRE( graph.get_edge_prop( )[ link_type( { rtoi(3), false, rtoi(5), false } ) ].overlap == 1 );
+          REQUIRE( graph.get_edge_prop( )[ link_type( { rtoi(4), true, rtoi(5), true } ) ].overlap == 0 );
+          REQUIRE( graph.get_edge_prop( )[ link_type( { rtoi(5), false, rtoi(6), false } ) ].overlap == 1 );
+          REQUIRE( graph.get_edge_prop( )[ link_type( { rtoi(5), false, rtoi(7), false } ) ].overlap == 0 );
+          REQUIRE( graph.get_edge_prop( )[ link_type( { rtoi(5), true, rtoi(8), false } ) ].overlap == 0 );
         };
 
     WHEN( "Loaded from a file in GFA 2.0 format" )
