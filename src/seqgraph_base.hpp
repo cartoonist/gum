@@ -670,6 +670,30 @@ namespace gum {
     using typename base_type::linktype_type;
 
     constexpr static size_type EDGE_CORE_LEN = 2;
+
+    /**
+     *  @brief  Get the type of the link to the adjacent node from nodes array.
+     *
+     *  @param  nodes Reference to nodes array.
+     *  @param  pos Start position of the edge entry.
+     */
+    static inline linktype_type
+    get_adj_linktype( nodes_type& nodes, size_type pos )
+    {
+      return nodes[ pos + 1 ];
+    }
+
+    /**
+     *  @brief  Set the type of the link to the adjacent node from nodes array.
+     *
+     *  @param  nodes Reference to nodes array.
+     *  @param  pos Start position of the edge entry.
+     */
+    static inline void
+    set_adj_linktype( nodes_type& nodes, size_type pos, linktype_type type )
+    {
+      return nodes[ pos + 1 ] = type;
+    }
   };  /* --- end of template class DirectedGraphTrait --- */
 
   template< uint8_t ...TWidths >
@@ -697,6 +721,30 @@ namespace gum {
     using typename base_type::linktype_type;
 
     constexpr static size_type EDGE_CORE_LEN = 1;
+
+    /**
+     *  @brief  Get the type of the link to the adjacent node from nodes array.
+     *
+     *  @param  nodes Reference to nodes array.
+     *  @param  pos Start position of the edge entry.
+     */
+    static inline linktype_type
+    get_adj_linktype( nodes_type&, size_type )
+    {
+      return base_type::get_default_linktype();
+    }
+
+    /**
+     *  @brief  Set the type of the link to the adjacent node from nodes array.
+     *
+     *  @param  nodes Reference to nodes array.
+     *  @param  pos Start position of the edge entry.
+     */
+    static inline void
+    set_adj_linktype( nodes_type&, size_type, linktype_type )
+    {
+      return;  /* NOOP */
+    }
   };  /* --- end of template class DirectedGraphTrait --- */
 
   template< typename TSpec, typename TDir = Bidirected, uint8_t ...TWidths >

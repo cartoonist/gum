@@ -962,7 +962,19 @@ namespace gum {
      */
     template< typename TCallback >
     inline bool
-    for_each_edges_to( id_type id, TCallback callback ) const;
+    for_each_edges_to( id_type id, TCallback callback ) const
+    {
+      if ( !this->has_edges_to( id ) ) return true;
+      return this->for_each_edges_to_pos(
+          id,
+          [this, callback]( size_type pos ) {
+            if ( !callback( this->nodes[ pos ],
+                            trait_type::get_adj_linktype( nodes, pos ) ) )
+              return false;
+            return true;
+          }
+        );
+    }
 
     /**
      *  @brief  Call a `callback` on each incoming edges to `to` side.
@@ -1003,7 +1015,19 @@ namespace gum {
      */
     template< typename TCallback >
     inline bool
-    for_each_edges_from( id_type id, TCallback callback ) const;
+    for_each_edges_from( id_type id, TCallback callback ) const
+    {
+      if ( !this->has_edges_from( id ) ) return true;
+      return this->for_each_edges_from_pos(
+          id,
+          [this, callback]( size_type pos ) {
+            if ( !callback( this->nodes[ pos ],
+                            trait_type::get_adj_linktype( nodes, pos ) ) )
+              return false;
+            return true;
+          }
+        );
+    }
 
     inline rank_type
     outdegree( id_type id ) const
@@ -1189,9 +1213,38 @@ namespace gum {
       this->identificate( );
     }
 
-    void fill_edges_entries( DirectedGraph< Dynamic, TDir, TWidths... > const& d_graph,
-                             id_type id,
-                             size_type pos );
+    inline void
+    fill_edges_entries( DirectedGraph< Dynamic, TDir, TWidths... > const& d_graph,
+                        id_type d_id,
+                        id_type new_id )
+    {
+      d_graph.for_each_edges_to(
+          d_id,
+          [this, new_id, &d_graph]( id_type to, linktype_type type ) {
+            this->for_each_edges_to_pos(
+                new_id,
+                [this, to, type, &d_graph]( size_type pos ) {
+                  // Fill out the `nodes` vector by rank in the first pass.
+                  this->nodes[ pos ] = d_graph.id_to_rank( to );
+                  trait_type::set_adj_linktype( nodes, pos, type );
+                  return true;
+                } );
+            return true;
+          } );
+      d_graph.for_each_edges_from(
+          d_id,
+          [this, new_id, &d_graph]( id_type from, linktype_type type ) {
+            this->for_each_edges_from_pos(
+                new_id,
+                [this, from, type, &d_graph]( size_type pos ) {
+                  // Fill out the `nodes` vector by rank in the first pass.
+                  this-nodes[ pos ] = d_graph.id_to_rank( from );
+                  trait_type::set_adj_linktype( nodes, pos, type );
+                  return true;
+                } );
+            return true;
+          } );
+    }
 
     /**
      *  @brief  Return the ID of the successor node in rank.
@@ -1246,144 +1299,6 @@ namespace gum {
         );
     }
   };  /* --- end of template class DirectedGraph --- */
-
-  template< uint8_t ...TWidths >
-  template< typename TCallback >
-  inline bool
-  DirectedGraph< Succinct, Bidirected, TWidths... >::for_each_edges_to(
-      id_type id,
-      TCallback callback )
-  {
-    if ( !this->has_edges_to( id ) ) return true;
-    return this->for_each_edges_to_pos(
-        id,
-        [this, callback]( size_type pos ) {
-          if ( !callback( this->nodes[ pos ], this->nodes[ pos + 1 ] ) ) return false;
-          return true;
-        }
-      );
-  }
-
-  template< uint8_t ...TWidths >
-  template< typename TCallback >
-  inline bool
-  DirectedGraph< Succinct, Directed, TWidths... >::for_each_edges_to(
-      id_type id,
-      TCallback callback )
-  {
-    if ( !this->has_edges_to( id ) ) return true;
-    return this->for_each_edges_to_pos(
-        id,
-        [this, callback]( size_type pos ) {
-          if ( !callback( this->nodes[ pos ], this->get_default_linktype() ) )
-            return false;
-          return true;
-        }
-      );
-  }
-
-  template< uint8_t ...TWidths >
-  template< typename TCallback >
-  inline bool
-  DirectedGraph< Succinct, Bidirected, TWidths... >::for_each_edges_from(
-      id_type id,
-      TCallback callback )
-  {
-    if ( !this->has_edges_from( id ) ) return true;
-    return this->for_each_edges_from_pos(
-        id,
-        [this, callback]( size_type pos ) {
-          if ( !callback( this->nodes[ pos ], this->nodes[ pos + 1 ] ) ) return false;
-          return true;
-        }
-      );
-  }
-
-  template< uint8_t ...TWidths >
-  template< typename TCallback >
-  inline bool
-  DirectedGraph< Succinct, Directed, TWidths... >::for_each_edges_from(
-      id_type id,
-      TCallback callback )
-  {
-    if ( !this->has_edges_from( id ) ) return true;
-    return this->for_each_edges_from_pos(
-        id,
-        [this, callback]( size_type pos ) {
-          if ( !callback( this->nodes[ pos ], this->get_default_linktype() ) )
-            return false;
-          return true;
-        }
-      );
-  }
-
-  template< uint8_t ...TWidths >
-  inline void
-  DirectedGraph< Succinct, Bidirected, TWidths... >::fill_edges_entries(
-      DirectedGraph< Dynamic, Bidirected, TWidths... > const& d_graph,
-      id_type d_id,
-      id_type new_id )
-  {
-    d_graph.for_each_edges_to(
-        d_id,
-        [this, new_id]( id_type to, linktype_type type ) {
-          this->for_each_edges_to_pos(
-              new_id,
-              [this, to, type]( size_type pos ) {
-                // Fill out the `nodes` vector by rank in the first pass.
-                this->nodes[ pos ] = d_graph.id_to_rank( to );
-                this->nodes[ pos + 1 ] = type;
-                return true;
-              } );
-          return true;
-        } );
-    d_graph.for_each_edges_from(
-        d_id,
-        [this, new_id]( id_type from, linktype_type type ) {
-          this->for_each_edges_from_pos(
-              new_id,
-              [this, from, type]( size_type pos ) {
-                // Fill out the `nodes` vector by rank in the first pass.
-                this-nodes[ pos ] = d_graph.id_to_rank( from );
-                this->nodes[ pos + 1 ] = type;
-                return true;
-              } );
-          return true;
-        } );
-  }
-
-  template< uint8_t ...TWidths >
-  inline void
-  DirectedGraph< Succinct, Directed, TWidths... >::fill_edges_entries(
-      DirectedGraph< Dynamic, Directed, TWidths... > const& d_graph,
-      id_type d_id,
-      id_type new_id )
-  {
-    d_graph.for_each_edges_to(
-        d_id,
-        [this, new_id]( id_type to, linktype_type type ) {
-          this->for_each_edges_to_pos(
-              new_id,
-              [this, to, type]( size_type pos ) {
-                // Fill out the `nodes` vector by rank in the first pass.
-                this->nodes[ pos ] = d_graph.id_to_rank( to );
-                return true;
-              } );
-          return true;
-        } );
-    d_graph.for_each_edges_from(
-        d_id,
-        [this, new_id]( id_type from, linktype_type type ) {
-          this->for_each_edges_from_pos(
-              new_id,
-              [this, from, type]( size_type pos ) {
-                // Fill out the `nodes` vector by rank in the first pass.
-                this->nodes[ pos ] = d_graph.id_to_rank( from );
-                return true;
-              } );
-          return true;
-        } );
-  }
 
   /**
    *  @brief  Node property class (dynamic).
