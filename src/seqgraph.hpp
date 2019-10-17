@@ -82,14 +82,6 @@ namespace gum {
       return this->edge_count;
     }
 
-    /* === MUTATORS === */
-    inline void
-    set_nodes( nodes_type value )
-    {
-      this->nodes = std::move( value );
-      this->set_rank();
-    }
-
     /* === OPERATORS === */
     DirectedGraph& operator=( DirectedGraph const& other ) = default;      /* copy assignment operator */
     DirectedGraph& operator=( DirectedGraph&& other ) noexcept = default;  /* move assignment operator */
@@ -126,7 +118,17 @@ namespace gum {
     inline id_type
     add_node( )
     {
-      return this->add_node_imp( );
+      id_type new_id = this->add_node_imp( );
+      this->set_last_rank();
+      return new_id;
+    }
+
+    inline void
+    add_nodes( size_type count,
+               std::function< void( id_type ) > callback = []{} )
+    {
+      for ( size_type i = 0; i < count; ++i ) callback( this->add_node_imp() );
+      this->set_rank();
     }
 
     inline bool
@@ -518,7 +520,6 @@ namespace gum {
     add_node_imp( )
     {
       this->nodes.push_back( ++this->max_id );
-      this->set_last_rank();
       return this->max_id;
     }
 
@@ -1574,7 +1575,7 @@ namespace gum {
     add_node( node_type node=node_type() )
     {
       this->node_prop.add_node( node );
-      return base_type::add_node_imp( );
+      return base_type::add_node( );
     }
 
     inline void
