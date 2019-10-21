@@ -62,6 +62,40 @@ namespace gum {
       }
       return false;
     }
+
+    /**
+     *  @brief  Copy all bits in [idx...idx+len) to the same range in the destination.
+     *
+     *  @param  src The source bit vector.
+     *  @param  dst The destination bit vector.
+     *  @param  idx The start index in `src` to copy to the "identical" index in `dst`.
+     *  @param  len The length of the range that should be copied.
+     *
+     *  Bitvector identical-range copy. The [idx...idx+len) from `src` is copied
+     *  to the same range in `dst`.
+     */
+    template< typename TBitVector >
+    inline void
+    bv_icopy( TBitVector const& src,
+              TBitVector& dst,
+              typename TBitVector::size_type idx=0,
+              typename TBitVector::size_type len=0 )
+    {
+      static const short int WLEN = 64;
+
+      assert( idx < src.size() );
+      assert( dst.size() >= src.size() );
+
+      if ( len == 0 ) len = src.size();
+      if ( len + idx > src.size() ) len = src.size() - idx;
+
+      auto i = idx + WLEN;
+      for ( ; i < idx + len /* && i < src.size() */; i += WLEN ) {
+        dst.set_int( i - WLEN, src.get_int( i - WLEN, WLEN ), WLEN );
+      }
+      i -= WLEN;
+      for ( ; i < idx + len; ++i ) dst[ i ] = src[ i ];
+    }
   }  /* --- end of namespace util --- */
 }  /* --- end of namespace gum --- */
 

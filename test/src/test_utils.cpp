@@ -15,6 +15,8 @@
  *  See LICENSE file for more information.
  */
 
+#include <sdsl/bit_vectors.hpp>
+
 #include "utils.hpp"
 
 #include "test_base.hpp"
@@ -101,6 +103,168 @@ TEMPLATE_SCENARIO( "Prefix and suffix check of a string", "[utils][template]",
         REQUIRE( !util::ends_with( s, suf3 ) );
         REQUIRE( !util::ends_with( s, suf4 ) );
         REQUIRE( util::ends_with( s, suf5 ) );
+      }
+    }
+  }
+}
+
+SCENARIO( "Word-wise range copy for bit-vectors", "[utils]" )
+{
+  GIVEN( "A bit vector whose size is less than a word length (64-bit)" )
+  {
+    sdsl::bit_vector sbv( 12, 0 );
+    sbv[ 0 ] = 1;
+    sbv[ 5 ] = 1;
+    sbv[ 11 ] = 1;
+
+    WHEN( "The whole bit vector is copied to another" )
+    {
+      sdsl::bit_vector dbv( 30, 1 );
+      util::bv_icopy( sbv, dbv );
+
+      THEN( "All first bits of length of source bit vector should be equal to the source" )
+      {
+        REQUIRE( dbv.get_int( 0 ) == 0xfffffffffffff821 );
+      }
+    }
+
+    WHEN( "The bit vector is partially copied to another" )
+    {
+      sdsl::bit_vector dbv( 30, 1 );
+      util::bv_icopy( sbv, dbv, 6, 1 );
+
+      THEN( "That part of destination bit vector should be equal to the source" )
+      {
+        REQUIRE( dbv.get_int( 0 ) == 0xffffffffffffffbf );
+      }
+    }
+
+    WHEN( "A suffix of the bit vector is copied to another" )
+    {
+      sdsl::bit_vector dbv( 30, 1 );
+      util::bv_icopy( sbv, dbv, 5 );
+
+      THEN( "The suffix part of destination bit vector should be equal to the source" )
+      {
+        REQUIRE( dbv.get_int( 0 ) == 0xfffffffffffff83f );
+      }
+    }
+  }
+
+  GIVEN( "A bit vector whose size is a multiplier of a word length (64-bit)" )
+  {
+    sdsl::bit_vector sbv( 7872, 0 );
+    sbv.set_int( 542, 0x900000000fafabcd );
+    sbv.set_int( 7808, 0xaaaaaaaaaaaaaaaa );
+
+    WHEN( "The whole bit vector is copied to another" )
+    {
+      sdsl::bit_vector dbv( 7872, 1 );
+      util::bv_icopy( sbv, dbv );
+
+      THEN( "All first bits of length of source bit vector should be equal to the source" )
+      {
+        REQUIRE( dbv.get_int( 0 ) == 0x0 );
+        REQUIRE( dbv.get_int( 100 ) == 0x0 );
+        REQUIRE( dbv.get_int( 478 ) == 0x0 );
+        REQUIRE( dbv.get_int( 542 ) == 0x900000000fafabcd );
+        REQUIRE( dbv.get_int( 893 ) == 0x0 );
+        REQUIRE( dbv.get_int( 7744 ) == 0x0 );
+        REQUIRE( dbv.get_int( 7808 ) == 0xaaaaaaaaaaaaaaaa );
+      }
+    }
+
+    WHEN( "The bit vector is partially copied to another" )
+    {
+      sdsl::bit_vector dbv( 8000, 1 );
+      util::bv_icopy( sbv, dbv, 542, 64 );
+
+      THEN( "That part of destination bit vector should be equal to the source" )
+      {
+        REQUIRE( dbv.get_int( 0 ) == 0xffffffffffffffff );
+        REQUIRE( dbv.get_int( 100 ) == 0xffffffffffffffff );
+        REQUIRE( dbv.get_int( 478 ) == 0xffffffffffffffff );
+        REQUIRE( dbv.get_int( 542 ) == 0x900000000fafabcd );
+        REQUIRE( dbv.get_int( 893 ) == 0xffffffffffffffff );
+        REQUIRE( dbv.get_int( 6936 ) == 0xffffffffffffffff );
+      }
+    }
+
+    WHEN( "A suffix of the bit vector is copied to another" )
+    {
+      sdsl::bit_vector dbv( 8000, 1 );
+      util::bv_icopy( sbv, dbv, 7808 );
+
+      THEN( "The suffix part of destination bit vector should be equal to the source" )
+      {
+        REQUIRE( dbv.get_int( 0 ) == 0xffffffffffffffff );
+        REQUIRE( dbv.get_int( 100 ) == 0xffffffffffffffff );
+        REQUIRE( dbv.get_int( 478 ) == 0xffffffffffffffff );
+        REQUIRE( dbv.get_int( 542 ) == 0xffffffffffffffff );
+        REQUIRE( dbv.get_int( 893 ) == 0xffffffffffffffff );
+        REQUIRE( dbv.get_int( 6936 ) == 0xffffffffffffffff );
+        REQUIRE( dbv.get_int( 7744 ) == 0xffffffffffffffff );
+        REQUIRE( dbv.get_int( 7808 ) == 0xaaaaaaaaaaaaaaaa );
+      }
+    }
+  }
+
+  GIVEN( "A bit vector whose size is larger than word length (64-bit)" )
+  {
+    sdsl::bit_vector sbv( 7800, 0 );
+    sbv.set_int( 0, 0xdddddddddddddddd );
+    sbv.set_int( 542, 0x900000000fafabcd );
+    sbv.set_int( 7736, 0xaaaaaaaaaaaaaaaa );
+
+    WHEN( "The whole bit vector is copied to another" )
+    {
+      sdsl::bit_vector dbv( 7872, 1 );
+      util::bv_icopy( sbv, dbv );
+
+      THEN( "All first bits of length of source bit vector should be equal to the source" )
+      {
+        REQUIRE( dbv.get_int( 0 ) == 0xdddddddddddddddd );
+        REQUIRE( dbv.get_int( 100 ) == 0x0 );
+        REQUIRE( dbv.get_int( 478 ) == 0x0 );
+        REQUIRE( dbv.get_int( 542 ) == 0x900000000fafabcd );
+        REQUIRE( dbv.get_int( 893 ) == 0x0 );
+        REQUIRE( dbv.get_int( 7672 ) == 0x0 );
+        REQUIRE( dbv.get_int( 7736 ) == 0xaaaaaaaaaaaaaaaa );
+      }
+    }
+
+    WHEN( "The bit vector is partially copied to another" )
+    {
+      sdsl::bit_vector dbv( 8000, 1 );
+      util::bv_icopy( sbv, dbv, 542, 74 );
+
+      THEN( "That part of destination bit vector should be equal to the source" )
+      {
+        REQUIRE( dbv.get_int( 0 ) == 0xffffffffffffffff );
+        REQUIRE( dbv.get_int( 100 ) == 0xffffffffffffffff );
+        REQUIRE( dbv.get_int( 478 ) == 0xffffffffffffffff );
+        REQUIRE( dbv.get_int( 542 ) == 0x900000000fafabcd );
+        REQUIRE( dbv.get_int( 606 ) == 0xfffffffffffffc00 );
+        REQUIRE( dbv.get_int( 893 ) == 0xffffffffffffffff );
+        REQUIRE( dbv.get_int( 6936 ) == 0xffffffffffffffff );
+      }
+    }
+
+    WHEN( "A suffix of the bit vector is copied to another" )
+    {
+      sdsl::bit_vector dbv( 8000, 1 );
+      util::bv_icopy( sbv, dbv, 7736 );
+
+      THEN( "The suffix part of destination bit vector should be equal to the source" )
+      {
+        REQUIRE( dbv.get_int( 0 ) == 0xffffffffffffffff );
+        REQUIRE( dbv.get_int( 100 ) == 0xffffffffffffffff );
+        REQUIRE( dbv.get_int( 478 ) == 0xffffffffffffffff );
+        REQUIRE( dbv.get_int( 542 ) == 0xffffffffffffffff );
+        REQUIRE( dbv.get_int( 893 ) == 0xffffffffffffffff );
+        REQUIRE( dbv.get_int( 6936 ) == 0xffffffffffffffff );
+        REQUIRE( dbv.get_int( 7672 ) == 0xffffffffffffffff );
+        REQUIRE( dbv.get_int( 7736 ) == 0xaaaaaaaaaaaaaaaa );
       }
     }
   }
