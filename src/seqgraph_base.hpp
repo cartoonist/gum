@@ -31,10 +31,6 @@
 
 
 namespace gum {
-  /* Graph dynamic specialization tag. */
-  struct Dynamic;
-  /* Graph succinct specialization tag. */
-  struct Succinct;
   /* Graph directed specialization tag. */
   struct Directed;
   /* Graph bidirected specialization tag. */

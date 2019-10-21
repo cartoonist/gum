@@ -22,6 +22,11 @@
 
 
 namespace gum {
+  /* Dynamic specialization tag. */
+  struct Dynamic;
+  /* Succinct specialization tag. */
+  struct Succinct;
+
   /**
    *  @brief  Wrap signed integer type of width TWidth.
    */
