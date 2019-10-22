@@ -116,6 +116,25 @@ namespace gum {
       return DNA5::select( v + 1 );
     }
   };  /* --- end of class DNA5 --- */
+
+  class Char : public Alphabet< 8 > {
+  public:
+    using base_type = Alphabet< 8 >;
+    using base_type::value_type;
+    using base_type::char_type;
+
+    inline static value_type
+    char2comp( char_type c )
+    {
+      return static_cast< value_type >( c );
+    }
+
+    inline static char_type
+    comp2char( value_type v )
+    {
+      return static_cast< char_type >( v );
+    }
+  };  /* --- end of class Char --- */
 }  /* --- end of namespace gum --- */
 
 #endif /* --- ifndef GUM_ALPHABET_HPP__ --- */
