@@ -777,20 +777,20 @@ namespace gum {
     public:
       /* === TYPEDEFS === */
       using sequence_type = std::string;
-      using name_type = std::string;
+      using string_type = std::string;
       /* === LIFECYCLE === */
-      Node( sequence_type s, name_type n="" )  /* constructor */
+      Node( sequence_type s, string_type n="" )  /* constructor */
         : sequence( s ), name( n ) { }
       Node( ) : Node( "", "" ) { }             /* constructor */
       /* === DATA MEMBERS === */
       sequence_type sequence;
-      name_type name;
+      string_type name;
     };  /* --- end of class Node --- */
 
     using node_type = Node;
     using value_type = node_type;
     using sequence_type = typename value_type::sequence_type;
-    using name_type = typename value_type::name_type;
+    using string_type = typename value_type::string_type;
     using container_type = std::vector< value_type >;
   };  /* --- end of template class NodePropertyTrait --- */
 

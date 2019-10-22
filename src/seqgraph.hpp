@@ -1318,7 +1318,7 @@ namespace gum {
     using value_type = typename trait_type::value_type;
     using container_type = typename trait_type::container_type;
     using sequence_type = typename trait_type::sequence_type;
-    using name_type = typename trait_type::name_type;
+    using string_type = typename trait_type::string_type;
 
     /* === LIFECYCLE === */
     NodeProperty() = default;                                 /* constructor      */
