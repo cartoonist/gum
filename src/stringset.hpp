@@ -31,12 +31,40 @@ namespace gum {
   using String = sdsl::int_vector< TAlphabet::width >;
 
   namespace util {
+    template< typename TAlphabet, typename TInputIt, typename TOutputIt >
+    inline TOutputIt
+    encode( TInputIt first, TInputIt last, TOutputIt d_first, TAlphabet )
+    {
+      return std::transform( first, last, d_first, TAlphabet::char2comp );
+    }
+
+    template< typename TAlphabet, typename TInputIt, typename TOutputIt >
+    inline TOutputIt
+    decode( TInputIt first, TInputIt last, TOutputIt d_first, TAlphabet )
+    {
+      return std::transform( first, last, d_first, TAlphabet::comp2char );
+    }
+
+    template< typename TInputIt, typename TOutputIt >
+    inline TOutputIt
+    encode( TInputIt first, TInputIt last, TOutputIt d_first, Char )
+    {
+      return std::copy( first, last, d_first );
+    }
+
+    template< typename TInputIt, typename TOutputIt >
+    inline TOutputIt
+    decode( TInputIt first, TInputIt last, TOutputIt d_first, Char )
+    {
+      return std::copy( first, last, d_first );
+    }
+
     template< typename TAlphabet >
     inline void
     assign( std::string& first, String< TAlphabet > const& second, TAlphabet /* tag */ )
     {
       first.resize( second.size() );
-      std::transform( second.begin(), second.end(), first.begin(), TAlphabet::comp2char );
+      decode( second.begin(), second.end(), first.begin(), TAlphabet() );
     }
 
     template< typename TAlphabet >
@@ -44,7 +72,7 @@ namespace gum {
     assign( String< TAlphabet >& first, std::string const& second, TAlphabet /* tag */ )
     {
       first.resize( second.size() );
-      std::transform( second.begin(), second.end(), first.begin(), TAlphabet::char2comp );
+      encode( second.begin(), second.end(), first.begin(), TAlphabet() );
     }
 
     template< typename TIter >
@@ -277,8 +305,7 @@ namespace gum {
       for ( ; begin != end; ++begin ) {
         this->breaks[ cpos - this->strset.begin() ] = 1;
         assert( cpos < this->strset.end() );
-        cpos = std::transform( begin->begin(), begin->end(), cpos,
-                               alphabet_type::char2comp );
+        cpos = util::encode( begin->begin(), begin->end(), cpos, alphabet_type() );
         ++count;
       }
       sdsl::util::init_support( this->rank, &this->breaks );
@@ -291,7 +318,7 @@ namespace gum {
       auto biter = this->strset.begin() + begin_pos;
       auto eiter = this->strset.begin() + end_pos;
       value_type elem( end_pos - begin_pos, '\0' );
-      std::transform( biter, eiter, elem.begin(), alphabet_type::comp2char );
+      util::decode( biter, eiter, elem.begin(), alphabet_type() );
       return elem;
     }
   };  /* --- end of template class StringSet --- */
