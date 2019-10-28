@@ -760,8 +760,93 @@ namespace gum {
   template< typename TSpec, typename TDir = Bidirected, uint8_t ...TWidths >
   class DirectedGraph;
 
+  template< typename TSequence, typename TString >
+  class Node {
+  public:
+    /* === TYPEDEFS === */
+    using sequence_type = TSequence;
+    using string_type = TString;
+    /* === LIFECYCLE === */
+    Node( sequence_type s, string_type n="" )  /* constructor */
+      : sequence( s ), name( n ) { }
+    Node( ) : Node( "", "" ) { }             /* constructor */
+    /* === DATA MEMBERS === */
+    sequence_type sequence;
+    string_type name;
+  };  /* --- end of class Node --- */
+
   template< typename TSpec, uint8_t ...TWidths >
   class NodePropertyTrait;
+
+  template< typename TNodeProp, typename TContainer, typename TValue >
+  class SequenceProxyContainer
+    : RandomAccessProxyContainer< TContainer, TValue > {
+  public:
+    using node_prop_type = TNodeProp;
+    using container_type = TContainer;
+    using value_type = TValue;
+    using base_type = RandomAccessProxyContainer< container_type, value_type >;
+    using base_type::size_type;
+    using base_type::difference_type;
+    using base_type::proxy_type;
+    using base_type::function_type;
+    using base_type::const_iterator;
+    using base_type::const_reference;
+
+    SequenceProxyContainer( node_prop_type const* npt,
+                            container_type const& cnt )
+      : npt_ptr( npt ),
+        base_type( &cnt,
+                   []( value_type const& node ) -> value_type {
+                     return node.sequence;
+                   } )
+    { }
+
+    node_prop_type const* npt_ptr;
+  };  /* --- end of template class SequenceProxyContainer --- */
+
+  template< typename TNodeProp, typename TContainer, typename TValue >
+  class NameProxyContainer
+    : RandomAccessProxyContainer< TContainer, TValue > {
+  public:
+    using node_prop_type = TNodeProp;
+    using container_type = TContainer;
+    using value_type = TValue;
+    using base_type = RandomAccessProxyContainer< container_type, value_type >;
+    using base_type::size_type;
+    using base_type::difference_type;
+    using base_type::proxy_type;
+    using base_type::function_type;
+    using base_type::const_iterator;
+    using base_type::const_reference;
+
+    NameProxyContainer( node_prop_type const* npt,
+                        container_type const& cnt )
+      : npt_ptr( npt ),
+        base_type( &cnt,
+                   []( value_type const& node ) -> value_type {
+                     return node.name;
+                   } )
+    { }
+
+    node_prop_type const* npt_ptr;
+  };  /* --- end of template class NameProxyContainer --- */
+
+  namespace util {
+    template< typename TNodeProp, typename TContainer, typename TValue >
+    inline std::size_t
+    length_sum( SequenceProxyContainer< TNodeProp, TContainer, TValue > const& cnt )
+    {
+      return cnt.npt_ptr->get_sequences_len_sum( );
+    }
+
+    template< typename TNodeProp, typename TContainer, typename TValue >
+    inline std::size_t
+    length_sum( NameProxyContainer< TNodeProp, TContainer, TValue > const& cnt )
+    {
+      return cnt.npt_ptr->get_name_len_sum( );
+    }
+  }  /* --- end of namespace util --- */
 
   template< uint8_t ...TWidths >
   class NodePropertyTrait< Dynamic, TWidths... > {
@@ -772,29 +857,22 @@ namespace gum {
     using id_type = typename trait_type::id_type;
     using offset_type = typename trait_type::offset_type;
     using rank_type = typename trait_type::rank_type;
-
-    class Node {
-    public:
-      /* === TYPEDEFS === */
-      using sequence_type = std::string;
-      using string_type = std::string;
-      /* === LIFECYCLE === */
-      Node( sequence_type s, string_type n="" )  /* constructor */
-        : sequence( s ), name( n ) { }
-      Node( ) : Node( "", "" ) { }             /* constructor */
-      /* === DATA MEMBERS === */
-      sequence_type sequence;
-      string_type name;
-    };  /* --- end of class Node --- */
-
-    using node_type = Node;
+    using sequence_type = std::string;
+    using string_type = std::string;
+    using node_type = Node< sequence_type, string_type >;
     using value_type = node_type;
-    using sequence_type = typename value_type::sequence_type;
-    using string_type = typename value_type::string_type;
     using container_type = std::vector< value_type >;
     using size_type = typename container_type::size_type;
     using const_reference = typename container_type::const_reference;
     using const_iterator = typename container_type::const_iterator;
+
+    template< typename TNodeProp >
+    using sequence_proxy_container =
+        SequenceProxyContainer< TNodeProp, container_type, sequence_type >;
+
+    template< typename TNodeProp >
+    using name_proxy_container =
+        NameProxyContainer< TNodeProp, container_type, string_type >;
   };  /* --- end of template class NodePropertyTrait --- */
 
   template< typename TSpec, uint8_t ...TWidths >

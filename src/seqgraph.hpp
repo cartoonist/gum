@@ -1314,14 +1314,20 @@ namespace gum {
     using id_type = typename trait_type::id_type;
     using offset_type = typename trait_type::offset_type;
     using rank_type = typename trait_type::rank_type;
+    using sequence_type = typename trait_type::sequence_type;
+    using string_type = typename trait_type::string_type;
     using node_type = typename trait_type::node_type;
     using value_type = typename trait_type::value_type;
     using container_type = typename trait_type::container_type;
-    using sequence_type = typename trait_type::sequence_type;
-    using string_type = typename trait_type::string_type;
     using size_type = typename trait_type::size_type;
     using const_reference = typename trait_type::const_reference;
     using const_iterator = typename trait_type::const_iterator;
+    using sequence_container_type =
+        typename trait_type::template sequence_proxy_container< NodeProperty >;
+    using name_container_type =
+        typename trait_type::template name_proxy_container< NodeProperty >;
+    using sequenceset_type = sequence_container_type;
+    using stringset_type = name_container_type;
 
     /* === LIFECYCLE === */
     /* constructor */
@@ -1411,6 +1417,18 @@ namespace gum {
       this->nodes.push_back( std::move( node ) );
       this->sequences_len_sum += node.sequence.size();
       this->names_len_sum += node.name.size();
+    }
+
+    inline sequenceset_type
+    sequences() const
+    {
+      return sequenceset_type( this, this->nodes );
+    }
+
+    inline stringset_type
+    names() const
+    {
+      return stringset_type( this, this->nodes );
     }
 
   private:
