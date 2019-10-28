@@ -1439,6 +1439,142 @@ namespace gum {
   };  /* --- end of template class NodeProperty --- */
 
   /**
+   *  @brief  Node property class (succinct).
+   *
+   *  Represent data associated with each node, mainly node sequences.
+   */
+  template< uint8_t ...TWidths >
+  class NodeProperty< Succinct, TWidths... > {
+  public:
+    /* === TYPEDEFS === */
+    using spec_type = Succinct;
+    using trait_type = NodePropertyTrait< spec_type, TWidths... >;
+    using id_type = typename trait_type::id_type;
+    using offset_type = typename trait_type::offset_type;
+    using rank_type = typename trait_type::rank_type;
+    using alphabet_type = typename trait_type::alphabet_type;
+    using sequenceset_type = typename trait_type::sequenceset_type;
+    using stringset_type = typename trait_type::stringset_type;
+    using sequence_type = typename trait_type::sequence_type;
+    using string_type = typename trait_type::string_type;
+    using char_type = typename trait_type::char_type;
+    using node_type = typename trait_type::node_type;
+    using value_type = typename trait_type::value_type;
+    using container_type = NodeProperty;
+    using size_type = std::size_t;
+    using const_reference = value_type;
+    using const_iterator = RandomAccessConstIterator< container_type >;
+
+    /* === LIFECYCLE === */
+    NodeProperty() = default;                                 /* constructor      */
+    NodeProperty( NodeProperty< Dynamic, TWidths... > const& other )
+      : seqset( other.sequences() ), nameset( other.names() )
+    { }
+
+    NodeProperty( NodeProperty const& other ) = default;      /* copy constructor */
+    NodeProperty( NodeProperty&& other ) noexcept = default;  /* move constructor */
+    ~NodeProperty() noexcept = default;                       /* destructor       */
+
+    /* === ACCESSORS === */
+    inline container_type const&
+    get_nodes( ) const
+    {
+      return *this;
+    }
+
+    inline typename sequence_type::size_type
+    get_sequences_len_sum( ) const
+    {
+      return util::length_sum( this->seqset );
+    }
+
+    inline typename string_type::size_type
+    get_names_len_sum( ) const
+    {
+      return util::length_sum( this->nameset );
+    }
+
+    /* === OPERATORS === */
+    NodeProperty& operator=( NodeProperty const& other ) = default;      /* copy assignment operator */
+    NodeProperty& operator=( NodeProperty&& other ) noexcept = default;  /* move assignment operator */
+
+    inline NodeProperty&
+    operator=( NodeProperty< Dynamic, TWidths... > const& other )
+    {
+      this->seqset = sequenceset_type( other.sequences() );
+      this->nameset = stringset_type( other.names() );
+      return *this;
+    }
+
+    inline const_reference
+    operator[]( size_type i ) const
+    {
+      return value_type( this->seqset[ i ], this->nameset[ i ] );
+    }
+
+    inline const_reference
+    operator()( rank_type rank ) const
+    {
+      return ( *this )[ rank - 1 ];
+    }
+
+    /* === METHODS === */
+    inline const_reference
+    at( size_type i ) const
+    {
+      return value_type( this->seqset.at( i ), this->nameset.at( i ) );
+    }
+
+    inline const_iterator
+    begin( ) const
+    {
+      return const_iterator( this, 0 );
+    }
+
+    inline const_iterator
+    end( ) const
+    {
+      return const_iterator( this, this->size() );
+    }
+
+    inline const_reference
+    back( ) const
+    {
+      return *( this->begin() );
+    }
+
+    inline const_reference
+    front( ) const
+    {
+      return *( this->end() - 1 );
+    }
+
+    inline size_type
+    size( ) const
+    {
+      assert( this->seqset.size() == this->nameset.size() );
+      return this->seqset.size();
+    }
+
+    inline sequenceset_type const&
+    sequences( ) const
+    {
+      return this->seqset;
+    }
+
+    inline stringset_type const&
+    names( ) const
+    {
+      return this->nameset;
+    }
+
+  private:
+    /* === DATA MEMBERS === */
+    sequenceset_type seqset;
+    stringset_type nameset;
+  };  /* --- end of template class NodeProperty --- */
+
+  /**
    *  @brief  Edge property class (dynamic).
    *
    *  Represent data associated with each edge, mainly directionality. Each data

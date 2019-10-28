@@ -27,6 +27,7 @@
 #include <sdsl/int_vector.hpp>
 #include <sdsl/bit_vectors.hpp>
 
+#include "stringset.hpp"
 #include "basic_types.hpp"
 
 
@@ -873,6 +874,25 @@ namespace gum {
     template< typename TNodeProp >
     using name_proxy_container =
         NameProxyContainer< TNodeProp, container_type, string_type >;
+  };  /* --- end of template class NodePropertyTrait --- */
+
+  template< uint8_t ...TWidths >
+  class NodePropertyTrait< Succinct, TWidths... > {
+  private:
+    using spec_type = Succinct;
+    using trait_type = GraphBaseTrait< spec_type, TWidths... >;
+  public:
+    using id_type = typename trait_type::id_type;
+    using offset_type = typename trait_type::offset_type;
+    using rank_type = typename trait_type::rank_type;
+    using alphabet_type = gum::DNA5;
+    using sequenceset_type = StringSet< alphabet_type >;
+    using stringset_type = StringSet< Char >;
+    using sequence_type = typename sequenceset_type::value_type;
+    using string_type = std::string;
+    using char_type = typename alphabet_type::char_type;
+    using node_type = Node< sequence_type, string_type >;
+    using value_type = node_type;
   };  /* --- end of template class NodePropertyTrait --- */
 
   template< typename TSpec, uint8_t ...TWidths >
