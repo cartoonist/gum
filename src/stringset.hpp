@@ -22,6 +22,7 @@
 #include <sdsl/bit_vectors.hpp>
 
 #include "alphabet.hpp"
+#include "iterators.hpp"
 #include "basic_utils.hpp"
 #include "basic_types.hpp"
 
@@ -119,7 +120,7 @@ namespace gum {
     using rs_type = typename trait_type::rs_type;
     using ss_type = typename trait_type::ss_type;
     using difference_type = std::ptrdiff_t;
-    using const_iterator = sdsl::random_access_const_iterator< StringSet >;
+    using const_iterator = RandomAccessConstIterator< StringSet >;
 
     /* === LIFECYCLE === */
     StringSet( ) : count( 0 ) { }
