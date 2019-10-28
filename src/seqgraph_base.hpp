@@ -792,6 +792,9 @@ namespace gum {
     using sequence_type = typename value_type::sequence_type;
     using string_type = typename value_type::string_type;
     using container_type = std::vector< value_type >;
+    using size_type = typename container_type::size_type;
+    using const_reference = typename container_type::const_reference;
+    using const_iterator = typename container_type::const_iterator;
   };  /* --- end of template class NodePropertyTrait --- */
 
   template< typename TSpec, uint8_t ...TWidths >

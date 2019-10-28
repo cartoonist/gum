@@ -1319,6 +1319,9 @@ namespace gum {
     using container_type = typename trait_type::container_type;
     using sequence_type = typename trait_type::sequence_type;
     using string_type = typename trait_type::string_type;
+    using size_type = typename trait_type::size_type;
+    using const_reference = typename trait_type::const_reference;
+    using const_iterator = typename trait_type::const_iterator;
 
     /* === LIFECYCLE === */
     NodeProperty() = default;                                 /* constructor      */
@@ -1337,17 +1340,53 @@ namespace gum {
     NodeProperty& operator=( NodeProperty const& other ) = default;      /* copy assignment operator */
     NodeProperty& operator=( NodeProperty&& other ) noexcept = default;  /* move assignment operator */
 
-    inline value_type const&
-    operator[]( rank_type rank ) const
+    inline const_reference
+    operator[]( size_type i ) const
     {
-      return this->nodes[ rank - 1 ];
+      return this->nodes[ i ];
+    }
+
+    inline const_reference
+    operator()( rank_type rank ) const
+    {
+      return ( *this )[ rank - 1 ];
     }
 
     /* === METHODS === */
-    inline value_type const&
-    at( rank_type rank ) const
+    inline const_reference
+    at( size_type i ) const
     {
-      return this->nodes.at( rank - 1 );
+      return this->nodes.at( i );
+    }
+
+    inline const_iterator
+    begin( ) const
+    {
+      return this->nodes.begin();
+    }
+
+    inline const_iterator
+    end( ) const
+    {
+      return this->nodes.end();
+    }
+
+    inline const_reference
+    back( ) const
+    {
+      return this->nodes.back();
+    }
+
+    inline const_reference
+    front( ) const
+    {
+      return this->nodes.front();
+    }
+
+    inline size_type
+    size( ) const
+    {
+      return this->nodes.size();
     }
 
     inline void
@@ -1473,6 +1512,12 @@ namespace gum {
       return this->node_prop;
     }
 
+    inline node_type const&
+    get_node_prop( rank_type rank ) const
+    {
+      return this->node_prop( rank );
+    }
+
     inline edge_prop_type const&
     get_edge_prop( ) const
     {
@@ -1521,7 +1566,7 @@ namespace gum {
     node_sequence( id_type id ) const
     {
       rank_type rank = base_type::id_to_rank( id );
-      return this->node_prop[ rank ].sequence;
+      return this->node_prop( rank ).sequence;
     }
 
     inline typename node_type::sequence_type::size_type
@@ -1536,6 +1581,12 @@ namespace gum {
     get_node_prop( )
     {
       return this->node_prop;
+    }
+
+    inline node_type&
+    get_node_prop( rank_type rank )
+    {
+      return this->node_prop( rank );
     }
 
     inline edge_prop_type&
