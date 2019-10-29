@@ -1324,7 +1324,11 @@ namespace gum {
     using const_iterator = typename trait_type::const_iterator;
 
     /* === LIFECYCLE === */
-    NodeProperty() = default;                                 /* constructor      */
+    /* constructor */
+    NodeProperty( )
+      : sequences_len_sum( 0 ), names_len_sum( 0 )
+    { }
+
     NodeProperty( NodeProperty const& other ) = default;      /* copy constructor */
     NodeProperty( NodeProperty&& other ) noexcept = default;  /* move constructor */
     ~NodeProperty() noexcept = default;                       /* destructor       */
@@ -1334,6 +1338,18 @@ namespace gum {
     get_nodes( ) const
     {
       return this->nodes;
+    }
+
+    inline typename sequence_type::size_type
+    get_sequences_len_sum( ) const
+    {
+      return this->sequences_len_sum;
+    }
+
+    inline typename string_type::size_type
+    get_names_len_sum( ) const
+    {
+      return this->names_len_sum;
     }
 
     /* === OPERATORS === */
@@ -1393,11 +1409,15 @@ namespace gum {
     add_node( value_type node )
     {
       this->nodes.push_back( std::move( node ) );
+      this->sequences_len_sum += node.sequence.size();
+      this->names_len_sum += node.name.size();
     }
 
   private:
     /* === DATA MEMBERS === */
     container_type nodes;
+    typename sequence_type::size_type sequences_len_sum;
+    typename string_type::size_type names_len_sum;
   };  /* --- end of template class NodeProperty --- */
 
   /**
