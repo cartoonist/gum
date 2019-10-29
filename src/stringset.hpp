@@ -31,6 +31,9 @@ namespace gum {
   template< typename TAlphabet >
   using String = sdsl::int_vector< TAlphabet::width >;
 
+  template< typename TAlphabet >
+  class StringSet;
+
   namespace util {
     template< typename TAlphabet, typename TInputIt, typename TOutputIt >
     inline TOutputIt
@@ -90,6 +93,13 @@ namespace gum {
     length_sum( TContainer strset )
     {
       return length_sum( strset.begin(), strset.end() );
+    }
+
+    template< typename TAlphabet >
+    inline std::size_t
+    length_sum( StringSet< TAlphabet > strset )
+    {
+      return strset.length_sum( );
     }
   }  /* --- end of namespace util --- */
 
@@ -221,6 +231,12 @@ namespace gum {
     size( ) const
     {
       return this->count;
+    }
+
+    inline size_type
+    length_sum( ) const
+    {
+      return this->strset.size();
     }
 
     inline bool
