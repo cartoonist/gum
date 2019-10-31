@@ -130,6 +130,7 @@ namespace gum {
     using rs_type = typename trait_type::rs_type;
     using ss_type = typename trait_type::ss_type;
     using difference_type = std::ptrdiff_t;
+    using const_reference = value_type;
     using const_iterator = RandomAccessConstIterator< StringSet >;
 
     /* === LIFECYCLE === */
@@ -209,7 +210,7 @@ namespace gum {
       return this->extract( pos, pos + len );
     }
 
-    inline value_type
+    inline const_reference
     operator[]( size_type i ) const
     {
       size_type endpos =
@@ -219,14 +220,14 @@ namespace gum {
       return this->extract( this->select( i + 1 ), endpos );
     }
 
-    inline value_type
+    /* === METHODS === */
+    inline const_reference
     at( size_type i ) const
     {
       if ( i < 0 or i >= this->size() ) throw std::runtime_error( "index out of range" );
       return ( *this )[ i ];
     }
 
-    /* === METHODS === */
     inline size_type
     size( ) const
     {
@@ -257,13 +258,13 @@ namespace gum {
       return const_iterator( this, this->size() );
     }
 
-    inline value_type
+    inline const_reference
     front( ) const
     {
       return *( this->begin() );
     }
 
-    inline value_type
+    inline const_reference
     back( ) const
     {
       return *( this->end() - 1 );

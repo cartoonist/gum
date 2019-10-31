@@ -37,7 +37,7 @@ namespace gum {
     /* === TYPEDEFS === */
     using container_type = TContainer;
     using iterator = RandomAccessConstIterator;
-    using const_reference = typename container_type::value_type const;
+    using const_reference = typename container_type::const_reference;
     using difference_type = typename container_type::difference_type;
     using size_type = typename container_type::size_type;
 
