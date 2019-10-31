@@ -768,7 +768,7 @@ namespace gum {
     using string_type = TString;
     /* === LIFECYCLE === */
     Node( sequence_type s, string_type n="" )  /* constructor */
-      : sequence( s ), name( n ) { }
+      : sequence( std::move( s ) ), name( std::move( n ) ) { }
     Node( ) : Node( "", "" ) { }             /* constructor */
     /* === DATA MEMBERS === */
     sequence_type sequence;
