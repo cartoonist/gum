@@ -215,11 +215,7 @@ namespace gum {
     inline const_reference
     operator[]( size_type i ) const
     {
-      size_type endpos =
-          ( i + 1 == this->count ) ?
-          this->strset.size() :
-          this->select( i + 2 );
-      return this->extract( this->select( i + 1 ), endpos );
+      return this->extract( this->position( i ), this->position( i + 1 ) );
     }
 
     /* === METHODS === */
@@ -234,6 +230,18 @@ namespace gum {
     size( ) const
     {
       return this->count;
+    }
+
+    inline size_type
+    position( size_type i ) const
+    {
+      return ( 0 <= i && i < this->count ) ? this->select( i + 1 ) : this->strset.size();
+    }
+
+    inline size_type
+    length( size_type i ) const
+    {
+      return this->position( i + 1 ) - this->position( i );
     }
 
     inline size_type
