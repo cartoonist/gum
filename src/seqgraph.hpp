@@ -245,6 +245,13 @@ namespace gum {
       return trait_type::make_link( from, to );
     }
 
+    constexpr inline link_type
+    make_link( id_type from_id, id_type to_id,
+               linktype_type type=get_default_linktype() ) const
+    {
+      return trait_type::make_link( from_id, to_id, type );
+    }
+
     constexpr inline linktype_type
     get_default_linktype( ) const
     {
@@ -851,6 +858,13 @@ namespace gum {
     make_link( side_type from, side_type to ) const
     {
       return trait_type::make_link( from, to );
+    }
+
+    constexpr inline link_type
+    make_link( id_type from_id, id_type to_id,
+               linktype_type type=get_default_linktype() ) const
+    {
+      return trait_type::make_link( from_id, to_id, type );
     }
 
     constexpr inline linktype_type

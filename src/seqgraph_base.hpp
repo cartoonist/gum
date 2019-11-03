@@ -233,7 +233,7 @@ namespace gum {
     to_side( id_type id, linktype_type type )
     {
       assert( DirectedGraphBaseTrait::is_valid( type ) );
-      return side_type( id, to_sidetype( type ) );
+      return side_type( id, DirectedGraphBaseTrait::to_sidetype( type ) );
     }
 
     constexpr static inline side_type
@@ -280,6 +280,15 @@ namespace gum {
                         DirectedGraphBaseTrait::sidetype_of( from ),
                         DirectedGraphBaseTrait::id_of( to ),
                         DirectedGraphBaseTrait::sidetype_of( to ) );
+    }
+
+    constexpr static inline link_type
+    make_link( id_type from_id, id_type to_id, linktype_type type )
+    {
+      return link_type( from_id,
+                        DirectedGraphBaseTrait::from_sidetype( type ),
+                        to_id,
+                        DirectedGraphBaseTrait::to_sidetype( type ) );
     }
 
     constexpr static inline link_type
@@ -494,6 +503,13 @@ namespace gum {
     make_link( side_type from, side_type to )
     {
       return link_type( from, to );
+    }
+
+    constexpr static inline link_type
+    make_link( id_type from_id, id_type to_id, linktype_type type )
+    {
+      return link_type( DirectedGraphBaseTrait::from_side( from_id, type ),
+                        DirectedGraphBaseTrait::to_side( to_id, type ) );
     }
 
     constexpr static inline link_type
