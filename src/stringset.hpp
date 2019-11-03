@@ -181,7 +181,8 @@ namespace gum {
 
     /* === OPERATORS === */
     /* copy assignment operator */
-    StringSet& operator=( StringSet const& other )
+    StringSet&
+    operator=( StringSet const& other )
     {
       this->strset = other.strset;
       this->breaks = other.breaks;
@@ -192,7 +193,8 @@ namespace gum {
     }
 
     /* move assignment operator */
-    StringSet& operator=( StringSet&& other ) noexcept
+    StringSet&
+    operator=( StringSet&& other ) noexcept
     {
       this->strset = std::move( other.strset );
       this->breaks = std::move( other.breaks );

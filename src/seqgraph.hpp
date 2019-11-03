@@ -687,7 +687,8 @@ namespace gum {
 
     /* === OPERATORS === */
     /* copy assignment operator */
-    DirectedGraph& operator=( DirectedGraph const& other )
+    DirectedGraph&
+    operator=( DirectedGraph const& other )
     {
       this->np_padding = other.np_padding;
       this->ep_padding = other.ep_padding;
@@ -700,7 +701,8 @@ namespace gum {
     }
 
     /* move assignment operator */
-    DirectedGraph& operator=( DirectedGraph&& other ) noexcept
+    DirectedGraph&
+    operator=( DirectedGraph&& other ) noexcept
     {
       this->np_padding = other.np_padding;
       this->ep_padding = other.ep_padding;
@@ -712,6 +714,12 @@ namespace gum {
       sdsl::util::init_support( this->node_id, &this->ids_bv );
       sdsl::util::clear( other.node_rank );
       sdsl::util::clear( other.node_id );
+    }
+
+    DirectedGraph&
+    operator=( DirectedGraph< Dynamic, TDir, TWidths... > const& d_graph )
+    {
+      this->construct( d_graph );
     }
 
     /* === METHODS === */
