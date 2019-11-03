@@ -988,10 +988,8 @@ namespace gum {
       return this->for_each_edges_to_pos(
           id,
           [this, callback]( size_type pos ) {
-            if ( !callback( this->nodes[ pos ],
-                            trait_type::get_adj_linktype( nodes, pos ) ) )
-              return false;
-            return true;
+            return callback( this->nodes[ pos ],
+                             this->get_adj_linktype( pos ) );
           }
         );
     }
@@ -1041,10 +1039,8 @@ namespace gum {
       return this->for_each_edges_from_pos(
           id,
           [this, callback]( size_type pos ) {
-            if ( !callback( this->nodes[ pos ],
-                            trait_type::get_adj_linktype( nodes, pos ) ) )
-              return false;
-            return true;
+            return callback( this->nodes[ pos ],
+                             this->get_adj_linktype( pos ) );
           }
         );
     }
@@ -1118,15 +1114,27 @@ namespace gum {
   protected:
     /* === METHODS === */
     inline size_type
+    header_core_len( ) const
+    {
+      return trait_type::HEADER_CORE_LEN;
+    }
+
+    inline size_type
     header_entry_len( ) const
     {
-      return trait_type::HEADER_CORE_LEN + this->np_padding;
+      return this->header_core_len() + this->np_padding;
+    }
+
+    inline size_type
+    edge_core_len( ) const
+    {
+      return trait_type::EDGE_CORE_LEN;
     }
 
     inline size_type
     edge_entry_len( ) const
     {
-      return trait_type::EDGE_CORE_LEN + this->ep_padding;
+      return this->edge_core_len() + this->ep_padding;
     }
 
     inline size_type
@@ -1179,6 +1187,18 @@ namespace gum {
         pos += this->edge_entry_len();
       }
       return true;
+    }
+
+    inline linktype_type
+    get_adj_linktype( size_type pos ) const
+    {
+      return trait_type::get_adj_linktype( this->nodes, pos );
+    }
+
+    inline void
+    set_adj_linktype( size_type pos, linktype_type type )
+    {
+      trait_type::set_adj_linktype( this->nodes, pos, type );
     }
 
   private:
@@ -1246,7 +1266,7 @@ namespace gum {
                 [this, to, type, &d_graph]( size_type pos ) {
                   // Fill out the `nodes` vector by rank in the first pass.
                   this->nodes[ pos ] = d_graph.id_to_rank( to );
-                  trait_type::set_adj_linktype( nodes, pos, type );
+                  this->set_adj_linktype( pos, type );
                   return true;
                 } );
             return true;
@@ -1259,7 +1279,7 @@ namespace gum {
                 [this, from, type, &d_graph]( size_type pos ) {
                   // Fill out the `nodes` vector by rank in the first pass.
                   this-nodes[ pos ] = d_graph.id_to_rank( from );
-                  trait_type::set_adj_linktype( nodes, pos, type );
+                  this->set_adj_linktype( pos, type );
                   return true;
                 } );
             return true;
@@ -1689,9 +1709,12 @@ namespace gum {
     using edge_prop_type = TEdgeProp< spec_type, dir_type, TWidths ... >;
     using typename base_type::id_type;
     using typename base_type::offset_type;
+    using typename base_type::common_type;
+    using typename base_type::size_type;
     using typename base_type::rank_type;
     using typename base_type::side_type;
     using typename base_type::link_type;
+    using typename base_type::linktype_type;
     using node_type = typename node_prop_type::node_type;
     using edge_type = typename edge_prop_type::edge_type;
 
@@ -1708,7 +1731,7 @@ namespace gum {
       return this->node_prop;
     }
 
-    inline node_type const&
+    inline typename node_prop_type::const_reference
     get_node_prop( rank_type rank ) const
     {
       return this->node_prop( rank );
