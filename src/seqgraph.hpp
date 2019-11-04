@@ -988,7 +988,7 @@ namespace gum {
       return this->for_each_edges_to_pos(
           id,
           [this, callback]( size_type pos ) {
-            return callback( this->nodes[ pos ],
+            return callback( this->get_adj_id( pos ),
                              this->get_adj_linktype( pos ) );
           }
         );
@@ -1039,7 +1039,7 @@ namespace gum {
       return this->for_each_edges_from_pos(
           id,
           [this, callback]( size_type pos ) {
-            return callback( this->nodes[ pos ],
+            return callback( this->get_adj_id( pos ),
                              this->get_adj_linktype( pos ) );
           }
         );
@@ -1049,7 +1049,7 @@ namespace gum {
     outdegree( id_type id ) const
     {
       this->check_id( id );
-      return this->nodes[ id + trait_type::OUTDEGREE_OFFSET ];
+      return trait_type::get_outdegree( nodes, id );
     }
 
     inline rank_type
@@ -1070,7 +1070,7 @@ namespace gum {
     indegree( id_type id ) const
     {
       this->check_id( id );
-      return this->nodes[ id + trait_type::INDEGREE_OFFSET ];
+      return trait_type::get_indegree( this->nodes, id );
     }
 
     inline rank_type
@@ -1189,6 +1189,42 @@ namespace gum {
       return true;
     }
 
+    inline common_type
+    get_nodes_at( size_type pos ) const
+    {
+      return this->nodes[ pos ];
+    }
+
+    inline void
+    set_nodes_at( size_type pos, common_type value )
+    {
+      this->nodes[ pos ] = value;
+    }
+
+    inline void
+    set_outdegree( id_type id, rank_type value )
+    {
+      trait_type::set_outdegree( this->nodes, id, value );
+    }
+
+    inline void
+    set_indegree( id_type id, rank_type value )
+    {
+      trait_type::set_indegree( this->nodes, id, value );
+    }
+
+    inline id_type
+    get_adj_id( size_type pos ) const
+    {
+      return trait_type::get_adj_id( this->nodes, pos );
+    }
+
+    inline void
+    set_adj_id( size_type pos, id_type value ) const
+    {
+      trait_type::set_adj_id( this->nodes, pos, value );
+    }
+
     inline linktype_type
     get_adj_linktype( size_type pos ) const
     {
@@ -1196,9 +1232,9 @@ namespace gum {
     }
 
     inline void
-    set_adj_linktype( size_type pos, linktype_type type )
+    set_adj_linktype( size_type pos, linktype_type value )
     {
-      trait_type::set_adj_linktype( this->nodes, pos, type );
+      trait_type::set_adj_linktype( this->nodes, pos, value );
     }
 
   private:
@@ -1240,8 +1276,8 @@ namespace gum {
         this->ids_bv[ pos - 1 ] = 1;
         // Fill out the `nodes` vector by rank in the first pass.
         this->nodes[ pos ] = rank;
-        this->nodes[ pos + trait_type::OUTDEGREE_OFFSET ] = d_graph.outdegree( d_id );
-        this->nodes[ pos + trait_type::INDEGREE_OFFSET ] = d_graph.indegree( d_id );
+        this->set_outdegree( pos, d_graph.outdegree( d_id ) );
+        this->set_indegree( pos, d_graph.indegree( d_id ));
         // Add EDGES_TO and EDGES_FROM entries
         this->fill_edges_entries( d_graph, d_id, static_cast< id_type >( pos ) );
         // Get the next node entry position.
@@ -1265,7 +1301,7 @@ namespace gum {
                 new_id,
                 [this, to, type, &d_graph]( size_type pos ) {
                   // Fill out the `nodes` vector by rank in the first pass.
-                  this->nodes[ pos ] = d_graph.id_to_rank( to );
+                  this->set_adj_id( pos, d_graph.id_to_rank( to ) );
                   this->set_adj_linktype( pos, type );
                   return true;
                 } );
@@ -1278,7 +1314,7 @@ namespace gum {
                 new_id,
                 [this, from, type, &d_graph]( size_type pos ) {
                   // Fill out the `nodes` vector by rank in the first pass.
-                  this-nodes[ pos ] = d_graph.id_to_rank( from );
+                  this->set_adj_id( pos, d_graph.id_to_rank( from ) );
                   this->set_adj_linktype( pos, type );
                   return true;
                 } );
@@ -1322,7 +1358,7 @@ namespace gum {
                 id,
                 [this]( size_type pos ) {
                   // Replace node IDs for edges to.
-                  this->nodes[ pos ] = this->rank_to_id( this->nodes[ pos ] );
+                  this->set_adj_id( pos, this->rank_to_id( this->get_adj_id( pos ) ) );
                   return true;
                 }
               );
@@ -1330,7 +1366,7 @@ namespace gum {
                 id,
                 [this]( size_type pos ) {
                   // Replace node IDs for edges from.
-                  this->nodes[ pos ] = this->rank_to_id( this->nodes[ pos ] );
+                  this->set_adj_id( pos, this->rank_to_id( this->get_adj_id( pos ) ) );
                   return true;
                 }
               );

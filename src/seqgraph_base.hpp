@@ -137,6 +137,30 @@ namespace gum {
     {
       if ( rank <= 0 ) throw std::runtime_error( "non-positive node rank");
     }
+
+    static inline rank_type
+    get_outdegree( nodes_type& nodes, id_type id )
+    {
+      return nodes[ id + GraphBaseTrait::OUTDEGREE_OFFSET ];
+    }
+
+    static inline void
+    set_outdegree( nodes_type& nodes, id_type id, rank_type value )
+    {
+      nodes[ id + GraphBaseTrait::OUTDEGREE_OFFSET ] = value;
+    }
+
+    static inline rank_type
+    get_indegree( nodes_type& nodes, id_type id )
+    {
+      return nodes[ id + GraphBaseTrait::INDEGREE_OFFSET ];
+    }
+
+    static inline void
+    set_indegree( nodes_type& nodes, id_type id, rank_type value )
+    {
+      nodes[ id + GraphBaseTrait::INDEGREE_OFFSET ] = value;
+    }
   };  /* --- end of template class GraphBaseTrait --- */
 
   /**
@@ -697,6 +721,33 @@ namespace gum {
     using typename base_type::linktype_type;
 
     constexpr static size_type EDGE_CORE_LEN = 2;
+    constexpr static size_type ADJ_ID_OFFSET = 0;
+    constexpr static size_type ADJ_LINKTYPE_OFFSET = 1;
+
+    /**
+     *  @brief  Get the ID of the adjacent node from nodes array.
+     *
+     *  @param  nodes Reference to nodes array.
+     *  @param  pos Start position of the edge entry.
+     */
+    static inline id_type
+    get_adj_id( nodes_type& nodes, size_type pos )
+    {
+      return nodes[ pos + DirectedGraphTrait::ADJ_ID_OFFSET ];
+    }
+
+    /**
+     *  @brief  Set the ID of the adjacent node from nodes array.
+     *
+     *  @param  nodes Reference to nodes array.
+     *  @param  pos Start position of the edge entry.
+     *  @param  value The value to be set.
+     */
+    static inline void
+    set_adj_id( nodes_type& nodes, size_type pos, id_type value )
+    {
+      nodes[ pos + DirectedGraphTrait::ADJ_ID_OFFSET ] = value;
+    }
 
     /**
      *  @brief  Get the type of the link to the adjacent node from nodes array.
@@ -707,7 +758,7 @@ namespace gum {
     static inline linktype_type
     get_adj_linktype( nodes_type& nodes, size_type pos )
     {
-      return nodes[ pos + 1 ];
+      return nodes[ pos + DirectedGraphTrait::ADJ_LINKTYPE_OFFSET ];
     }
 
     /**
@@ -715,11 +766,12 @@ namespace gum {
      *
      *  @param  nodes Reference to nodes array.
      *  @param  pos Start position of the edge entry.
+     *  @param  value The value to be set.
      */
     static inline void
-    set_adj_linktype( nodes_type& nodes, size_type pos, linktype_type type )
+    set_adj_linktype( nodes_type& nodes, size_type pos, linktype_type value )
     {
-      return nodes[ pos + 1 ] = type;
+      return nodes[ pos + DirectedGraphTrait::ADJ_LINKTYPE_OFFSET ] = value;
     }
   };  /* --- end of template class DirectedGraphTrait --- */
 
@@ -748,6 +800,32 @@ namespace gum {
     using typename base_type::linktype_type;
 
     constexpr static size_type EDGE_CORE_LEN = 1;
+    constexpr static size_type ADJ_ID_OFFSET = 0;
+
+    /**
+     *  @brief  Get the ID of the adjacent node from nodes array.
+     *
+     *  @param  nodes Reference to nodes array.
+     *  @param  pos Start position of the edge entry.
+     */
+    static inline id_type
+    get_adj_id( nodes_type& nodes, size_type pos )
+    {
+      return nodes[ pos + DirectedGraphTrait::ADJ_ID_OFFSET ];
+    }
+
+    /**
+     *  @brief  Set the ID of the adjacent node from nodes array.
+     *
+     *  @param  nodes Reference to nodes array.
+     *  @param  pos Start position of the edge entry.
+     *  @param  value The value to be set.
+     */
+    static inline void
+    set_adj_id( nodes_type& nodes, size_type pos, id_type value )
+    {
+      nodes[ pos + DirectedGraphTrait::ADJ_ID_OFFSET ] = value;
+    }
 
     /**
      *  @brief  Get the type of the link to the adjacent node from nodes array.
