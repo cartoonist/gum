@@ -1830,6 +1830,25 @@ namespace gum {
       return this->node_sequence( id ).size();
     }
 
+    inline offset_type
+    edge_overlap( link_type sides ) const
+    {
+      return this->edge_prop[ sides ].overlap;
+    }
+
+    inline offset_type
+    edge_overlap( id_type from, id_type to,
+                  linktype_type type=base_type::get_default_linktype() ) const
+    {
+      return this->edge_overlap( this->make_link( from, to, type ) );
+    }
+
+    inline offset_type
+    edge_overlap( side_type from, side_type to ) const
+    {
+      return this->edge_overlap( this->make_link( from, to ) );
+    }
+
   protected:
     /* === ACCESSORS === */
     inline node_prop_type&
