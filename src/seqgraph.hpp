@@ -39,7 +39,7 @@ namespace gum {
     using trait_type = DirectedGraphTrait< spec_type, TDir, TWidths... >;
     using id_type = typename trait_type::id_type;
     using offset_type = typename trait_type::offset_type;
-    using common_type = typename trait_type::common_type;
+    using value_type = typename trait_type::value_type;
     using nodes_type = typename trait_type::nodes_type;
     using size_type = typename trait_type::size_type;
     using rank_type = typename trait_type::rank_type;
@@ -603,7 +603,7 @@ namespace gum {
     using trait_type = DirectedGraphTrait< spec_type, TDir, TWidths... >;
     using id_type = typename trait_type::id_type;
     using offset_type = typename trait_type::offset_type;
-    using common_type = typename trait_type::common_type;
+    using value_type = typename trait_type::value_type;
     using nodes_type = typename trait_type::nodes_type;
     using size_type = typename trait_type::size_type;
     using rank_type = typename trait_type::rank_type;
@@ -1189,14 +1189,14 @@ namespace gum {
       return true;
     }
 
-    inline common_type
+    inline value_type
     get_nodes_at( size_type pos ) const
     {
       return this->nodes[ pos ];
     }
 
     inline void
-    set_nodes_at( size_type pos, common_type value )
+    set_nodes_at( size_type pos, value_type value )
     {
       this->nodes[ pos ] = value;
     }
@@ -1745,7 +1745,7 @@ namespace gum {
     using edge_prop_type = TEdgeProp< spec_type, dir_type, TWidths ... >;
     using typename base_type::id_type;
     using typename base_type::offset_type;
-    using typename base_type::common_type;
+    using typename base_type::value_type;
     using typename base_type::size_type;
     using typename base_type::rank_type;
     using typename base_type::side_type;

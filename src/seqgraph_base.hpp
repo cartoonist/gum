@@ -51,7 +51,8 @@ namespace gum {
   public:
     using id_type = integer_t< TIdWidth >;
     using offset_type = integer_t< TOffsetWidth >;
-    using common_type = common_t< TIdWidth, TOffsetWidth >;
+    using common_type = common< TIdWidth, TOffsetWidth >;
+    using value_type = typename common_type::type;
     using nodes_type = std::vector< id_type >;
     using size_type = typename nodes_type::size_type;
     using rank_type = typename nodes_type::size_type;
@@ -106,14 +107,15 @@ namespace gum {
    *  (*) NOTE that the `type` field is only for Bidirected graphs and will be
    *  omitted for directed graphs.
    *
-   *  NOTE: The node/edge property values should fit in the `common_type`.
+   *  NOTE: The node/edge property values should fit in the `value_type`.
    */
   template< uint8_t TIdWidth, uint8_t TOffsetWidth >
   class GraphBaseTrait< Succinct, TIdWidth, TOffsetWidth > {
   public:
     using id_type = integer_t< TIdWidth >;
     using offset_type = integer_t< TOffsetWidth >;
-    using common_type = common_t< TIdWidth, TOffsetWidth >;
+    using common_type = common< TIdWidth, TOffsetWidth >;
+    using value_type = typename common_type::type;
     using nodes_type = sdsl::int_vector< common_type::value >;
     using size_type = typename nodes_type::size_type;
     using rank_type = typename nodes_type::size_type;
@@ -607,7 +609,7 @@ namespace gum {
   public:
     using typename graph_type::id_type;
     using typename graph_type::offset_type;
-    using typename graph_type::common_type;
+    using typename graph_type::value_type;
     using typename graph_type::nodes_type;
     using typename graph_type::size_type;
     using typename graph_type::rank_type;
@@ -658,7 +660,7 @@ namespace gum {
   public:
     using typename graph_type::id_type;
     using typename graph_type::offset_type;
-    using typename graph_type::common_type;
+    using typename graph_type::value_type;
     using typename graph_type::nodes_type;
     using typename graph_type::size_type;
     using typename graph_type::rank_type;
@@ -708,7 +710,7 @@ namespace gum {
   public:
     using typename graph_type::id_type;
     using typename graph_type::offset_type;
-    using typename graph_type::common_type;
+    using typename graph_type::value_type;
     using typename graph_type::nodes_type;
     using typename graph_type::size_type;
     using typename graph_type::rank_type;
@@ -787,7 +789,7 @@ namespace gum {
   public:
     using typename graph_type::id_type;
     using typename graph_type::offset_type;
-    using typename graph_type::common_type;
+    using typename graph_type::value_type;
     using typename graph_type::nodes_type;
     using typename graph_type::size_type;
     using typename graph_type::rank_type;
