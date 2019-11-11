@@ -189,8 +189,8 @@ namespace gum {
     using difference_type = typename container_type::difference_type;
     using proxy_type = typename container_type::value_type;
     using function_type = std::function< value_type( proxy_type const& ) >;
+    using const_reference = value_type const;
     using const_iterator = RandomAccessConstIterator< RandomAccessProxyContainer >;
-    using const_reference = typename const_iterator::const_reference;
 
     /* === LIFECYCLE === */
     RandomAccessProxyContainer( )
