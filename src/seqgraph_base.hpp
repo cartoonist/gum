@@ -883,12 +883,12 @@ namespace gum {
     using container_type = TContainer;
     using value_type = TValue;
     using base_type = RandomAccessProxyContainer< container_type, value_type >;
-    using base_type::size_type;
-    using base_type::difference_type;
-    using base_type::proxy_type;
-    using base_type::function_type;
-    using base_type::const_iterator;
-    using base_type::const_reference;
+    using typename base_type::size_type;
+    using typename base_type::difference_type;
+    using typename base_type::proxy_type;
+    using typename base_type::function_type;
+    using typename base_type::const_iterator;
+    using typename base_type::const_reference;
 
     SequenceProxyContainer( node_prop_type const* npt,
                             container_type const& cnt )
@@ -910,12 +910,12 @@ namespace gum {
     using container_type = TContainer;
     using value_type = TValue;
     using base_type = RandomAccessProxyContainer< container_type, value_type >;
-    using base_type::size_type;
-    using base_type::difference_type;
-    using base_type::proxy_type;
-    using base_type::function_type;
-    using base_type::const_iterator;
-    using base_type::const_reference;
+    using typename base_type::size_type;
+    using typename base_type::difference_type;
+    using typename base_type::proxy_type;
+    using typename base_type::function_type;
+    using typename base_type::const_iterator;
+    using typename base_type::const_reference;
 
     NameProxyContainer( node_prop_type const* npt,
                         container_type const& cnt )

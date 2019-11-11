@@ -46,8 +46,8 @@ namespace gum {
   class DNA : public Alphabet< 2 > {
   public:
     using base_type = Alphabet< 2 >;
-    using base_type::value_type;
-    using base_type::char_type;
+    using typename base_type::value_type;
+    using typename base_type::char_type;
     using bv_type = sdsl::bit_vector;
     using rs_type = typename bv_type::rank_1_type;
     using ss_type = typename bv_type::select_1_type;
@@ -83,8 +83,8 @@ namespace gum {
   class DNA5 : public Alphabet< 3 > {
   public:
     using base_type = Alphabet< 3 >;
-    using base_type::value_type;
-    using base_type::char_type;
+    using typename base_type::value_type;
+    using typename base_type::char_type;
     using bv_type = sdsl::bit_vector;
     using rs_type = typename bv_type::rank_1_type;
     using ss_type = typename bv_type::select_1_type;
@@ -120,8 +120,8 @@ namespace gum {
   class Char : public Alphabet< 8 > {
   public:
     using base_type = Alphabet< 8 >;
-    using base_type::value_type;
-    using base_type::char_type;
+    using typename base_type::value_type;
+    using typename base_type::char_type;
 
     inline static value_type
     char2comp( char_type c )
