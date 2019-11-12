@@ -88,19 +88,35 @@ namespace gum {
     DirectedGraph& operator=( DirectedGraph&& other ) noexcept = default;  /* move assignment operator */
 
     /* === METHODS === */
+    /**
+     *  @brief  Return the rank of a node by its ID.
+     *
+     *  @param  id A node ID.
+     *  @return The corresponding node rank.
+     */
     inline rank_type
     id_to_rank( id_type id ) const
     {
-      this->check_id( id );
+      assert( id > 0 );
       auto found = this->node_rank.find( id );
       if ( found == this->node_rank.end() ) return 0;
       return found->second;
     }
 
+    /**
+     *  @brief  Return the ID of a node by its rank.
+     *
+     *  NOTE: This function assumes that node rank is within the range
+     *  [1, node_count], otherwise the behaviour is undefined. The node rank
+     *  should be verified beforehand.
+     *
+     *  @param  id A node rank.
+     *  @return The corresponding node ID.
+     */
     inline id_type
     rank_to_id( rank_type rank ) const
     {
-      this->check_rank( rank );
+      assert( 0 < rank && rank <= this->node_count );
       return this->nodes[ rank - 1 ];
     }
 
@@ -137,7 +153,7 @@ namespace gum {
     inline bool
     has_node( id_type id ) const
     {
-      return this->id_to_rank( id ) != 0;
+      return this->node_rank.find( id ) != this->node_rank.end();
     }
 
     /**
@@ -156,24 +172,6 @@ namespace gum {
         ++rank;
       }
       return true;
-    }
-
-    inline void
-    check_id( id_type id ) const
-    {
-      trait_type::check_id( id );
-    }
-
-    inline void
-    check_rank( rank_type rank ) const
-    {
-      trait_type::check_rank( rank );
-    }
-
-    inline void
-    check_linktype( linktype_type type ) const
-    {
-      trait_type::check_linktype( type );
     }
 
     constexpr inline id_type
@@ -325,7 +323,6 @@ namespace gum {
     inline bool
     has_edge( id_type from, id_type to, linktype_type type=get_default_linktype() )
     {
-      this->check_linktype( type );
       return this->has_edge( this->from_side( from, type ), this->to_side( to, type ) );
     }
 
@@ -728,18 +725,37 @@ namespace gum {
     }
 
     /* === METHODS === */
+    /**
+     *  @brief  Return the rank of a node by its ID.
+     *
+     *  NOTE: This function assumes that node ID exists in the graph, otherwise
+     *  the behaviour is undefined. The node ID can be verified by `has_node`
+     *  method before calling this one.
+     *
+     *  @param  id A node ID.
+     *  @return The corresponding node rank.
+     */
     inline rank_type
     id_to_rank( id_type id ) const
     {
-      this->check_id( id );
-      if ( this->ids_bv[ id - 1 ] != 1 ) return 0;
+      assert( this->has_node( id ) );
       return this->node_rank( id );
     }
 
+    /**
+     *  @brief  Return the ID of a node by its rank.
+     *
+     *  NOTE: This function assumes that node rank is within the range
+     *  [1, node_count], otherwise the behaviour is undefined. The node rank
+     *  should be verified beforehand.
+     *
+     *  @param  id A node rank.
+     *  @return The corresponding node ID.
+     */
     inline id_type
     rank_to_id( rank_type rank ) const
     {
-      this->check_rank( rank );
+      assert( 0 < rank && rank <= this->node_count );
       return this->node_id( rank ) + 1;
     }
 
@@ -752,14 +768,16 @@ namespace gum {
     inline id_type
     successor_id( id_type id ) const
     {
-      this->check_id( id );
-      return this->_successor_id( id );
+      assert( this->has_node( id ) );
+      id += this->node_entry_len( id );
+      return static_cast< size_type >( id ) < this->nodes.size() ? id : 0;
     }
 
     inline bool
     has_node( id_type id ) const
     {
-      return this->id_to_rank( id ) != 0;
+      if ( id <= 0 || static_cast<size_type>( id ) >= this->nodes.size() ) return false;
+      return this->ids_bv[ id - 1 ] == 1;
     }
 
     /**
@@ -776,29 +794,10 @@ namespace gum {
       rank_type rank = 1;
       while ( id != 0 ) {
         if ( !callback( rank, id ) ) return false;
-        id = this->_successor_id( id );
+        id = this->successor_id( id );
         ++rank;
       }
       return true;
-    }
-
-    inline void
-    check_id( id_type id ) const
-    {
-      trait_type::check_id( id );
-      if ( this->ids_bv[ id - 1 ] != 1 ) throw std::runtime_error( "invalid node ID" );
-    }
-
-    inline void
-    check_rank( rank_type rank ) const
-    {
-      trait_type::check_rank( rank );
-    }
-
-    inline void
-    check_linktype( linktype_type type ) const
-    {
-      trait_type::check_linktype( type );
     }
 
     constexpr inline id_type
@@ -919,7 +918,7 @@ namespace gum {
     inline bool
     has_edge( id_type from, id_type to, linktype_type type=get_default_linktype() ) const
     {
-      this->check_linktype( type );
+      if ( !this->has_node( from ) || !this->has_node( to ) ) return false;
       auto fod = this->outdegree( from );
       auto tod = this->indegree( to );
       auto findto =
@@ -1085,7 +1084,7 @@ namespace gum {
     inline rank_type
     outdegree( id_type id ) const
     {
-      this->check_id( id );
+      assert( this->has_node( id ) );
       return trait_type::get_outdegree( nodes, id );
     }
 
@@ -1106,7 +1105,7 @@ namespace gum {
     inline rank_type
     indegree( id_type id ) const
     {
-      this->check_id( id );
+      assert( this->has_node( id ) );
       return trait_type::get_indegree( this->nodes, id );
     }
 
@@ -1352,21 +1351,6 @@ namespace gum {
             pos += this->edge_entry_len();
             return true;
           } );
-    }
-
-    /**
-     *  @brief  Return the ID of the successor node in rank.
-     *
-     *  @param  id A node id.
-     *  @return The node ID of the successor node of a node whose ID is `id` in the rank.
-     */
-    inline id_type
-    _successor_id( id_type id ) const
-    {
-      assert( id > 0 );
-      assert( static_cast< id_type >( this->nodes[ id ] ) == id );
-      id += this->node_entry_len( id );
-      return static_cast< size_type >( id ) < this->nodes.size() ? id : 0;
     }
 
     /**
@@ -2005,7 +1989,6 @@ namespace gum {
     edge_overlap( id_type from, id_type to,
                   linktype_type type=base_type::get_default_linktype() ) const
     {
-      this->check_linktype( type );
       auto fod = this->outdegree( from );
       auto tod = this->indegree( to );
       offset_type overlap = 0;

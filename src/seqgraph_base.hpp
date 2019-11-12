@@ -64,18 +64,6 @@ namespace gum {
       // `dense_hash_map` requires to set empty key before any `insert` call.
       //m.set_empty_key( 0 );  // ID cannot be zero, so it can be used as empty key.
     }
-
-    static inline void
-    check_id( id_type id )
-    {
-      if ( id <= 0 ) throw std::runtime_error( "non-positive node ID" );
-    }
-
-    static inline void
-    check_rank( rank_type rank )
-    {
-      if ( rank <= 0 ) throw std::runtime_error( "non-positive node rank");
-    }
   };  /* --- end of template class GraphBaseTrait --- */
 
   /**
@@ -127,18 +115,6 @@ namespace gum {
     constexpr static size_type HEADER_CORE_LEN = 3;
     constexpr static size_type OUTDEGREE_OFFSET = 1;
     constexpr static size_type INDEGREE_OFFSET = 2;
-
-    static inline void
-    check_id( id_type id )
-    {
-      if ( id <= 0 ) throw std::runtime_error( "non-positive node ID" );
-    }
-
-    static inline void
-    check_rank( rank_type rank )
-    {
-      if ( rank <= 0 ) throw std::runtime_error( "non-positive node rank");
-    }
 
     static inline rank_type
     get_outdegree( nodes_type const& nodes, id_type id )
@@ -370,13 +346,6 @@ namespace gum {
           DirectedGraphBaseTrait::to_sidetype( type );
     }
 
-    static inline void
-    check_linktype( linktype_type type )
-    {
-      if ( !DirectedGraphBaseTrait::is_valid( type ) )
-        throw std::runtime_error( "invalid link type" );
-    }
-
   private:
     /* === Side type === */
     constexpr static inline sidetype_type
@@ -593,13 +562,6 @@ namespace gum {
     is_valid_to( side_type to, linktype_type type )
     {
       return true;
-    }
-
-    static inline void
-    check_linktype( linktype_type type )
-    {
-      if ( !DirectedGraphBaseTrait::is_valid( type ) )
-        throw std::runtime_error( "invalid link type" );
     }
   };  /* --- end of template class DirectedGraphBaseTrait --- */
 
