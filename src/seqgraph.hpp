@@ -49,6 +49,7 @@ namespace gum {
     using linktype_type = typename trait_type::linktype_type;
     using adjs_type = typename trait_type::adjs_type;
     using adj_map_type = typename trait_type::adj_map_type;
+    using succinct_type = DirectedGraph< Succinct, TDir, TWidths... >;
 
     /* === LIFECYCLE === */
     DirectedGraph( )                                            /* constructor      */
@@ -617,6 +618,7 @@ namespace gum {
     using link_type = typename trait_type::link_type;
     using linktype_type = typename trait_type::linktype_type;
     using adjs_type = typename trait_type::adjs_type;
+    using dynamic_type = DirectedGraph< Dynamic, TDir, TWidths... >;
 
     /* === LIFECYCLE  === */
     DirectedGraph( padding_type npadding = 0, padding_type epadding = 0 )
@@ -1782,6 +1784,7 @@ namespace gum {
     using typename base_type::linktype_type;
     using node_type = typename node_prop_type::node_type;
     using edge_type = typename edge_prop_type::edge_type;
+    using succinct_type = SeqGraph< Succinct, TNodeProp, TEdgeProp, TWidths... >;
 
     /* === LIFECYCLE === */
     SeqGraph() = default;                                  /* constructor      */
