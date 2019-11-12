@@ -141,7 +141,7 @@ namespace gum {
     }
 
     static inline rank_type
-    get_outdegree( nodes_type& nodes, id_type id )
+    get_outdegree( nodes_type const& nodes, id_type id )
     {
       return nodes[ id + GraphBaseTrait::OUTDEGREE_OFFSET ];
     }
@@ -153,7 +153,7 @@ namespace gum {
     }
 
     static inline rank_type
-    get_indegree( nodes_type& nodes, id_type id )
+    get_indegree( nodes_type const& nodes, id_type id )
     {
       return nodes[ id + GraphBaseTrait::INDEGREE_OFFSET ];
     }
@@ -373,7 +373,7 @@ namespace gum {
     static inline void
     check_linktype( linktype_type type )
     {
-      if ( !DirectedGraphBaseTrait::is->is_valid( type ) )
+      if ( !DirectedGraphBaseTrait::is_valid( type ) )
         throw std::runtime_error( "invalid link type" );
     }
 
@@ -507,6 +507,18 @@ namespace gum {
     }
 
     constexpr static inline side_type
+    start_side( id_type id )
+    {
+      return side_type( id );
+    }
+
+    constexpr static inline side_type
+    end_side( id_type id )
+    {
+      return side_type( id );
+    }
+
+    constexpr static inline side_type
     opposite_side( side_type side )
     {
       return side;
@@ -586,7 +598,7 @@ namespace gum {
     static inline void
     check_linktype( linktype_type type )
     {
-      if ( !DirectedGraphBaseTrait::is->is_valid( type ) )
+      if ( !DirectedGraphBaseTrait::is_valid( type ) )
         throw std::runtime_error( "invalid link type" );
     }
   };  /* --- end of template class DirectedGraphBaseTrait --- */
@@ -733,7 +745,7 @@ namespace gum {
      *  @param  pos Start position of the edge entry.
      */
     static inline id_type
-    get_adj_id( nodes_type& nodes, size_type pos )
+    get_adj_id( nodes_type const& nodes, size_type pos )
     {
       return nodes[ pos + DirectedGraphTrait::ADJ_ID_OFFSET ];
     }
@@ -758,7 +770,7 @@ namespace gum {
      *  @param  pos Start position of the edge entry.
      */
     static inline linktype_type
-    get_adj_linktype( nodes_type& nodes, size_type pos )
+    get_adj_linktype( nodes_type const& nodes, size_type pos )
     {
       return nodes[ pos + DirectedGraphTrait::ADJ_LINKTYPE_OFFSET ];
     }
@@ -773,7 +785,7 @@ namespace gum {
     static inline void
     set_adj_linktype( nodes_type& nodes, size_type pos, linktype_type value )
     {
-      return nodes[ pos + DirectedGraphTrait::ADJ_LINKTYPE_OFFSET ] = value;
+      nodes[ pos + DirectedGraphTrait::ADJ_LINKTYPE_OFFSET ] = value;
     }
   };  /* --- end of template class DirectedGraphTrait --- */
 
@@ -811,7 +823,7 @@ namespace gum {
      *  @param  pos Start position of the edge entry.
      */
     static inline id_type
-    get_adj_id( nodes_type& nodes, size_type pos )
+    get_adj_id( nodes_type const& nodes, size_type pos )
     {
       return nodes[ pos + DirectedGraphTrait::ADJ_ID_OFFSET ];
     }
@@ -836,7 +848,7 @@ namespace gum {
      *  @param  pos Start position of the edge entry.
      */
     static inline linktype_type
-    get_adj_linktype( nodes_type&, size_type )
+    get_adj_linktype( nodes_type const&, size_type )
     {
       return base_type::get_default_linktype();
     }
@@ -877,7 +889,7 @@ namespace gum {
 
   template< typename TNodeProp, typename TContainer, typename TValue >
   class SequenceProxyContainer
-    : RandomAccessProxyContainer< TContainer, TValue > {
+    : public RandomAccessProxyContainer< TContainer, TValue > {
   public:
     using node_prop_type = TNodeProp;
     using container_type = TContainer;
@@ -892,11 +904,11 @@ namespace gum {
 
     SequenceProxyContainer( node_prop_type const* npt,
                             container_type const& cnt )
-      : npt_ptr( npt ),
-        base_type( &cnt,
-                   []( value_type const& node ) -> value_type {
+      : base_type( &cnt,
+                   []( proxy_type const& node ) -> value_type {
                      return node.sequence;
-                   } )
+                   } ),
+        npt_ptr( npt )
     { }
 
     node_prop_type const* npt_ptr;
@@ -904,7 +916,7 @@ namespace gum {
 
   template< typename TNodeProp, typename TContainer, typename TValue >
   class NameProxyContainer
-    : RandomAccessProxyContainer< TContainer, TValue > {
+    : public RandomAccessProxyContainer< TContainer, TValue > {
   public:
     using node_prop_type = TNodeProp;
     using container_type = TContainer;
@@ -919,11 +931,11 @@ namespace gum {
 
     NameProxyContainer( node_prop_type const* npt,
                         container_type const& cnt )
-      : npt_ptr( npt ),
-        base_type( &cnt,
-                   []( value_type const& node ) -> value_type {
+      : base_type( &cnt,
+                   []( proxy_type const& node ) -> value_type {
                      return node.name;
-                   } )
+                   } ),
+        npt_ptr( npt )
     { }
 
     node_prop_type const* npt_ptr;

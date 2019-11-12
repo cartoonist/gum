@@ -84,7 +84,7 @@ namespace gum {
     length_sum( TIter begin, TIter end )
     {
       std::size_t sum = 0;
-      for ( ; begin != end; ++begin ) sum += begin->size();
+      for ( ; begin != end; ++begin ) sum += ( *begin ).size();
       return sum;
     }
 
@@ -333,7 +333,12 @@ namespace gum {
       for ( ; begin != end; ++begin ) {
         this->breaks[ cpos - this->strset.begin() ] = 1;
         assert( cpos < this->strset.end() );
-        cpos = util::encode( begin->begin(), begin->end(), cpos, alphabet_type() );
+        // It's important to have a `const` reference from the element, because
+        // it may be returned by value. In that case the `*begin` would be
+        // temporary object for which different multiple call of `begin` or `end`
+        // methods returns iterators for different containers.
+        auto const& str = *begin;
+        cpos = util::encode( str.begin(), str.end(), cpos, alphabet_type() );
         ++count;
       }
       sdsl::util::init_support( this->rank, &this->breaks );

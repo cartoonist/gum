@@ -112,7 +112,9 @@ namespace gum {
     inline id_type
     successor_id( id_type id ) const
     {
-      return this->rank_to_id( this->id_to_rank( id ) + 1 );
+      rank_type rank = this->id_to_rank( id );
+      if ( rank == this->node_count ) return 0;
+      return this->rank_to_id( rank + 1 );
     }
 
     inline id_type
@@ -125,7 +127,7 @@ namespace gum {
 
     inline void
     add_nodes( size_type count,
-               std::function< void( id_type ) > callback = []{} )
+               std::function< void( id_type ) > callback = []( id_type ){} )
     {
       for ( size_type i = 0; i < count; ++i ) callback( this->add_node_imp() );
       this->set_rank();
@@ -246,10 +248,10 @@ namespace gum {
     }
 
     constexpr inline link_type
-    make_link( id_type from_id, id_type to_id,
+    make_link( id_type from, id_type to,
                linktype_type type=get_default_linktype() ) const
     {
-      return trait_type::make_link( from_id, to_id, type );
+      return trait_type::make_link( from, to, type );
     }
 
     constexpr inline linktype_type
@@ -305,9 +307,9 @@ namespace gum {
     {
       auto oit = this->adj_to.find( from );
       auto iit = this->adj_from.find( to );
+      if ( oit == this->adj_to.end() || iit == this->adj_from.end() ) return false;
       auto const& outs = oit->second;
       auto const& ins = iit->second;
-      if ( oit == this->adj_to.end() || iit == this->adj_from.end() ) return false;
       if ( outs.size() < ins.size() )
         return std::find( outs.begin(), outs.end(), to ) != outs.end();
       return std::find( ins.begin(), ins.end(), from ) != ins.end();
@@ -728,14 +730,14 @@ namespace gum {
     {
       this->check_id( id );
       if ( this->ids_bv[ id - 1 ] != 1 ) return 0;
-      return this->node_rank[ id ];
+      return this->node_rank( id );
     }
 
     inline id_type
     rank_to_id( rank_type rank ) const
     {
       this->check_rank( rank );
-      return this->node_id[ rank ] + 1;
+      return this->node_id( rank ) + 1;
     }
 
     /**
@@ -869,10 +871,10 @@ namespace gum {
     }
 
     constexpr inline link_type
-    make_link( id_type from_id, id_type to_id,
+    make_link( id_type from, id_type to,
                linktype_type type=get_default_linktype() ) const
     {
-      return trait_type::make_link( from_id, to_id, type );
+      return trait_type::make_link( from, to, type );
     }
 
     constexpr inline linktype_type
@@ -916,17 +918,19 @@ namespace gum {
     {
       this->check_linktype( type );
       auto fod = this->outdegree( from );
-      auto tod = this->outdegree( to );
+      auto tod = this->indegree( to );
       auto findto =
           [to, type]( id_type tid, linktype_type ttype ) {
             if ( tid == to && ttype == type ) return false;
+            return true;
           };
       auto findfrom =
           [from, type]( id_type fid, linktype_type ftype ) {
             if ( fid == from && ftype == type ) return false;
+            return true;
           };
-      if ( fod < tod ) return !this->for_each_edges_to( to, findto );
-      else return !this->for_each_edges_from( from, findfrom );
+      if ( fod < tod ) return !this->for_each_edges_to( from, findto );
+      else return !this->for_each_edges_from( to, findfrom );
     }
 
     inline bool
@@ -1220,7 +1224,7 @@ namespace gum {
     }
 
     inline void
-    set_adj_id( size_type pos, id_type value ) const
+    set_adj_id( size_type pos, id_type value )
     {
       trait_type::set_adj_id( this->nodes, pos, value );
     }
@@ -1270,7 +1274,7 @@ namespace gum {
       sdsl::util::assign( this->nodes, nodes_type( this->int_vector_len(), 0 ) );
       sdsl::util::assign( this->ids_bv, bv_type( this->int_vector_len(), 0 ) );
       size_type pos = 1;  // Leave the first entry as dummy.
-      for ( rank_type rank = 1; rank < d_graph.get_node_count(); ++rank ) {
+      for ( rank_type rank = 1; rank <= d_graph.get_node_count(); ++rank ) {
         id_type d_id = d_graph.rank_to_id( rank );
         // Set the bit at index `pos - 1` denoting the start of a node record.
         this->ids_bv[ pos - 1 ] = 1;
@@ -1294,30 +1298,25 @@ namespace gum {
                         id_type d_id,
                         id_type new_id )
     {
+      size_type pos = this->edges_to_pos( new_id );
       d_graph.for_each_edges_to(
           d_id,
-          [this, new_id, &d_graph]( id_type to, linktype_type type ) {
-            this->for_each_edges_to_pos(
-                new_id,
-                [this, to, type, &d_graph]( size_type pos ) {
-                  // Fill out the `nodes` vector by rank in the first pass.
-                  this->set_adj_id( pos, d_graph.id_to_rank( to ) );
-                  this->set_adj_linktype( pos, type );
-                  return true;
-                } );
+          [this, &pos, &d_graph]( id_type to, linktype_type type ) {
+            // Fill out the `nodes` vector by rank in the first pass.
+            this->set_adj_id( pos, d_graph.id_to_rank( to ) );
+            this->set_adj_linktype( pos, type );
+            pos += this->edge_entry_len();
             return true;
           } );
+
+      pos = this->edges_from_pos( new_id );
       d_graph.for_each_edges_from(
           d_id,
-          [this, new_id, &d_graph]( id_type from, linktype_type type ) {
-            this->for_each_edges_from_pos(
-                new_id,
-                [this, from, type, &d_graph]( size_type pos ) {
-                  // Fill out the `nodes` vector by rank in the first pass.
-                  this->set_adj_id( pos, d_graph.id_to_rank( from ) );
-                  this->set_adj_linktype( pos, type );
-                  return true;
-                } );
+          [this, &pos, &d_graph]( id_type from, linktype_type type ) {
+            // Fill out the `nodes` vector by rank in the first pass.
+            this->set_adj_id( pos, d_graph.id_to_rank( from ) );
+            this->set_adj_linktype( pos, type );
+            pos += this->edge_entry_len();
             return true;
           } );
     }
@@ -1332,9 +1331,9 @@ namespace gum {
     _successor_id( id_type id ) const
     {
       assert( id > 0 );
-      assert( this->nodes[ id ] == id );
-      id += this->node_entry_len();
-      return id < this->nodes.size() ? id : 0;
+      assert( static_cast< id_type >( this->nodes[ id ] ) == id );
+      id += this->node_entry_len( id );
+      return static_cast< size_type >( id ) < this->nodes.size() ? id : 0;
     }
 
     /**
@@ -1343,7 +1342,6 @@ namespace gum {
     inline void
     identificate( )
     {
-      id_type id = 1;
       // Replace all `id` field in the headers with their indices in the nodes list.
       this->for_each_node(
           [this]( rank_type rank, id_type id ) {
@@ -1492,9 +1490,9 @@ namespace gum {
     inline void
     add_node( value_type node )
     {
-      this->nodes.push_back( std::move( node ) );
       this->sequences_len_sum += node.sequence.size();
       this->names_len_sum += node.name.size();
+      this->nodes.push_back( std::move( node ) );
     }
 
     inline sequenceset_type
