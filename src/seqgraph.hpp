@@ -156,6 +156,12 @@ namespace gum {
       return this->node_rank.find( id ) != this->node_rank.end();
     }
 
+    inline bool
+    has_node( side_type side ) const
+    {
+      return this->has_node( this->id_of( side ) );
+    }
+
     /**
      *  @brief  Call a callback on each nodes in rank order.
      *
@@ -778,6 +784,12 @@ namespace gum {
     {
       if ( id <= 0 || static_cast<size_type>( id ) >= this->nodes.size() ) return false;
       return this->ids_bv[ id - 1 ] == 1;
+    }
+
+    inline bool
+    has_node( side_type side ) const
+    {
+      return this->has_node( this->id_of( side ) );
     }
 
     /**
