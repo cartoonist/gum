@@ -413,16 +413,7 @@ namespace gum {
     using graph_type = GraphBaseTrait< TSpec, TWidths... >;
     using id_type = typename graph_type::id_type;
   public:
-    struct Side {
-      id_type id;
-      constexpr Side( id_type i=0 ) : id( i ) { }
-      constexpr bool
-      operator==( const Side& other ) const
-      {
-        return this->id == other.id;
-      }
-    };
-    using side_type = Side;
+    using side_type = std::tuple< id_type >;
     using link_type = std::pair< side_type, side_type >;
     using linktype_type = unsigned char;
 
@@ -433,19 +424,19 @@ namespace gum {
     constexpr static inline id_type
     from_id( link_type sides )
     {
-      return sides.first.id;
+      return std::get<0>( sides.first );
     }
 
     constexpr static inline id_type
     to_id( link_type sides )
     {
-      return sides.second.id;
+      return std::get<0>( sides.second );
     }
 
     constexpr static inline id_type
     id_of( side_type side )
     {
-      return side.id;
+      return std::get<0>( side );
     }
 
     /* === Side === */
@@ -648,7 +639,7 @@ namespace gum {
       inline std::size_t
       operator()( side_type const& side ) const
       {
-        return std::hash< id_type >{}( side.id );
+        return std::hash< id_type >{}( std::get<0>( side ) );
       }
     };  /* --- end of struct hash_side --- */
 
