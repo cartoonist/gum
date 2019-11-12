@@ -616,6 +616,7 @@ namespace gum {
     using side_type = typename trait_type::side_type;
     using link_type = typename trait_type::link_type;
     using linktype_type = typename trait_type::linktype_type;
+    using adjs_type = typename trait_type::adjs_type;
 
     /* === LIFECYCLE  === */
     DirectedGraph( padding_type npadding = 0, padding_type epadding = 0 )
@@ -945,6 +946,36 @@ namespace gum {
     {
       return this->has_edge( this->from_id( sides ), this->to_id( sides ),
                              this->linktype( sides ) );
+    }
+
+    inline adjs_type
+    adjacents_to( side_type from ) const
+    {
+      adjs_type adjs;
+      // Getting outdegree of node (rather than side) is faster, although not exact.
+      adjs.reserve( this->outdegree( this->id_of( from ) ) );
+      this->for_each_edges_to(
+          from,
+          [&adjs]( side_type to ) {
+            adjs.push_back( to );
+            return true;
+          } );
+      return adjs;
+    }
+
+    inline adjs_type
+    adjacents_from( side_type to ) const
+    {
+      adjs_type adjs;
+      // Getting outdegree of node (rather than side) is faster, although not exact.
+      adjs.reserve( this->indegree( this->id_of( to ) ) );
+      this->for_each_edges_from(
+          to,
+          [&adjs]( side_type from ) {
+            adjs.push_back( from );
+            return true;
+          } );
+      return adjs;
     }
 
     /**

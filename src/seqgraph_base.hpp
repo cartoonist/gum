@@ -733,6 +733,7 @@ namespace gum {
     using typename base_type::side_type;
     using typename base_type::link_type;
     using typename base_type::linktype_type;
+    using adjs_type = std::vector< side_type >;
 
     constexpr static size_type EDGE_CORE_LEN = 2;
     constexpr static size_type ADJ_ID_OFFSET = 0;
@@ -812,6 +813,7 @@ namespace gum {
     using typename base_type::side_type;
     using typename base_type::link_type;
     using typename base_type::linktype_type;
+    using adjs_type = std::vector< side_type >;
 
     constexpr static size_type EDGE_CORE_LEN = 1;
     constexpr static size_type ADJ_ID_OFFSET = 0;
