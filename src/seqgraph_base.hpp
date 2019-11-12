@@ -913,6 +913,12 @@ namespace gum {
         npt_ptr( npt )
     { }
 
+    inline typename value_type::size_type
+    length_sum( ) const
+    {
+      return this->npt_ptr->get_sequences_len_sum( );
+    }
+
     node_prop_type const* npt_ptr;
   };  /* --- end of template class SequenceProxyContainer --- */
 
@@ -940,24 +946,14 @@ namespace gum {
         npt_ptr( npt )
     { }
 
+    inline typename value_type::size_type
+    length_sum( ) const
+    {
+      return this->npt_ptr->get_names_len_sum( );
+    }
+
     node_prop_type const* npt_ptr;
   };  /* --- end of template class NameProxyContainer --- */
-
-  namespace util {
-    template< typename TNodeProp, typename TContainer, typename TValue >
-    inline std::size_t
-    length_sum( SequenceProxyContainer< TNodeProp, TContainer, TValue > const& cnt )
-    {
-      return cnt.npt_ptr->get_sequences_len_sum( );
-    }
-
-    template< typename TNodeProp, typename TContainer, typename TValue >
-    inline std::size_t
-    length_sum( NameProxyContainer< TNodeProp, TContainer, TValue > const& cnt )
-    {
-      return cnt.npt_ptr->get_name_len_sum( );
-    }
-  }  /* --- end of namespace util --- */
 
   template< uint8_t ...TWidths >
   class NodePropertyTrait< Dynamic, TWidths... > {

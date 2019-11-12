@@ -90,14 +90,7 @@ namespace gum {
 
     template< typename TContainer >
     inline std::size_t
-    length_sum( TContainer strset )
-    {
-      return length_sum( strset.begin(), strset.end() );
-    }
-
-    template< typename TAlphabet >
-    inline std::size_t
-    length_sum( StringSet< TAlphabet > strset )
+    length_sum( TContainer const& strset )
     {
       return strset.length_sum( );
     }

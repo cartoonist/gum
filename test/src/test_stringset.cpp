@@ -100,6 +100,8 @@ TEMPLATE_SCENARIO( "StringSet basic functionalities", "[stringset]",
           REQUIRE( strset.at( i ) == stdstrset.at( i ) );
         }
         REQUIRE_THROWS( strset.at( strset.size() ) );
+        REQUIRE_THROWS( strset.at( strset.size() + 1 ) );
+        REQUIRE_THROWS( strset.at( -1 ) );
         REQUIRE( strset.front() == stdstrset.front() );
         REQUIRE( strset.back() == stdstrset.back() );
         if ( std::is_same< alphabet_type, gum::DNA >::value ) {
@@ -117,15 +119,6 @@ TEMPLATE_SCENARIO( "StringSet basic functionalities", "[stringset]",
   GIVEN( "A set of standard strings in the given alphabet" )
   {
     stdstrset = get_stdstrset( );
-    WHEN( "StringSet is constructed by passing the container" )
-    {
-      stringset_type strset( stdstrset );
-      THEN( "It should pass basic test cases" )
-      {
-        basic_test( strset, stdstrset );
-      }
-    }
-
     WHEN( "StringSet is constructed by passing the iterator" )
     {
       stringset_type strset( stdstrset.begin(), stdstrset.end() );
@@ -148,7 +141,7 @@ TEMPLATE_SCENARIO( "StringSet basic functionalities", "[stringset]",
     WHEN( "StringSet is extended by another set of strings" )
     {
       stringset_type strset;
-      strset.extend( stdstrset );
+      strset.extend( stdstrset.begin(), stdstrset.end() );
       strset.extend( stdstrset.begin(), stdstrset.end() );
       auto old_size = stdstrset.size();
       stdstrset.resize( old_size * 2 );
@@ -182,7 +175,7 @@ TEMPLATE_SCENARIO( "StringSet basic functionalities", "[stringset]",
 
     WHEN( "StringSet is constructed by using copy assignment operator" )
     {
-      stringset_type yastrset( stdstrset );
+      stringset_type yastrset( stdstrset.begin(), stdstrset.end() );
       stringset_type strset;
       strset = yastrset;
       THEN( "It should pass basic test cases" )
@@ -193,7 +186,7 @@ TEMPLATE_SCENARIO( "StringSet basic functionalities", "[stringset]",
 
     WHEN( "StringSet is constructed by using move assignment operator" )
     {
-      stringset_type yastrset( stdstrset );
+      stringset_type yastrset( stdstrset.begin(), stdstrset.end() );
       stringset_type strset;
       strset = std::move( yastrset );
       THEN( "It should pass basic test cases" )
