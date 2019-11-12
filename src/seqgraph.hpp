@@ -1908,6 +1908,247 @@ namespace gum {
   };  /* --- end of template class SeqGraph --- */
 
   /**
+   *  @brief  Bidirected sequence graph representation (succinct).
+   *
+   *  Represent a sequence graph (node-labeled bidirected graph).
+   */
+  template< template< class, uint8_t ... > class TNodeProp,
+            template< class, class, uint8_t ... > class TEdgeProp,
+            uint8_t ...TWidths >
+  class SeqGraph< Succinct, TNodeProp, TEdgeProp, TWidths... >
+    : public DirectedGraph< Succinct, Bidirected, TWidths... > {
+  public:
+    /* === TYPEDEFS === */
+    using spec_type = Succinct;
+    using dir_type = Bidirected;
+    using base_type = DirectedGraph< spec_type, dir_type, TWidths... >;
+    using node_prop_type = TNodeProp< spec_type, TWidths... >;
+    using edge_prop_type = void;
+    using typename base_type::id_type;
+    using typename base_type::offset_type;
+    using typename base_type::value_type;
+    using typename base_type::size_type;
+    using typename base_type::rank_type;
+    using typename base_type::padding_type;
+    using typename base_type::side_type;
+    using typename base_type::link_type;
+    using typename base_type::linktype_type;
+    using node_type = typename node_prop_type::node_type;
+    using dynamic_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >;
+
+    constexpr static padding_type NODE_PADDING = 2;
+    constexpr static padding_type EDGE_PADDING = 1;
+
+    constexpr static size_type NP_SEQSTART_OFFSET = 0;
+    constexpr static size_type NP_SEQLEN_OFFSET = 1;
+
+    constexpr static size_type EP_OVERLAP_OFFSET = 0;
+
+    /* === LIFECYCLE === */
+    /* constructor      */
+    SeqGraph( )
+      : base_type( SeqGraph::NODE_PADDING, SeqGraph::EDGE_PADDING )
+    { }
+
+    SeqGraph( dynamic_type const& d_graph )
+      : base_type( d_graph, SeqGraph::NODE_PADDING, SeqGraph::EDGE_PADDING ),
+        node_prop( d_graph.get_node_prop( ) )
+    {
+      this->fill_properties( d_graph );
+    }
+
+    SeqGraph( SeqGraph const& other ) = default;           /* copy constructor */
+    SeqGraph( SeqGraph&& other ) noexcept = default;       /* move constructor */
+    ~SeqGraph() noexcept = default;                        /* destructor       */
+
+    /* === ACCESSORS === */
+    inline node_prop_type const&
+    get_node_prop( ) const
+    {
+      return this->node_prop;
+    }
+
+    inline typename node_prop_type::const_reference
+    get_node_prop( rank_type rank ) const
+    {
+      return this->node_prop( rank );
+    }
+
+    /* === OPERATORS === */
+    SeqGraph& operator=( SeqGraph const& other ) = default;      /* copy assignment operator */
+    SeqGraph& operator=( SeqGraph&& other ) noexcept = default;  /* move assignment operator */
+
+    SeqGraph&
+    operator=( dynamic_type const& d_graph )
+    {
+      base_type::operator=( d_graph );
+      this->node_prop = d_graph.get_node_prop( );
+      this->fill_properties( d_graph );
+    }
+
+    /* === METHODS === */
+    inline typename node_type::sequence_type
+    node_sequence( id_type id ) const
+    {
+      size_type spos = this->get_np_value( id, SeqGraph::NP_SEQSTART_OFFSET );
+      size_type len = this->get_np_value( id, SeqGraph::NP_SEQLEN_OFFSET );
+      return this->node_prop.sequences()( spos, len );
+    }
+
+    inline typename node_type::sequence_type::size_type
+    node_length( id_type id ) const
+    {
+      return this->get_np_value( id, SeqGraph::NP_SEQLEN_OFFSET );
+    }
+
+    inline offset_type
+    edge_overlap( id_type from, id_type to,
+                  linktype_type type=base_type::get_default_linktype() ) const
+    {
+      this->check_linktype( type );
+      auto fod = this->outdegree( from );
+      auto tod = this->indegree( to );
+      offset_type overlap = 0;
+      bool success = false;
+      auto setoverlap =
+          [this, &overlap]( id_type id, linktype_type type ) {
+            return [this, id, type, &overlap]( size_type pos ) {
+                     id_type adj_id = this->get_adj_id( pos );
+                     linktype_type adj_type = this->get_adj_linktype( pos );
+                     if ( adj_id == id && adj_type == type ) {
+                       overlap = this->edge_overlap( pos );
+                       return false;
+                     }
+                     return true;
+                   };
+          };
+      if ( fod < tod ) {
+        success = !this->for_each_edges_to_pos( from, setoverlap( to, type ) );
+        assert( success );
+      }
+      else {
+        success = !this->for_each_edges_from_pos( to, setoverlap( from, type ) );
+        assert( success );
+      }
+      return overlap;
+    }
+
+    inline offset_type
+    edge_overlap( side_type from, side_type to ) const
+    {
+      return this->edge_overlap( this->id_of( from ), this->id_of( to ),
+                                 this->linktype( from, to ) );
+    }
+
+    inline offset_type
+    edge_overlap( link_type sides ) const
+    {
+      return this->edge_overlap( this->from_id( sides ), this->to_id( sides ),
+                                 this->linktype( sides ) );
+    }
+
+  protected:
+    /* === ACCESSORS === */
+    inline node_prop_type&
+    get_node_prop( )
+    {
+      return this->node_prop;
+    }
+
+    inline node_type
+    get_node_prop( rank_type rank )
+    {
+      return this->node_prop( rank );
+    }
+
+    /* === METHODS === */
+    inline size_type
+    node_prop_pos( id_type id ) const
+    {
+      return id + this->header_core_len();
+    }
+
+    inline size_type
+    edge_prop_pos( size_type pos ) const
+    {
+      return pos + this->edge_core_len();
+    }
+
+    inline value_type
+    get_np_value( id_type id, size_type offset ) const
+    {
+      return this->get_nodes_at( this->node_prop_pos( id ) + offset );
+    }
+
+    inline void
+    set_np_value( id_type id, size_type offset, value_type value )
+    {
+      this->set_nodes_at( this->node_prop_pos( id ) + offset, value );
+    }
+
+    inline value_type
+    get_ep_value( size_type pos, size_type offset ) const
+    {
+      return this->get_nodes_at( this->edge_prop_pos( pos ) + offset );
+    }
+
+    inline void
+    set_ep_value( size_type pos, size_type offset, value_type value )
+    {
+      this->set_nodes_at( this->edge_prop_pos( pos ) + offset, value );
+    }
+
+    inline offset_type
+    edge_overlap( size_type pos ) const
+    {
+      return this->get_ep_value( pos, SeqGraph::EP_OVERLAP_OFFSET );
+    }
+
+  private:
+    /* === DATA MEMBERS === */
+    node_prop_type node_prop;
+
+    /* === METHODS === */
+    inline void
+    fill_properties( dynamic_type const& d_graph )
+    {
+      this->for_each_node(
+          [this, &d_graph]( rank_type rank, id_type id ) {
+            this->set_np_value( id, SeqGraph::NP_SEQSTART_OFFSET,
+                                this->node_prop.sequences().position( rank - 1 ) );
+            this->set_np_value( id, SeqGraph::NP_SEQLEN_OFFSET,
+                                this->node_prop.sequences().length( rank - 1 ) );
+            id_type d_id = d_graph.rank_to_id( rank );
+            this->for_each_edges_to_pos(
+                id,
+                [this, d_id, &d_graph]( size_type pos ) {
+                  rank_type adj_rank = this->id_to_rank( this->get_adj_id( pos ) );
+                  id_type d_adj_id = d_graph.rank_to_id( adj_rank );
+                  link_type link = this->make_link( d_id,
+                                                    d_adj_id,
+                                                    this->get_adj_linktype( pos ) );
+                  offset_type overlap = d_graph.edge_overlap( link );
+                  this->set_ep_value( pos, SeqGraph::EP_OVERLAP_OFFSET, overlap );
+                  return true;
+                } );
+            this->for_each_edges_from_pos(
+                id,
+                [this, d_id, &d_graph]( size_type pos ) {
+                  rank_type adj_rank = this->id_to_rank( this->get_adj_id( pos ) );
+                  id_type d_adj_id = d_graph.rank_to_id( adj_rank );
+                  link_type link = this->make_link( d_adj_id,
+                                                    d_id,
+                                                    this->get_adj_linktype( pos ) );
+                  offset_type overlap = d_graph.edge_overlap( link );
+                  this->set_ep_value( pos, SeqGraph::EP_OVERLAP_OFFSET, overlap );
+                  return true;
+                } );
+            return true;
+          } );
+    }
+  };  /* --- end of template class SeqGraph --- */
+
+  /**
    *  @brief  Directed sequence graph representation (dynamic).
    *
    *  Represent a directed sequence graph (node-labeled directed graph).
