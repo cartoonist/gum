@@ -249,6 +249,18 @@ TEMPLATE_SCENARIO( "Specialised functionality of DirectedGraph", "[seqgraph][tem
           REQUIRE( graph.has_edges_to( { rtoi(2) } ) );
           REQUIRE( graph.has_edges_to( { rtoi(8) } ) );
           REQUIRE( !graph.has_edges_to( { rtoi(9) } ) );
+          REQUIRE( graph.is_branch( rtoi(1) ) );
+          REQUIRE( graph.is_branch( rtoi(2) ) );
+          REQUIRE( !graph.is_branch( rtoi(6) ) );
+          REQUIRE( graph.is_branch( { rtoi(1) } ) );
+          REQUIRE( graph.is_branch( { rtoi(2) } ) );
+          REQUIRE( !graph.is_branch( { rtoi(6) } ) );
+          REQUIRE( !graph.is_merge( rtoi(9) ) );
+          REQUIRE( graph.is_merge( rtoi(8) ) );
+          REQUIRE( !graph.is_merge( rtoi(6) ) );
+          REQUIRE( !graph.is_merge( { rtoi(9) } ) );
+          REQUIRE( graph.is_merge( { rtoi(8) } ) );
+          REQUIRE( !graph.is_merge( { rtoi(6) } ) );
         };
 
     WHEN( "It is constructed incrementally" )
@@ -482,6 +494,24 @@ TEMPLATE_SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[se
           REQUIRE( graph.has_edges_to( rtoi(2) ) );
           REQUIRE( graph.has_edges_to( rtoi(8) ) );
           REQUIRE( !graph.has_edges_to( rtoi(9) ) );
+          REQUIRE( graph.is_branch( { rtoi(1), true } ) );
+          REQUIRE( !graph.is_branch( { rtoi(1), false } ) );
+          REQUIRE( graph.is_branch( { rtoi(2), true } ) );
+          REQUIRE( !graph.is_branch( { rtoi(2), false } ) );
+          REQUIRE( !graph.is_branch( { rtoi(6), true } ) );
+          REQUIRE( !graph.is_branch( { rtoi(6), false } ) );
+          REQUIRE( graph.is_branch( rtoi(1) ) );
+          REQUIRE( graph.is_branch( rtoi(2) ) );
+          REQUIRE( !graph.is_branch( rtoi(6) ) );
+          REQUIRE( !graph.is_merge( { rtoi(9), true } ) );
+          REQUIRE( !graph.is_merge( { rtoi(9), false } ) );
+          REQUIRE( !graph.is_merge( { rtoi(6), true } ) );
+          REQUIRE( !graph.is_merge( { rtoi(6), false } ) );
+          REQUIRE( !graph.is_merge( { rtoi(8), true } ) );
+          REQUIRE( graph.is_merge( { rtoi(8), false } ) );
+          REQUIRE( !graph.is_merge( rtoi(9) ) );
+          REQUIRE( !graph.is_merge( rtoi(6) ) );
+          REQUIRE( graph.is_merge( rtoi(8) ) );
         };
 
     WHEN( "It is constructed incrementally" )

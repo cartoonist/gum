@@ -520,6 +520,30 @@ namespace gum {
       return this->outdegree( id ) != 0;
     }
 
+    inline bool
+    is_branch( id_type id ) const
+    {
+      return this->outdegree( id ) > 1;
+    }
+
+    inline bool
+    is_branch( side_type side ) const
+    {
+      return this->outdegree( side ) > 1;
+    }
+
+    inline bool
+    is_merge( id_type id ) const
+    {
+      return this->indegree( id ) > 1;
+    }
+
+    inline bool
+    is_merge( side_type side ) const
+    {
+      return this->indegree( side ) > 1;
+    }
+
   protected:
     /* === ACCESSORS === */
     inline nodes_type&
@@ -1157,6 +1181,30 @@ namespace gum {
     has_edges_to( id_type id ) const
     {
       return this->outdegree( id ) != 0;
+    }
+
+    inline bool
+    is_branch( id_type id ) const
+    {
+      return this->outdegree( id ) > 1;
+    }
+
+    inline bool
+    is_branch( side_type side ) const
+    {
+      return this->outdegree( side ) > 1;
+    }
+
+    inline bool
+    is_merge( id_type id ) const
+    {
+      return this->indegree( id ) > 1;
+    }
+
+    inline bool
+    is_merge( side_type side ) const
+    {
+      return this->indegree( side ) > 1;
     }
 
   protected:
