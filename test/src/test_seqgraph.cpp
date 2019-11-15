@@ -132,25 +132,26 @@ TEMPLATE_SCENARIO( "Specialised functionality of DirectedGraph", "[seqgraph][tem
       { 4, 8 },
       { 8, 9 }
     };
-    auto dyn_rtoi =
-        [&graph]( rank_type rank ) {
-          return graph.rank_to_id( rank );
-        };
     auto update_edges =
-        [&graph, &nodes, &edges]( auto rtoi ) {
+        [&edges]( auto const& graph ) {
           for ( std::size_t i = 0; i < edges.size(); ++i ) {
             link_type e = edges[ i ];
-            edges[ i ] = link_type( rtoi( graph.from_id( e ) ),
-                                    rtoi( graph.to_id( e ) ) );
+            edges[ i ] = link_type( graph.rank_to_id( graph.from_id( e ) ),
+                                    graph.rank_to_id( graph.to_id( e ) ) );
           }
         };
     auto integrity_test =
-        [&edges, abs_id]( auto const& graph, auto rtoi ) {
+        [&edges, abs_id]( auto const& graph ) {
           using graph_type = std::decay_t< decltype( graph ) >;
           using id_type = typename graph_type::id_type;
           using rank_type = typename graph_type::rank_type;
           using side_type = typename graph_type::side_type;
           using linktype_type = typename graph_type::linktype_type;
+
+          auto rtoi =
+              [&graph]( rank_type rank ) {
+                return graph.rank_to_id( rank );
+              };
 
           REQUIRE( graph.get_edge_count() == edges.size() );
           for ( rank_type rank = 1; rank <= graph.get_node_count(); ++rank ) {
@@ -254,11 +255,11 @@ TEMPLATE_SCENARIO( "Specialised functionality of DirectedGraph", "[seqgraph][tem
     {
       for ( rank_type i = 1; i <= node_count; ++i )
         nodes.push_back( graph.add_node( ) );
-      update_edges( dyn_rtoi );
+      update_edges( graph );
       for ( auto const& edge : edges ) graph.add_edge( edge.first, edge.second );
       THEN( "The resulting graph should pass integrity tests" )
       {
-        integrity_test( graph, dyn_rtoi );
+        integrity_test( graph );
       }
     }
 
@@ -267,11 +268,11 @@ TEMPLATE_SCENARIO( "Specialised functionality of DirectedGraph", "[seqgraph][tem
       graph.add_nodes( node_count, [&nodes]( id_type id ) {
                                      nodes.push_back( id );
                                    } );
-      update_edges( dyn_rtoi );
+      update_edges( graph );
       for ( auto const& edge : edges ) graph.add_edge( edge );
       THEN( "The resulting graph should pass integrity tests" )
       {
-        integrity_test( graph, dyn_rtoi );
+        integrity_test( graph );
       }
     }
 
@@ -279,21 +280,18 @@ TEMPLATE_SCENARIO( "Specialised functionality of DirectedGraph", "[seqgraph][tem
     {
       graph.add_nodes( node_count );
       auto tmp = edges;
-      update_edges( dyn_rtoi );
+      update_edges( graph );
       for ( auto const& edge : edges ) graph.add_edge( edge );
       succinct_type sc_graph( graph );
-      auto suc_rtoi = [&sc_graph]( rank_type rank ) {
-                        return sc_graph.rank_to_id( rank );
-                      };
       sc_graph.for_each_node( [&nodes]( rank_type rank, id_type id ) {
                                 nodes.push_back( id );
                                 return true;
                               } );
       edges = tmp;
-      update_edges( suc_rtoi );
+      update_edges( sc_graph );
       THEN( "The resulting graph should pass integrity tests" )
       {
-        integrity_test( sc_graph, suc_rtoi );
+        integrity_test( sc_graph );
       }
     }
   }
@@ -331,27 +329,28 @@ TEMPLATE_SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[se
       { 4, true, 8, false },
       { 8, false, 9, false }
     };
-    auto dyn_rtoi =
-        [&graph]( rank_type rank ) {
-          return graph.rank_to_id( rank );
-        };
     auto update_edges =
-        [&nodes, &edges]( auto rtoi ) {
+        [&edges]( auto const& graph ) {
           for ( std::size_t i = 0; i < edges.size(); ++i ) {
             link_type e = edges[ i ];
-            edges[ i ] = link_type( rtoi( std::get< 0 >( e ) ),
+            edges[ i ] = link_type( graph.rank_to_id( std::get< 0 >( e ) ),
                                     std::get< 1 >( e ),
-                                    rtoi( std::get< 2 >( e ) ),
+                                    graph.rank_to_id( std::get< 2 >( e ) ),
                                     std::get< 3 >( e ) );
           }
         };
     auto integrity_test =
-        [&edges, abs_id]( auto const& graph, auto rtoi ) {
+        [&edges, abs_id]( auto const& graph ) {
           using graph_type = std::decay_t< decltype( graph ) >;
           using id_type = typename graph_type::id_type;
           using rank_type = typename graph_type::rank_type;
           using side_type = typename graph_type::side_type;
           using linktype_type = typename graph_type::linktype_type;
+
+          auto rtoi =
+              [&graph]( rank_type rank ) {
+                return graph.rank_to_id( rank );
+              };
 
           REQUIRE( graph.get_edge_count() == edges.size() );
           for ( rank_type rank = 1; rank <= graph.get_node_count(); ++rank ) {
@@ -489,13 +488,13 @@ TEMPLATE_SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[se
     {
       for ( rank_type i = 1; i <= node_count; ++i )
         nodes.push_back( graph.add_node( ) );
-      update_edges( dyn_rtoi );
+      update_edges( graph );
       for ( auto const& edge : edges ) {
         graph.add_edge( graph.from_side( edge ), graph.to_side( edge ) );
       }
       THEN( "The resulting graph should pass integrity tests" )
       {
-        integrity_test( graph, dyn_rtoi );
+        integrity_test( graph );
       }
     }
 
@@ -504,11 +503,11 @@ TEMPLATE_SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[se
       graph.add_nodes( node_count, [&nodes]( id_type id ) {
                                      nodes.push_back( id );
                                    } );
-      update_edges( dyn_rtoi );
+      update_edges( graph );
       for ( auto const& edge : edges ) graph.add_edge( edge );
       THEN( "The resulting graph should pass integrity tests" )
       {
-        integrity_test( graph, dyn_rtoi );
+        integrity_test( graph );
       }
     }
 
@@ -516,21 +515,18 @@ TEMPLATE_SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[se
     {
       graph.add_nodes( node_count );
       auto tmp = edges;
-      update_edges( dyn_rtoi );
+      update_edges( graph );
       for ( auto const& edge : edges ) graph.add_edge( edge );
       succinct_type sc_graph( graph );
-      auto suc_rtoi = [&sc_graph]( rank_type rank ) {
-                        return sc_graph.rank_to_id( rank );
-                      };
       sc_graph.for_each_node( [&nodes]( rank_type rank, id_type id ) {
                                 nodes.push_back( id );
                                 return true;
                               } );
       edges = tmp;
-      update_edges( suc_rtoi );
+      update_edges( sc_graph );
       THEN( "The resulting graph should pass integrity tests" )
       {
-        integrity_test( sc_graph, suc_rtoi );
+        integrity_test( sc_graph );
       }
     }
 
@@ -539,12 +535,12 @@ TEMPLATE_SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[se
       graph.add_nodes( node_count, [&nodes]( id_type id ) {
                                      nodes.push_back( id );
                                    } );
-      update_edges( dyn_rtoi );
+      update_edges( graph );
       for ( auto const& edge : edges ) graph.add_edge( edge );
       THEN( "The method should silently ignore it" )
       {
-        graph.add_edge( { dyn_rtoi(1), true, dyn_rtoi(2), false } );
-        graph.add_edge( { dyn_rtoi(8), false, dyn_rtoi(9), false } );
+        graph.add_edge( { graph.rank_to_id(1), true, graph.rank_to_id(2), false } );
+        graph.add_edge( { graph.rank_to_id(8), false, graph.rank_to_id(9), false } );
         REQUIRE( graph.get_edge_count() == edges.size() );
       }
     }
