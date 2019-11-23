@@ -1,5 +1,5 @@
 /**
- *    @file  tests_main.cpp
+ *    @file  test_main.cpp
  *   @brief  Unit test framework (Catch2) implementation file.
  *
  *  In order to compile the unit testing framework once, not for each tranlation unit

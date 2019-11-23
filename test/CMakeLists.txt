@@ -1,5 +1,5 @@
 # Prepare "Catch" library for other executables
-add_subdirectory(ext/Catch2)
+add_subdirectory(ext/catch2)
 file(GLOB TEST_SOURCES "src/*.cpp")
 configure_file(src/test_config.hpp.in ${PROJECT_BINARY_DIR}/test/src/test_config.hpp @ONLY)
 include_directories(${PROJECT_SOURCE_DIR}/src ${PROJECT_BINARY_DIR}/test/src)
