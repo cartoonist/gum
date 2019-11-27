@@ -1,3 +1,6 @@
+# Enabling `assert` by setting the build type to 'Debug' for test module
+set(CMAKE_BUILD_TYPE "Debug")
+
 # Prepare "Catch" library for other executables
 add_subdirectory(ext/catch2)
 file(GLOB TEST_SOURCES "src/*.cpp")
