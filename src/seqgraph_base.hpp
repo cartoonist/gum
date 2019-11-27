@@ -50,7 +50,7 @@ namespace gum {
   class GraphBaseTrait< Dynamic, TIdWidth, TOffsetWidth > {
   public:
     using id_type = integer_t< TIdWidth >;
-    using offset_type = integer_t< TOffsetWidth >;
+    using offset_type = uinteger_t< TOffsetWidth >;
     using common_type = common< TIdWidth, TOffsetWidth >;
     using value_type = typename common_type::type;
     using nodes_type = std::vector< id_type >;
@@ -101,7 +101,7 @@ namespace gum {
   class GraphBaseTrait< Succinct, TIdWidth, TOffsetWidth > {
   public:
     using id_type = integer_t< TIdWidth >;
-    using offset_type = integer_t< TOffsetWidth >;
+    using offset_type = uinteger_t< TOffsetWidth >;
     using common_type = common< TIdWidth, TOffsetWidth >;
     using value_type = typename common_type::type;
     using nodes_type = sdsl::int_vector< common_type::value >;

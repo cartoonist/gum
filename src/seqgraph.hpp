@@ -1827,6 +1827,7 @@ namespace gum {
     using typename base_type::link_type;
     using typename base_type::linktype_type;
     using node_type = typename node_prop_type::node_type;
+    using sequence_type = typename node_prop_type::sequence_type;
     using edge_type = typename edge_prop_type::edge_type;
     using succinct_type = SeqGraph< Succinct, TNodeProp, TEdgeProp, TWidths... >;
 
@@ -1893,14 +1894,14 @@ namespace gum {
       return this->has_edge( base_type::make_link( from, to ) );
     }
 
-    inline typename node_type::sequence_type
+    inline sequence_type
     node_sequence( id_type id ) const
     {
       rank_type rank = base_type::id_to_rank( id );
       return this->node_prop( rank ).sequence;
     }
 
-    inline typename node_type::sequence_type::size_type
+    inline offset_type
     node_length( id_type id ) const
     {
       return this->node_sequence( id ).size();
@@ -1978,6 +1979,7 @@ namespace gum {
     using typename base_type::link_type;
     using typename base_type::linktype_type;
     using node_type = typename node_prop_type::node_type;
+    using sequence_type = typename node_prop_type::sequence_type;
     using dynamic_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >;
 
     constexpr static padding_type NODE_PADDING = 2;
@@ -2031,7 +2033,7 @@ namespace gum {
     }
 
     /* === METHODS === */
-    inline typename node_type::sequence_type
+    inline sequence_type
     node_sequence( id_type id ) const
     {
       size_type spos = this->get_np_value( id, SeqGraph::NP_SEQSTART_OFFSET );
@@ -2039,7 +2041,7 @@ namespace gum {
       return this->node_prop.sequences()( spos, len );
     }
 
-    inline typename node_type::sequence_type::size_type
+    inline offset_type
     node_length( id_type id ) const
     {
       return this->get_np_value( id, SeqGraph::NP_SEQLEN_OFFSET );
