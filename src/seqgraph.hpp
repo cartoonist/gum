@@ -2055,6 +2055,7 @@ namespace gum {
       auto tod = this->indegree( to );
       offset_type overlap = 0;
       bool success = false;
+      (void)success;  // Silencing unused-but-set-variable warning.
       auto setoverlap =
           [this, &overlap]( id_type id, linktype_type type ) {
             return [this, id, type, &overlap]( size_type pos ) {
