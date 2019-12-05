@@ -56,8 +56,8 @@ namespace gum {
       : max_id( 0 ), node_count( 0 ), edge_count( 0 )
     {
       trait_type::init_rank_map( this->node_rank );
-      trait_type::init_adj_map( this->adj_from );
-      trait_type::init_adj_map( this->adj_to );
+      trait_type::init_adj_map( this->adj_in );
+      trait_type::init_adj_map( this->adj_out );
     }
 
     DirectedGraph( DirectedGraph const& other ) = default;      /* copy constructor */
@@ -310,9 +310,9 @@ namespace gum {
     inline bool
     has_edge( side_type from, side_type to ) const
     {
-      auto oit = this->adj_to.find( from );
-      auto iit = this->adj_from.find( to );
-      if ( oit == this->adj_to.end() || iit == this->adj_from.end() ) return false;
+      auto oit = this->adj_out.find( from );
+      auto iit = this->adj_in.find( to );
+      if ( oit == this->adj_out.end() || iit == this->adj_in.end() ) return false;
       auto const& outs = oit->second;
       auto const& ins = iit->second;
       if ( outs.size() < ins.size() )
@@ -333,18 +333,18 @@ namespace gum {
     }
 
     inline adjs_type
-    adjacents_to( side_type from ) const
+    adjacents_out( side_type from ) const
     {
-      auto found = this->adj_to.find( from );
-      if ( found == this->adj_to.end() ) return adjs_type();
+      auto found = this->adj_out.find( from );
+      if ( found == this->adj_out.end() ) return adjs_type();
       return found->second;
     }
 
     inline adjs_type
-    adjacents_from( side_type to ) const
+    adjacents_in( side_type to ) const
     {
-      auto found = this->adj_from.find( to );
-      if ( found == this->adj_from.end() ) return adjs_type();
+      auto found = this->adj_in.find( to );
+      if ( found == this->adj_in.end() ) return adjs_type();
       return found->second;
     }
 
@@ -360,11 +360,11 @@ namespace gum {
      *  iteration has been interrupted by `callback`.
      */
     inline bool
-    for_each_edges_to( side_type from,
-                       std::function< bool( side_type ) > callback ) const
+    for_each_edges_out( side_type from,
+                        std::function< bool( side_type ) > callback ) const
     {
-      auto found = this->adj_to.find( from );
-      if ( found == this->adj_to.end() ) return true;
+      auto found = this->adj_out.find( from );
+      if ( found == this->adj_out.end() ) return true;
       for ( side_type to : found->second ) {
         if ( !callback( to ) ) return false;
       }
@@ -384,14 +384,14 @@ namespace gum {
      *  iteration has been interrupted by `callback`.
      */
     inline bool
-    for_each_edges_to( id_type id,
-                       std::function< bool( id_type, linktype_type ) > callback ) const
+    for_each_edges_out( id_type id,
+                        std::function< bool( id_type, linktype_type ) > callback ) const
     {
       return this->for_each_side(
           id,
           [this, callback]( side_type from ) {
-            auto found = this->adj_to.find( from );
-            if ( found == this->adj_to.end() ) return true;
+            auto found = this->adj_out.find( from );
+            if ( found == this->adj_out.end() ) return true;
             for ( side_type to : found->second ) {
               if ( !callback( this->id_of( to ), this->linktype( from, to ) ) )
                 return false;
@@ -412,11 +412,11 @@ namespace gum {
      *  iteration has been interrupted by `callback`.
      */
     inline bool
-    for_each_edges_from( side_type to,
-                         std::function< bool( side_type ) > callback ) const
+    for_each_edges_in( side_type to,
+                       std::function< bool( side_type ) > callback ) const
     {
-      auto found = this->adj_from.find( to );
-      if ( found == this->adj_from.end() ) return true;
+      auto found = this->adj_in.find( to );
+      if ( found == this->adj_in.end() ) return true;
       for ( side_type from : found->second ) {
         if ( !callback( from ) ) return false;
       }
@@ -436,14 +436,14 @@ namespace gum {
      *  iteration has been interrupted by `callback`.
      */
     inline bool
-    for_each_edges_from( id_type id,
-                         std::function< bool( id_type, linktype_type ) > callback ) const
+    for_each_edges_in( id_type id,
+                       std::function< bool( id_type, linktype_type ) > callback ) const
     {
       return this->for_each_side(
           id,
           [this, callback]( side_type to ) {
-            auto found = this->adj_from.find( to );
-            if ( found == this->adj_from.end() ) return true;
+            auto found = this->adj_in.find( to );
+            if ( found == this->adj_in.end() ) return true;
             for ( side_type from : found->second ) {
               if ( !callback( this->id_of( from ), this->linktype( from, to ) ) )
                 return false;
@@ -455,8 +455,8 @@ namespace gum {
     inline rank_type
     outdegree( side_type side ) const
     {
-      auto found = this->adj_to.find( side );
-      if ( found == this->adj_to.end() ) return 0;
+      auto found = this->adj_out.find( side );
+      if ( found == this->adj_out.end() ) return 0;
       return found->second.size();
     }
 
@@ -477,8 +477,8 @@ namespace gum {
     inline rank_type
     indegree( side_type side ) const
     {
-      auto found = this->adj_from.find( side );
-      if ( found == this->adj_from.end() ) return 0;
+      auto found = this->adj_in.find( side );
+      if ( found == this->adj_in.end() ) return 0;
       return found->second.size();
     }
 
@@ -497,25 +497,25 @@ namespace gum {
     }
 
     inline bool
-    has_edges_from( side_type side ) const
+    has_edges_in( side_type side ) const
     {
       return this->indegree( side ) != 0;
     }
 
     inline bool
-    has_edges_from( id_type id ) const
+    has_edges_in( id_type id ) const
     {
       return this->indegree( id ) != 0;
     }
 
     inline bool
-    has_edges_to( side_type side ) const
+    has_edges_out( side_type side ) const
     {
       return this->outdegree( side ) != 0;
     }
 
     inline bool
-    has_edges_to( id_type id ) const
+    has_edges_out( id_type id ) const
     {
       return this->outdegree( id ) != 0;
     }
@@ -564,8 +564,8 @@ namespace gum {
     add_edge_imp( side_type from, side_type to, bool safe=true )
     {
       if ( safe && this->has_edge( from, to ) ) return;
-      this->adj_to[ from ].push_back( to );
-      this->adj_from[ to ].push_back( from );
+      this->adj_out[ from ].push_back( to );
+      this->adj_in[ to ].push_back( from );
       ++this->edge_count;
     }
 
@@ -579,8 +579,8 @@ namespace gum {
     /* === DATA MEMBERS === */
     nodes_type nodes;
     rank_map_type node_rank;
-    adj_map_type adj_to;
-    adj_map_type adj_from;
+    adj_map_type adj_out;
+    adj_map_type adj_in;
     id_type max_id;
     rank_type node_count;
     rank_type edge_count;
@@ -967,8 +967,8 @@ namespace gum {
             if ( fid == from && ftype == type ) return false;
             return true;
           };
-      if ( fod < tod ) return !this->for_each_edges_to( from, findto );
-      else return !this->for_each_edges_from( to, findfrom );
+      if ( fod < tod ) return !this->for_each_edges_out( from, findto );
+      else return !this->for_each_edges_in( to, findfrom );
     }
 
     inline bool
@@ -986,12 +986,12 @@ namespace gum {
     }
 
     inline adjs_type
-    adjacents_to( side_type from ) const
+    adjacents_out( side_type from ) const
     {
       adjs_type adjs;
       // Getting outdegree of node (rather than side) is faster, although not exact.
       adjs.reserve( this->outdegree( this->id_of( from ) ) );
-      this->for_each_edges_to(
+      this->for_each_edges_out(
           from,
           [&adjs]( side_type to ) {
             adjs.push_back( to );
@@ -1001,12 +1001,12 @@ namespace gum {
     }
 
     inline adjs_type
-    adjacents_from( side_type to ) const
+    adjacents_in( side_type to ) const
     {
       adjs_type adjs;
       // Getting outdegree of node (rather than side) is faster, although not exact.
       adjs.reserve( this->indegree( this->id_of( to ) ) );
-      this->for_each_edges_from(
+      this->for_each_edges_in(
           to,
           [&adjs]( side_type from ) {
             adjs.push_back( from );
@@ -1027,10 +1027,10 @@ namespace gum {
      *  iteration has been interrupted by `callback`.
      */
     inline bool
-    for_each_edges_to( side_type from,
-                       std::function< bool( side_type ) > callback ) const
+    for_each_edges_out( side_type from,
+                        std::function< bool( side_type ) > callback ) const
     {
-      return this->for_each_edges_to(
+      return this->for_each_edges_out(
           this->id_of( from ),
           [this, from, callback]( id_type id, linktype_type type ) {
             if ( !this->is_valid_from( from, type ) ) return true;
@@ -1053,11 +1053,11 @@ namespace gum {
      *  iteration has been interrupted by `callback`.
      */
     inline bool
-    for_each_edges_to( id_type id,
-                       std::function< bool( id_type, linktype_type ) > callback ) const
+    for_each_edges_out( id_type id,
+                        std::function< bool( id_type, linktype_type ) > callback ) const
     {
-      if ( !this->has_edges_to( id ) ) return true;
-      return this->for_each_edges_to_pos(
+      if ( !this->has_edges_out( id ) ) return true;
+      return this->for_each_edges_out_pos(
           id,
           [this, callback]( size_type pos ) {
             return callback( this->get_adj_id( pos ),
@@ -1078,10 +1078,10 @@ namespace gum {
      *  iteration has been interrupted by `callback`.
      */
     inline bool
-    for_each_edges_from( side_type to,
-                         std::function< bool( side_type ) > callback ) const
+    for_each_edges_in( side_type to,
+                       std::function< bool( side_type ) > callback ) const
     {
-      return this->for_each_edges_from(
+      return this->for_each_edges_in(
           this->id_of( to ),
           [this, to, callback]( id_type id, linktype_type type ) {
             if ( !this->is_valid_to( to, type ) ) return true;
@@ -1104,11 +1104,11 @@ namespace gum {
      *  iteration has been interrupted by `callback`.
      */
     inline bool
-    for_each_edges_from( id_type id,
-                         std::function< bool( id_type, linktype_type ) > callback ) const
+    for_each_edges_in( id_type id,
+                       std::function< bool( id_type, linktype_type ) > callback ) const
     {
-      if ( !this->has_edges_from( id ) ) return true;
-      return this->for_each_edges_from_pos(
+      if ( !this->has_edges_in( id ) ) return true;
+      return this->for_each_edges_in_pos(
           id,
           [this, callback]( size_type pos ) {
             return callback( this->get_adj_id( pos ),
@@ -1128,7 +1128,7 @@ namespace gum {
     outdegree( side_type side ) const
     {
       rank_type retval = 0;
-      this->for_each_edges_to(
+      this->for_each_edges_out(
           side,
           [&retval]( side_type ) {
             ++retval;
@@ -1149,7 +1149,7 @@ namespace gum {
     indegree( side_type side ) const
     {
       rank_type retval = 0;
-      this->for_each_edges_from(
+      this->for_each_edges_in(
           side,
           [&retval]( side_type ) {
             ++retval;
@@ -1160,25 +1160,25 @@ namespace gum {
     }
 
     inline bool
-    has_edges_from( side_type side ) const
+    has_edges_in( side_type side ) const
     {
       return this->indegree( side ) != 0;
     }
 
     inline bool
-    has_edges_from( id_type id ) const
+    has_edges_in( id_type id ) const
     {
       return this->indegree( id ) != 0;
     }
 
     inline bool
-    has_edges_to( side_type side ) const
+    has_edges_out( side_type side ) const
     {
       return this->outdegree( side ) != 0;
     }
 
     inline bool
-    has_edges_to( id_type id ) const
+    has_edges_out( id_type id ) const
     {
       return this->outdegree( id ) != 0;
     }
@@ -1249,23 +1249,23 @@ namespace gum {
     }
 
     inline size_type
-    edges_to_pos( id_type id ) const
+    edges_out_pos( id_type id ) const
     {
       return id + this->header_entry_len();
     }
 
     inline size_type
-    edges_from_pos( id_type id ) const
+    edges_in_pos( id_type id ) const
     {
-      return this->edges_to_pos( id ) +
+      return this->edges_out_pos( id ) +
           this->outdegree( id ) * this->edge_entry_len();
     }
 
     inline bool
-    for_each_edges_to_pos( id_type id,
+    for_each_edges_out_pos( id_type id,
                            std::function< bool( size_type ) > callback ) const
     {
-      size_type pos = this->edges_to_pos( id );
+      size_type pos = this->edges_out_pos( id );
       for ( rank_type i = 0; i < this->outdegree( id ); ++i ) {
         if ( !callback( pos ) ) return false;
         pos += this->edge_entry_len();
@@ -1274,10 +1274,10 @@ namespace gum {
     }
 
     inline bool
-    for_each_edges_from_pos( id_type id,
-                             std::function< bool( size_type ) > callback ) const
+    for_each_edges_in_pos( id_type id,
+                           std::function< bool( size_type ) > callback ) const
     {
-      size_type pos = this->edges_from_pos( id );
+      size_type pos = this->edges_in_pos( id );
       for ( rank_type i = 0; i < this->indegree( id ); ++i ) {
         if ( !callback( pos ) ) return false;
         pos += this->edge_entry_len();
@@ -1374,7 +1374,7 @@ namespace gum {
         this->nodes[ pos ] = rank;
         this->set_outdegree( pos, d_graph.outdegree( d_id ) );
         this->set_indegree( pos, d_graph.indegree( d_id ));
-        // Add EDGES_TO and EDGES_FROM entries
+        // Add EDGES_OUT and EDGES_IN entries
         this->fill_edges_entries( d_graph, d_id, static_cast< id_type >( pos ) );
         // Get the next node entry position.
         pos += this->node_entry_len( static_cast< id_type >( pos ) );
@@ -1390,8 +1390,8 @@ namespace gum {
                         id_type d_id,
                         id_type new_id )
     {
-      size_type pos = this->edges_to_pos( new_id );
-      d_graph.for_each_edges_to(
+      size_type pos = this->edges_out_pos( new_id );
+      d_graph.for_each_edges_out(
           d_id,
           [this, &pos, &d_graph]( id_type to, linktype_type type ) {
             // Fill out the `nodes` vector by rank in the first pass.
@@ -1401,8 +1401,8 @@ namespace gum {
             return true;
           } );
 
-      pos = this->edges_from_pos( new_id );
-      d_graph.for_each_edges_from(
+      pos = this->edges_in_pos( new_id );
+      d_graph.for_each_edges_in(
           d_id,
           [this, &pos, &d_graph]( id_type from, linktype_type type ) {
             // Fill out the `nodes` vector by rank in the first pass.
@@ -1429,7 +1429,7 @@ namespace gum {
       // Replace other node IDs in adjacency lists.
       this->for_each_node(
           [this]( rank_type rank, id_type id ) {
-            this->for_each_edges_to_pos(
+            this->for_each_edges_out_pos(
                 id,
                 [this]( size_type pos ) {
                   // Replace node IDs for edges to.
@@ -1437,7 +1437,7 @@ namespace gum {
                   return true;
                 }
               );
-            this->for_each_edges_from_pos(
+            this->for_each_edges_in_pos(
                 id,
                 [this]( size_type pos ) {
                   // Replace node IDs for edges from.
@@ -2069,11 +2069,11 @@ namespace gum {
                    };
           };
       if ( fod < tod ) {
-        success = !this->for_each_edges_to_pos( from, setoverlap( to, type ) );
+        success = !this->for_each_edges_out_pos( from, setoverlap( to, type ) );
         assert( success );
       }
       else {
-        success = !this->for_each_edges_from_pos( to, setoverlap( from, type ) );
+        success = !this->for_each_edges_in_pos( to, setoverlap( from, type ) );
         assert( success );
       }
       return overlap;
@@ -2165,7 +2165,7 @@ namespace gum {
             this->set_np_value( id, SeqGraph::NP_SEQLEN_OFFSET,
                                 this->node_prop.sequences().length( rank - 1 ) );
             id_type d_id = d_graph.rank_to_id( rank );
-            this->for_each_edges_to_pos(
+            this->for_each_edges_out_pos(
                 id,
                 [this, d_id, &d_graph]( size_type pos ) {
                   rank_type adj_rank = this->id_to_rank( this->get_adj_id( pos ) );
@@ -2177,7 +2177,7 @@ namespace gum {
                   this->set_ep_value( pos, SeqGraph::EP_OVERLAP_OFFSET, overlap );
                   return true;
                 } );
-            this->for_each_edges_from_pos(
+            this->for_each_edges_in_pos(
                 id,
                 [this, d_id, &d_graph]( size_type pos ) {
                   rank_type adj_rank = this->id_to_rank( this->get_adj_id( pos ) );

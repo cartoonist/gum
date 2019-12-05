@@ -76,12 +76,12 @@ namespace gum {
    *  node/edge properties in the graph.
    *
    *  GRAPH := NODES
-   *  NODES := {HEADER, EDGES_TO, EDGES_FROM}
+   *  NODES := {HEADER, EDGES_OUT, EDGES_IN}
    *  HEADER = {id, outdegree, indegree, NODE_PROPS}
-   *  EDGES_TO = {EDGE_TO, ...}
-   *  EDGES_FROM = {EDGE_FROM, ...}
-   *  EDGE_TO(*) = {id, type?, EDGE_PROPS}
-   *  EDGE_FROM(*) = {id, type?, EDGE_PROPS}
+   *  EDGES_OUT = {EDGE_OUT, ...}
+   *  EDGES_IN = {EDGE_IN, ...}
+   *  EDGE_OUT(*) = {id, type?, EDGE_PROPS}
+   *  EDGE_IN(*) = {id, type?, EDGE_PROPS}
    *  NODE_PROPS = {node_prop, ...}  // of size np_padding
    *  EDGE_PROPS = {edge_prop, ...}  // of size ep_padding
    *

@@ -189,38 +189,38 @@ TEMPLATE_SCENARIO( "Specialised functionality of DirectedGraph", "[seqgraph][tem
                 REQUIRE( std::find( truth.begin(), truth.end(), side ) != truth.end() );
                 return true;
               };
-          auto adjs = graph.adjacents_to( rtoi(2) );
+          auto adjs = graph.adjacents_out( rtoi(2) );
           truth = { rtoi(5), rtoi(6), rtoi(7) };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_to( rtoi(2), to_id_truth_check );
-          graph.for_each_edges_to( side_type( rtoi(2) ), side_truth_check );
-          adjs = graph.adjacents_to( rtoi(8) );
+          graph.for_each_edges_out( rtoi(2), to_id_truth_check );
+          graph.for_each_edges_out( side_type( rtoi(2) ), side_truth_check );
+          adjs = graph.adjacents_out( rtoi(8) );
           truth = { rtoi(9) };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_to( rtoi(8), to_id_truth_check );
-          graph.for_each_edges_to( side_type( rtoi(8) ), side_truth_check );
-          adjs = graph.adjacents_from( rtoi(2) );
+          graph.for_each_edges_out( rtoi(8), to_id_truth_check );
+          graph.for_each_edges_out( side_type( rtoi(8) ), side_truth_check );
+          adjs = graph.adjacents_in( rtoi(2) );
           truth = { rtoi(1) };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_from( rtoi(2), from_id_truth_check );
-          graph.for_each_edges_from( side_type( rtoi(2) ), side_truth_check );
-          adjs = graph.adjacents_from( rtoi(8) );
+          graph.for_each_edges_in( rtoi(2), from_id_truth_check );
+          graph.for_each_edges_in( side_type( rtoi(2) ), side_truth_check );
+          adjs = graph.adjacents_in( rtoi(8) );
           truth = { rtoi(5), rtoi(6), rtoi(7), rtoi(4) };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_from( rtoi(8), from_id_truth_check );
-          graph.for_each_edges_from( side_type( rtoi(8) ), side_truth_check );
+          graph.for_each_edges_in( rtoi(8), from_id_truth_check );
+          graph.for_each_edges_in( side_type( rtoi(8) ), side_truth_check );
           REQUIRE( graph.outdegree( rtoi(1) ) == 2 );
           REQUIRE( graph.outdegree( rtoi(2) ) == 3 );
           REQUIRE( graph.outdegree( rtoi(6) ) == 1 );
@@ -233,22 +233,22 @@ TEMPLATE_SCENARIO( "Specialised functionality of DirectedGraph", "[seqgraph][tem
           REQUIRE( graph.indegree( { rtoi(9) } ) == 1 );
           REQUIRE( graph.indegree( { rtoi(8) } ) == 4 );
           REQUIRE( graph.indegree( { rtoi(6) } ) == 1 );
-          REQUIRE( !graph.has_edges_from( rtoi(1) ) );
-          REQUIRE( graph.has_edges_from( rtoi(2) ) );
-          REQUIRE( graph.has_edges_from( rtoi(8) ) );
-          REQUIRE( graph.has_edges_from( rtoi(9) ) );
-          REQUIRE( !graph.has_edges_from( { rtoi(1) } ) );
-          REQUIRE( graph.has_edges_from( { rtoi(2) } ) );
-          REQUIRE( graph.has_edges_from( { rtoi(8) } ) );
-          REQUIRE( graph.has_edges_from( { rtoi(9) } ) );
-          REQUIRE( graph.has_edges_to( rtoi(1) ) );
-          REQUIRE( graph.has_edges_to( rtoi(2) ) );
-          REQUIRE( graph.has_edges_to( rtoi(8) ) );
-          REQUIRE( !graph.has_edges_to( rtoi(9) ) );
-          REQUIRE( graph.has_edges_to( { rtoi(1) } ) );
-          REQUIRE( graph.has_edges_to( { rtoi(2) } ) );
-          REQUIRE( graph.has_edges_to( { rtoi(8) } ) );
-          REQUIRE( !graph.has_edges_to( { rtoi(9) } ) );
+          REQUIRE( !graph.has_edges_in( rtoi(1) ) );
+          REQUIRE( graph.has_edges_in( rtoi(2) ) );
+          REQUIRE( graph.has_edges_in( rtoi(8) ) );
+          REQUIRE( graph.has_edges_in( rtoi(9) ) );
+          REQUIRE( !graph.has_edges_in( { rtoi(1) } ) );
+          REQUIRE( graph.has_edges_in( { rtoi(2) } ) );
+          REQUIRE( graph.has_edges_in( { rtoi(8) } ) );
+          REQUIRE( graph.has_edges_in( { rtoi(9) } ) );
+          REQUIRE( graph.has_edges_out( rtoi(1) ) );
+          REQUIRE( graph.has_edges_out( rtoi(2) ) );
+          REQUIRE( graph.has_edges_out( rtoi(8) ) );
+          REQUIRE( !graph.has_edges_out( rtoi(9) ) );
+          REQUIRE( graph.has_edges_out( { rtoi(1) } ) );
+          REQUIRE( graph.has_edges_out( { rtoi(2) } ) );
+          REQUIRE( graph.has_edges_out( { rtoi(8) } ) );
+          REQUIRE( !graph.has_edges_out( { rtoi(9) } ) );
           REQUIRE( graph.is_branch( rtoi(1) ) );
           REQUIRE( graph.is_branch( rtoi(2) ) );
           REQUIRE( !graph.is_branch( rtoi(6) ) );
@@ -409,49 +409,49 @@ TEMPLATE_SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[se
                 REQUIRE( std::find( truth.begin(), truth.end(), side ) != truth.end() );
                 return true;
               };
-          auto adjs = graph.adjacents_to( { rtoi(2), true } );
+          auto adjs = graph.adjacents_out( { rtoi(2), true } );
           truth = { { rtoi(5), false }, { rtoi(6), true }, { rtoi(7), false } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_to( { rtoi(2), true }, side_truth_check );
-          adjs = graph.adjacents_to( { rtoi(8), false } );
+          graph.for_each_edges_out( { rtoi(2), true }, side_truth_check );
+          adjs = graph.adjacents_out( { rtoi(8), false } );
           truth = { { rtoi(9), false } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_to( { rtoi(8), false }, side_truth_check );
-          adjs = graph.adjacents_to( { rtoi(8), true } );
+          graph.for_each_edges_out( { rtoi(8), false }, side_truth_check );
+          adjs = graph.adjacents_out( { rtoi(8), true } );
           REQUIRE( adjs.empty() );
-          graph.for_each_edges_to( rtoi(8), to_id_truth_check );
-          adjs = graph.adjacents_from( { rtoi(2), false } );
+          graph.for_each_edges_out( rtoi(8), to_id_truth_check );
+          adjs = graph.adjacents_in( { rtoi(2), false } );
           truth = { { rtoi(1), true } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_from( { rtoi(2), false }, side_truth_check );
-          adjs = graph.adjacents_from( { rtoi(2), true } );
+          graph.for_each_edges_in( { rtoi(2), false }, side_truth_check );
+          adjs = graph.adjacents_in( { rtoi(2), true } );
           REQUIRE( adjs.empty() );
-          graph.for_each_edges_from( rtoi(2), from_id_truth_check );
-          adjs = graph.adjacents_from( { rtoi(8), false } );
+          graph.for_each_edges_in( rtoi(2), from_id_truth_check );
+          adjs = graph.adjacents_in( { rtoi(8), false } );
           truth = { { rtoi(5), true }, { rtoi(7), true }, { rtoi(4), true } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_from( { rtoi(8), false }, side_truth_check );
+          graph.for_each_edges_in( { rtoi(8), false }, side_truth_check );
           truth.push_back( { rtoi(6), false } );
-          graph.for_each_edges_from( rtoi(8), from_id_truth_check );
-          adjs = graph.adjacents_from( { rtoi(8), true } );
+          graph.for_each_edges_in( rtoi(8), from_id_truth_check );
+          adjs = graph.adjacents_in( { rtoi(8), true } );
           truth = { { rtoi(6), false } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_from( { rtoi(8), true }, side_truth_check );
+          graph.for_each_edges_in( { rtoi(8), true }, side_truth_check );
           REQUIRE( graph.outdegree( { rtoi(1), true } ) == 2 );
           REQUIRE( graph.outdegree( { rtoi(1), false } ) == 0 );
           REQUIRE( graph.outdegree( { rtoi(2), true } ) == 3 );
@@ -470,30 +470,30 @@ TEMPLATE_SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[se
           REQUIRE( graph.indegree( rtoi(9) ) == 1 );
           REQUIRE( graph.indegree( rtoi(6) ) == 1 );
           REQUIRE( graph.indegree( rtoi(8) ) == 4 );
-          REQUIRE( !graph.has_edges_from( { rtoi(1), true } ) );
-          REQUIRE( !graph.has_edges_from( { rtoi(1), false } ) );
-          REQUIRE( !graph.has_edges_from( { rtoi(2), true } ) );
-          REQUIRE( graph.has_edges_from( { rtoi(2), false } ) );
-          REQUIRE( graph.has_edges_from( { rtoi(8), true } ) );
-          REQUIRE( graph.has_edges_from( { rtoi(8), false } ) );
-          REQUIRE( !graph.has_edges_from( { rtoi(9), true } ) );
-          REQUIRE( graph.has_edges_from( { rtoi(9), false } ) );
-          REQUIRE( !graph.has_edges_from( rtoi(1) ) );
-          REQUIRE( graph.has_edges_from( rtoi(2) ) );
-          REQUIRE( graph.has_edges_from( rtoi(8) ) );
-          REQUIRE( graph.has_edges_from( rtoi(9) ) );
-          REQUIRE( graph.has_edges_to( { rtoi(1), true } ) );
-          REQUIRE( !graph.has_edges_to( { rtoi(1), false } ) );
-          REQUIRE( graph.has_edges_to( { rtoi(2), true } ) );
-          REQUIRE( !graph.has_edges_to( { rtoi(2), false } ) );
-          REQUIRE( !graph.has_edges_to( { rtoi(8), true } ) );
-          REQUIRE( graph.has_edges_to( { rtoi(8), false } ) );
-          REQUIRE( !graph.has_edges_to( { rtoi(9), true } ) );
-          REQUIRE( !graph.has_edges_to( { rtoi(9), false } ) );
-          REQUIRE( graph.has_edges_to( rtoi(1) ) );
-          REQUIRE( graph.has_edges_to( rtoi(2) ) );
-          REQUIRE( graph.has_edges_to( rtoi(8) ) );
-          REQUIRE( !graph.has_edges_to( rtoi(9) ) );
+          REQUIRE( !graph.has_edges_in( { rtoi(1), true } ) );
+          REQUIRE( !graph.has_edges_in( { rtoi(1), false } ) );
+          REQUIRE( !graph.has_edges_in( { rtoi(2), true } ) );
+          REQUIRE( graph.has_edges_in( { rtoi(2), false } ) );
+          REQUIRE( graph.has_edges_in( { rtoi(8), true } ) );
+          REQUIRE( graph.has_edges_in( { rtoi(8), false } ) );
+          REQUIRE( !graph.has_edges_in( { rtoi(9), true } ) );
+          REQUIRE( graph.has_edges_in( { rtoi(9), false } ) );
+          REQUIRE( !graph.has_edges_in( rtoi(1) ) );
+          REQUIRE( graph.has_edges_in( rtoi(2) ) );
+          REQUIRE( graph.has_edges_in( rtoi(8) ) );
+          REQUIRE( graph.has_edges_in( rtoi(9) ) );
+          REQUIRE( graph.has_edges_out( { rtoi(1), true } ) );
+          REQUIRE( !graph.has_edges_out( { rtoi(1), false } ) );
+          REQUIRE( graph.has_edges_out( { rtoi(2), true } ) );
+          REQUIRE( !graph.has_edges_out( { rtoi(2), false } ) );
+          REQUIRE( !graph.has_edges_out( { rtoi(8), true } ) );
+          REQUIRE( graph.has_edges_out( { rtoi(8), false } ) );
+          REQUIRE( !graph.has_edges_out( { rtoi(9), true } ) );
+          REQUIRE( !graph.has_edges_out( { rtoi(9), false } ) );
+          REQUIRE( graph.has_edges_out( rtoi(1) ) );
+          REQUIRE( graph.has_edges_out( rtoi(2) ) );
+          REQUIRE( graph.has_edges_out( rtoi(8) ) );
+          REQUIRE( !graph.has_edges_out( rtoi(9) ) );
           REQUIRE( graph.is_branch( { rtoi(1), true } ) );
           REQUIRE( !graph.is_branch( { rtoi(1), false } ) );
           REQUIRE( graph.is_branch( { rtoi(2), true } ) );
