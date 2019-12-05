@@ -278,6 +278,18 @@ namespace gum {
     }
 
     constexpr inline bool
+    is_from_start( link_type sides ) const
+    {
+      return trait_type::is_from_start( sides );
+    }
+
+    constexpr inline bool
+    is_to_end( link_type sides ) const
+    {
+      return trait_type::is_to_end( sides );
+    }
+
+    constexpr inline bool
     is_valid( linktype_type type ) const
     {
       return trait_type::is_valid( type );
@@ -931,6 +943,18 @@ namespace gum {
     linktype( link_type sides ) const
     {
       return trait_type::linktype( sides );
+    }
+
+    constexpr inline bool
+    is_from_start( link_type sides ) const
+    {
+      return trait_type::is_from_start( sides );
+    }
+
+    constexpr inline bool
+    is_to_end( link_type sides ) const
+    {
+      return trait_type::is_to_end( sides );
     }
 
     constexpr inline bool
