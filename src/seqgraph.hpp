@@ -170,11 +170,12 @@ namespace gum {
      *  iteration has been interrupted by `callback`.
      */
     inline bool
-    for_each_node( std::function< bool( rank_type, id_type ) > callback ) const
+    for_each_node( std::function< bool( rank_type, id_type ) > callback,
+                   rank_type s_rank=1 ) const
     {
       rank_type rank = 1;
       for ( id_type id : this->nodes ) {
-        if ( !callback( rank, id ) ) return false;
+        if ( rank >= s_rank && !callback( rank, id ) ) return false;
         ++rank;
       }
       return true;
@@ -836,12 +837,13 @@ namespace gum {
      *  iteration has been interrupted by `callback`.
      */
     inline bool
-    for_each_node( std::function< bool( rank_type, id_type ) > callback ) const
+    for_each_node( std::function< bool( rank_type, id_type ) > callback,
+                   rank_type s_rank=1 ) const
     {
       id_type id = 1;
       rank_type rank = 1;
       while ( id != 0 ) {
-        if ( !callback( rank, id ) ) return false;
+        if ( rank >= s_rank && !callback( rank, id ) ) return false;
         id = this->successor_id( id );
         ++rank;
       }

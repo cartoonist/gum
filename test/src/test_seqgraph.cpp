@@ -58,6 +58,16 @@ TEMPLATE_SCENARIO( "Generic functionality of DirectedGraph", "[seqgraph][templat
                 successor = graph.successor_id( id );
                 return true;
               } );
+          unsigned int counter = 3;
+          graph.for_each_node(
+              [&counter]( rank_type rank, id_type ) {
+                REQUIRE( rank == counter );
+                ++counter;
+                return true;
+              },
+              counter
+            );
+          REQUIRE( counter - 1 == node_count );
           for ( rank_type i = 1; i <= graph.get_node_count(); ++i ) {
             REQUIRE( graph.has_node( nodes[ i - 1 ] ) );
           }
