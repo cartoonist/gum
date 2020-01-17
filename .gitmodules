@@ -1,3 +1,6 @@
 [submodule "test/ext/catch2"]
 	path = test/ext/catch2
 	url = https://github.com/catchorg/Catch2.git
+[submodule "ext/gfakluge"]
+	path = ext/gfakluge
+	url = https://github.com/cartoonist/gfakluge.git
