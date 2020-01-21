@@ -9,6 +9,8 @@ find_package(SDSL REQUIRED)
 find_package(GFAKluge)
 find_package(VGio)
 find_package(OpenMP)
+# Include external dependencies
+include(${PROJECT_SOURCE_DIR}/ext/external.cmake)
 
 # Force CMake to use `-I` instead of `-isystem`
 set(CMAKE_NO_SYSTEM_FROM_IMPORTED TRUE)
