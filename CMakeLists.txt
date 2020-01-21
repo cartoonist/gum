@@ -13,6 +13,33 @@ find_package(OpenMP)
 # Force CMake to use `-I` instead of `-isystem`
 set(CMAKE_NO_SYSTEM_FROM_IMPORTED TRUE)
 
+# Setting header files
+file(GLOB HEADER_FILES "${PROJECT_SOURCE_DIR}/include/gum/*.hpp")
+# Creating an INTERFACE library
+add_library(gum INTERFACE)
+# Defining target sources
+target_sources(gum INTERFACE "$<BUILD_INTERFACE:${HEADER_FILES}>")
+# Defining include directories
+target_include_directories(gum
+  INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/gum>
+  SYSTEM INTERFACE $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include/gum>
+  INTERFACE sdsl::sdsl
+  INTERFACE SparseHash::SparseHash
+  INTERFACE GFAKluge::GFAKluge
+  INTERFACE VGio::VGio)
+# Defining link libraries
+target_link_libraries(gum
+  INTERFACE sdsl::sdsl
+  INTERFACE VGio::VGio
+  INTERFACE GFAKluge::GFAKluge
+  INTERFACE OpenMP::OpenMP_CXX)
+# Use C++17
+target_compile_features(gum INTERFACE cxx_std_17)
+# Defining `gum::gum` alias
+add_library(gum::gum ALIAS gum)
+# Install targets
+install(DIRECTORY include/gum DESTINATION include)
+
 # Adding test submodule.
 add_subdirectory(test)
 

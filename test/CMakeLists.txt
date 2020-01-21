@@ -2,16 +2,21 @@
 set(CMAKE_BUILD_TYPE "Debug")
 
 # Prepare "Catch" library for other executables
-add_subdirectory(ext/catch2)
-file(GLOB TEST_SOURCES "src/*.cpp")
+set(CATCH_SOURCE_DIR ext/catch2)
+execute_process(COMMAND git submodule update --init -- ${CATCH_SOURCE_DIR}
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+add_subdirectory(${CATCH_SOURCE_DIR})
+
+# Defining the configure header file
 configure_file(src/test_config.hpp.in ${PROJECT_BINARY_DIR}/test/src/test_config.hpp @ONLY)
-include_directories(${PROJECT_SOURCE_DIR}/src ${PROJECT_BINARY_DIR}/test/src)
+
+# Defining target Tests
+file(GLOB TEST_SOURCES "src/*.cpp")
 add_executable(Tests ${TEST_SOURCES})
-target_compile_features(Tests PRIVATE cxx_std_17)
 target_compile_options(Tests PRIVATE -g -Wall -Wpedantic -Werror)
-target_link_libraries(Tests Catch2::Catch2 ${SDSL_LIBRARIES} VGio::VGio OpenMP::OpenMP_CXX)
 target_include_directories(Tests
-  PRIVATE ${SPARSEHASH_INCLUDE_DIRS}
-  PRIVATE ${SDSL_INCLUDE_DIRS}
-  PRIVATE VGio::VGio
-  PRIVATE ${GFAKLUGE_INCLUDE_DIRS})
+  PRIVATE ${PROJECT_BINARY_DIR}/test/src
+  PRIVATE gum::gum)
+target_link_libraries(Tests
+  PRIVATE Catch2::Catch2
+  PRIVATE gum::gum)
