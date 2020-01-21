@@ -23,8 +23,8 @@ add_library(gum INTERFACE)
 target_sources(gum INTERFACE "$<BUILD_INTERFACE:${HEADER_FILES}>")
 # Defining include directories
 target_include_directories(gum
-  INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/gum>
-  SYSTEM INTERFACE $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include/gum>
+  INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+  SYSTEM INTERFACE $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>
   INTERFACE sdsl::sdsl
   INTERFACE SparseHash::SparseHash
   INTERFACE GFAKluge::GFAKluge
