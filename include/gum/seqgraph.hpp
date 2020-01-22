@@ -765,6 +765,7 @@ namespace gum {
     operator=( DirectedGraph< Dynamic, TDir, TWidths... > const& d_graph )
     {
       this->construct( d_graph );
+      return *this;
     }
 
     /* === METHODS === */
@@ -2056,6 +2057,7 @@ namespace gum {
       base_type::operator=( d_graph );
       this->node_prop = d_graph.get_node_prop( );
       this->fill_properties( d_graph );
+      return *this;
     }
 
     /* === METHODS === */
