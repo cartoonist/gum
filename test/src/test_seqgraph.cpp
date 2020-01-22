@@ -18,8 +18,8 @@
 #include <vector>
 #include <utility>
 
-#include "seqgraph.hpp"
-#include "io_utils.hpp"
+#include <gum/seqgraph.hpp>
+#include <gum/io_utils.hpp>
 
 #include "test_base.hpp"
 

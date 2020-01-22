@@ -18,7 +18,8 @@
 #include <string>
 #include <vector>
 
-#include "stringset.hpp"
+#include <gum/stringset.hpp>
+
 #include "test_base.hpp"
 
 

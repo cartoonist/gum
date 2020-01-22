@@ -17,7 +17,7 @@
 
 #include <sdsl/bit_vectors.hpp>
 
-#include "utils.hpp"
+#include <gum/utils.hpp>
 
 #include "test_base.hpp"
 

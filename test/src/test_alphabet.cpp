@@ -17,7 +17,7 @@
 
 #include <algorithm>
 
-#include "alphabet.hpp"
+#include <gum/alphabet.hpp>
 
 #include "test_base.hpp"
 
