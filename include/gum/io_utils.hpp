@@ -41,6 +41,20 @@ namespace gum {
       }
       else throw std::runtime_error( "unsupported input file format" );
     }
+
+    template< template< class, uint8_t ... > class TNodeProp,
+              template< class, class, uint8_t ... > class TEdgeProp,
+              typename ...TArgs,
+              uint8_t ...TWidths >
+    inline void
+    load( SeqGraph< Succinct, TNodeProp, TEdgeProp, TWidths... >& graph,
+          std::string fname,
+          TArgs&&... args )
+    {
+      SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... > dyn_graph;
+      extend( dyn_graph, fname, std::forward< TArgs >( args )... );
+      graph = dyn_graph;
+    }
   }  /* --- end of namespace util --- */
 }  /* --- end of namespace gum --- */
 

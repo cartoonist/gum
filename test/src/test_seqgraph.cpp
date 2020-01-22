@@ -587,9 +587,9 @@ TEMPLATE_SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[se
   }
 }
 
-SCENARIO( "Specialised functionality of Dynamic SeqGraph", "[seqgraph]" )
+SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
 {
-  GIVEN( "A simple Dynamic SeqGraph" )
+  GIVEN( "A simple SeqGraph" )
   {
     using graph_type = gum::SeqGraph< gum::Dynamic >;
     using succinct_type = typename graph_type::succinct_type;
@@ -650,7 +650,7 @@ SCENARIO( "Specialised functionality of Dynamic SeqGraph", "[seqgraph]" )
           REQUIRE( graph.edge_overlap( rtoi(5), rtoi(8), graph.linktype( link_type( { rtoi(5), true, rtoi(8), false } ) ) ) == 0 );
         };
 
-    WHEN( "Loaded from a file in GFA 2.0 format" )
+    WHEN( "Loaded a Dynamic SeqGraph from a file in GFA 2.0 format" )
     {
       gum::util::extend( graph, test_data_dir + "/graph_simple_v2.gfa" );
       THEN( "The resulting graph should pass integrity tests" )
@@ -668,7 +668,17 @@ SCENARIO( "Specialised functionality of Dynamic SeqGraph", "[seqgraph]" )
       }
     }
 
-    WHEN( "Loaded from a file in vg format" )
+    WHEN( "Loaded a Succinct SeqGraph from a file in GFA 2.0 format" )
+    {
+      succinct_type sc_graph;
+      gum::util::load( sc_graph, test_data_dir + "/graph_simple_v2.gfa" );
+      THEN( "The resulting graph should pass integrity tests" )
+      {
+        integrity_test( sc_graph );
+      }
+    }
+
+    WHEN( "Loaded a Dynamic SeqGraph from a file in vg format" )
     {
       gum::util::extend( graph, test_data_dir + "/graph_simple.vg" );
       THEN( "The resulting graph should pass integrity tests" )
@@ -683,6 +693,16 @@ SCENARIO( "Specialised functionality of Dynamic SeqGraph", "[seqgraph]" )
         {
           integrity_test( sc_graph );
         }
+      }
+    }
+
+    WHEN( "Loaded a Succinct SeqGraph from a file in vg format" )
+    {
+      succinct_type sc_graph;
+      gum::util::load( sc_graph, test_data_dir + "/graph_simple.vg" );
+      THEN( "The resulting graph should pass integrity tests" )
+      {
+        integrity_test( sc_graph );
       }
     }
   }
