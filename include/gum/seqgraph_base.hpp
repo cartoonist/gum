@@ -600,6 +600,7 @@ namespace gum {
   public:
     using typename graph_type::id_type;
     using typename graph_type::offset_type;
+    using typename graph_type::common_type;
     using typename graph_type::value_type;
     using typename graph_type::nodes_type;
     using typename graph_type::size_type;
@@ -651,6 +652,7 @@ namespace gum {
   public:
     using typename graph_type::id_type;
     using typename graph_type::offset_type;
+    using typename graph_type::common_type;
     using typename graph_type::value_type;
     using typename graph_type::nodes_type;
     using typename graph_type::size_type;
@@ -701,6 +703,7 @@ namespace gum {
   public:
     using typename graph_type::id_type;
     using typename graph_type::offset_type;
+    using typename graph_type::common_type;
     using typename graph_type::value_type;
     using typename graph_type::nodes_type;
     using typename graph_type::size_type;
@@ -781,6 +784,7 @@ namespace gum {
   public:
     using typename graph_type::id_type;
     using typename graph_type::offset_type;
+    using typename graph_type::common_type;
     using typename graph_type::value_type;
     using typename graph_type::nodes_type;
     using typename graph_type::size_type;
