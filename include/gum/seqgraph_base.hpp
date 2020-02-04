@@ -77,20 +77,20 @@ namespace gum {
    *
    *  GRAPH := NODES
    *  NODES := {HEADER, EDGES_OUT, EDGES_IN}
-   *  HEADER = {id, outdegree, indegree, NODE_PROPS}
-   *  EDGES_OUT = {EDGE_OUT, ...}
-   *  EDGES_IN = {EDGE_IN, ...}
-   *  EDGE_OUT(*) = {id, type?, EDGE_PROPS}
-   *  EDGE_IN(*) = {id, type?, EDGE_PROPS}
-   *  NODE_PROPS = {node_prop, ...}  // of size np_padding
-   *  EDGE_PROPS = {edge_prop, ...}  // of size ep_padding
+   *  HEADER := {id, outdegree, indegree, NODE_PROPS}
+   *  EDGES_OUT := {EDGE_OUT, ...}
+   *  EDGES_IN := {EDGE_IN, ...}
+   *  EDGE_OUT(*) := {id, type?, EDGE_PROPS}
+   *  EDGE_IN(*) := {id, type?, EDGE_PROPS}
+   *  NODE_PROPS := {node_prop, ...}  // of size np_padding
+   *  EDGE_PROPS := {edge_prop, ...}  // of size ep_padding
    *
-   *  id = integer
-   *  outdegree = integer
-   *  indegree = integer
-   *  type = integer
-   *  node_prop = integer
-   *  edge_prop = integer
+   *  id: integer
+   *  outdegree: integer
+   *  indegree: integer
+   *  type: integer
+   *  node_prop: integer
+   *  edge_prop: integer
    *
    *  (*) NOTE that the `type` field is only for Bidirected graphs and will be
    *  omitted for directed graphs.

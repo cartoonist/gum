@@ -111,7 +111,7 @@ namespace gum {
      *  [1, node_count], otherwise the behaviour is undefined. The node rank
      *  should be verified beforehand.
      *
-     *  @param  id A node rank.
+     *  @param  rank A node rank.
      *  @return The corresponding node ID.
      */
     inline id_type
@@ -741,7 +741,7 @@ namespace gum {
       this->ep_padding = other.ep_padding;
       this->node_count = other.node_count;
       this->edge_count = other.edge_count;
-      this->nodes = other.edge_nodes;
+      this->nodes = other.nodes;
       this->ids_bv = other.ids_bv;
       sdsl::util::init_support( this->node_rank, &this->ids_bv );
       sdsl::util::init_support( this->node_id, &this->ids_bv );
@@ -755,7 +755,7 @@ namespace gum {
       this->ep_padding = other.ep_padding;
       this->node_count = other.node_count;
       this->edge_count = other.edge_count;
-      this->nodes = std::move( other.edge_nodes );
+      this->nodes = std::move( other.nodes );
       this->ids_bv = std::move( other.ids_bv );
       sdsl::util::init_support( this->node_rank, &this->ids_bv );
       sdsl::util::init_support( this->node_id, &this->ids_bv );
