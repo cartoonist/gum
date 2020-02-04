@@ -124,6 +124,52 @@ namespace gum {
 
   template< uint8_t T1, uint8_t T2 >
   using ucommon_t = typename ucommon< T1, T2 >::type;
+
+  /**
+   *  @brief  Meta-function to get the width an integer type.
+   */
+  template< typename TInteger >
+  struct widthof;
+
+  template< >
+  struct widthof< int8_t > {
+    constexpr static uint8_t value = 8;
+  };
+
+  template< >
+  struct widthof< uint8_t > {
+    constexpr static uint8_t value = 8;
+  };
+
+  template< >
+  struct widthof< int16_t > {
+    constexpr static uint8_t value = 16;
+  };
+
+  template< >
+  struct widthof< uint16_t > {
+    constexpr static uint8_t value = 16;
+  };
+
+  template< >
+  struct widthof< int32_t > {
+    constexpr static uint8_t value = 32;
+  };
+
+  template< >
+  struct widthof< uint32_t > {
+    constexpr static uint8_t value = 32;
+  };
+
+  template< >
+  struct widthof< int64_t > {
+    constexpr static uint8_t value = 64;
+  };
+
+  template< >
+  struct widthof< uint64_t > {
+    constexpr static uint8_t value = 64;
+  };
 }  /* --- end of namespace gum --- */
 
 #endif  /* --- #ifndef GUM_BASIC_TYPES_HPP__ --- */
