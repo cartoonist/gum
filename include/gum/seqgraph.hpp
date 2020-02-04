@@ -36,7 +36,8 @@ namespace gum {
   public:
     /* === TYPEDEFS === */
     using spec_type = Dynamic;
-    using trait_type = DirectedGraphTrait< spec_type, TDir, TWidths... >;
+    using dir_type = TDir;
+    using trait_type = DirectedGraphTrait< spec_type, dir_type, TWidths... >;
     using id_type = typename trait_type::id_type;
     using offset_type = typename trait_type::offset_type;
     using value_type = typename trait_type::value_type;
@@ -49,7 +50,7 @@ namespace gum {
     using linktype_type = typename trait_type::linktype_type;
     using adjs_type = typename trait_type::adjs_type;
     using adj_map_type = typename trait_type::adj_map_type;
-    using succinct_type = DirectedGraph< Succinct, TDir, TWidths... >;
+    using succinct_type = DirectedGraph< Succinct, dir_type, TWidths... >;
 
     /* === LIFECYCLE === */
     DirectedGraph( )                                            /* constructor      */
@@ -643,7 +644,8 @@ namespace gum {
   public:
     /* === TYPEDEFS  === */
     using spec_type = Succinct;
-    using trait_type = DirectedGraphTrait< spec_type, TDir, TWidths... >;
+    using dir_type = TDir;
+    using trait_type = DirectedGraphTrait< spec_type, dir_type, TWidths... >;
     using id_type = typename trait_type::id_type;
     using offset_type = typename trait_type::offset_type;
     using value_type = typename trait_type::value_type;
@@ -658,7 +660,7 @@ namespace gum {
     using link_type = typename trait_type::link_type;
     using linktype_type = typename trait_type::linktype_type;
     using adjs_type = typename trait_type::adjs_type;
-    using dynamic_type = DirectedGraph< Dynamic, TDir, TWidths... >;
+    using dynamic_type = DirectedGraph< Dynamic, dir_type, TWidths... >;
 
     /* === LIFECYCLE  === */
     DirectedGraph( padding_type npadding = 0, padding_type epadding = 0 )
@@ -673,7 +675,7 @@ namespace gum {
       sdsl::util::init_support( this->node_id, &this->ids_bv );
     }
 
-    DirectedGraph( DirectedGraph< Dynamic, TDir, TWidths... > const& d_graph,
+    DirectedGraph( dynamic_type const& d_graph,
                    padding_type npadding = 0,
                    padding_type epadding = 0)
       : np_padding( npadding ),
@@ -762,7 +764,7 @@ namespace gum {
     }
 
     DirectedGraph&
-    operator=( DirectedGraph< Dynamic, TDir, TWidths... > const& d_graph )
+    operator=( dynamic_type const& d_graph )
     {
       this->construct( d_graph );
       return *this;
@@ -1386,7 +1388,7 @@ namespace gum {
     *  initialiased.
     */
     inline void
-    construct( DirectedGraph< Dynamic, TDir, TWidths... > const& d_graph )
+    construct( dynamic_type const& d_graph )
     {
       this->node_count = d_graph.get_node_count();
       this->edge_count = d_graph.get_edge_count();
@@ -1413,7 +1415,7 @@ namespace gum {
     }
 
     inline void
-    fill_edges_entries( DirectedGraph< Dynamic, TDir, TWidths... > const& d_graph,
+    fill_edges_entries( dynamic_type const& d_graph,
                         id_type d_id,
                         id_type new_id )
     {
@@ -1644,10 +1646,11 @@ namespace gum {
     using size_type = std::size_t;
     using const_reference = value_type;
     using const_iterator = RandomAccessConstIterator< container_type >;
+    using dynamic_type = NodeProperty< Dynamic, TWidths... >;
 
     /* === LIFECYCLE === */
     NodeProperty() = default;                                 /* constructor      */
-    NodeProperty( NodeProperty< Dynamic, TWidths... > const& other )
+    NodeProperty( dynamic_type const& other )
       : seqset( other.sequences() ), nameset( other.names() )
     { }
 
@@ -1679,7 +1682,7 @@ namespace gum {
     NodeProperty& operator=( NodeProperty&& other ) noexcept = default;  /* move assignment operator */
 
     inline NodeProperty&
-    operator=( NodeProperty< Dynamic, TWidths... > const& other )
+    operator=( dynamic_type const& other )
     {
       this->seqset = sequenceset_type( other.sequences() );
       this->nameset = stringset_type( other.names() );
@@ -1766,7 +1769,8 @@ namespace gum {
   public:
     /* === TYPEDEFS === */
     using spec_type = Dynamic;
-    using trait_type = EdgePropertyTrait< spec_type, TDir, TWidths... >;
+    using dir_type = TDir;
+    using trait_type = EdgePropertyTrait< spec_type, dir_type, TWidths... >;
     using id_type = typename trait_type::id_type;
     using offset_type = typename trait_type::offset_type;
     using link_type = typename trait_type::link_type;

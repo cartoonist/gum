@@ -997,7 +997,8 @@ namespace gum {
   class EdgePropertyTrait< Dynamic, TDir, TWidths... > {
   private:
     using spec_type = Dynamic;
-    using trait_type = DirectedGraphTrait< spec_type, TDir, TWidths... >;
+    using dir_type = TDir;
+    using trait_type = DirectedGraphTrait< spec_type, dir_type, TWidths... >;
   public:
     using id_type = typename trait_type::id_type;
     using offset_type = typename trait_type::offset_type;
