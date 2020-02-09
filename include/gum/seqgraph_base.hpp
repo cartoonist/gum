@@ -57,6 +57,7 @@ namespace gum {
     using size_type = typename nodes_type::size_type;
     using rank_type = typename nodes_type::size_type;
     using rank_map_type = google::sparse_hash_map< id_type, rank_type >;
+    using string_type = std::string;  // for node and path names
 
     static inline void
     init_rank_map( rank_map_type& m )
@@ -110,6 +111,7 @@ namespace gum {
     using bv_type = sdsl::bit_vector;
     using rank_map_type = typename bv_type::rank_1_type;
     using id_map_type = typename bv_type::select_1_type;
+    using string_type = std::string;  // for node and path names
     using padding_type = unsigned char;
 
     constexpr static size_type HEADER_CORE_LEN = 3;
@@ -606,6 +608,7 @@ namespace gum {
     using typename graph_type::size_type;
     using typename graph_type::rank_type;
     using typename graph_type::rank_map_type;
+    using typename graph_type::string_type;
     using typename base_type::side_type;
     using typename base_type::link_type;
     using typename base_type::linktype_type;
@@ -658,6 +661,7 @@ namespace gum {
     using typename graph_type::size_type;
     using typename graph_type::rank_type;
     using typename graph_type::rank_map_type;
+    using typename graph_type::string_type;
     using typename base_type::side_type;
     using typename base_type::link_type;
     using typename base_type::linktype_type;
@@ -711,6 +715,7 @@ namespace gum {
     using typename graph_type::bv_type;
     using typename graph_type::rank_map_type;
     using typename graph_type::id_map_type;
+    using typename graph_type::string_type;
     using typename graph_type::padding_type;
     using typename base_type::side_type;
     using typename base_type::link_type;
@@ -792,6 +797,7 @@ namespace gum {
     using typename graph_type::bv_type;
     using typename graph_type::rank_map_type;
     using typename graph_type::id_map_type;
+    using typename graph_type::string_type;
     using typename graph_type::padding_type;
     using typename base_type::side_type;
     using typename base_type::link_type;
@@ -948,7 +954,7 @@ namespace gum {
     using offset_type = typename trait_type::offset_type;
     using rank_type = typename trait_type::rank_type;
     using sequence_type = std::string;
-    using string_type = std::string;
+    using string_type = typename trait_type::string_type;
     using node_type = Node< sequence_type, string_type >;
     using value_type = node_type;
     using container_type = std::vector< value_type >;
@@ -978,7 +984,7 @@ namespace gum {
     using sequenceset_type = StringSet< alphabet_type >;
     using stringset_type = StringSet< Char >;
     using sequence_type = typename sequenceset_type::value_type;
-    using string_type = std::string;
+    using string_type = typename trait_type::string_type;
     using char_type = typename alphabet_type::char_type;
     using node_type = Node< sequence_type, string_type >;
     using value_type = node_type;

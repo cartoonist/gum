@@ -45,6 +45,7 @@ namespace gum {
     using size_type = typename trait_type::size_type;
     using rank_type = typename trait_type::rank_type;
     using rank_map_type = typename trait_type::rank_map_type;
+    using string_type = typename trait_type::string_type;
     using side_type = typename trait_type::side_type;
     using link_type = typename trait_type::link_type;
     using linktype_type = typename trait_type::linktype_type;
@@ -655,6 +656,7 @@ namespace gum {
     using bv_type = typename trait_type::bv_type;
     using rank_map_type = typename trait_type::rank_map_type;
     using id_map_type = typename trait_type::id_map_type;
+    using string_type = typename trait_type::string_type;
     using padding_type = typename trait_type::padding_type;
     using side_type = typename trait_type::side_type;
     using link_type = typename trait_type::link_type;
@@ -1857,6 +1859,7 @@ namespace gum {
     using typename base_type::side_type;
     using typename base_type::link_type;
     using typename base_type::linktype_type;
+    using typename base_type::string_type;
     using node_type = typename node_prop_type::node_type;
     using sequence_type = typename node_prop_type::sequence_type;
     using edge_type = typename edge_prop_type::edge_type;
@@ -2009,6 +2012,7 @@ namespace gum {
     using typename base_type::side_type;
     using typename base_type::link_type;
     using typename base_type::linktype_type;
+    using typename base_type::string_type;
     using node_type = typename node_prop_type::node_type;
     using sequence_type = typename node_prop_type::sequence_type;
     using dynamic_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >;
