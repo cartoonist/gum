@@ -26,10 +26,11 @@ namespace gum {
   namespace util {
     template< template< class, uint8_t ... > class TNodeProp,
               template< class, class, uint8_t ... > class TEdgeProp,
+              template< class, class, uint8_t ... > class TGraphProp,
               typename ...TArgs,
               uint8_t ...TWidths >
     inline void
-    extend( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >& graph,
+    extend( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
             std::string fname,
             TArgs&&... args )
     {
@@ -44,14 +45,16 @@ namespace gum {
 
     template< template< class, uint8_t ... > class TNodeProp,
               template< class, class, uint8_t ... > class TEdgeProp,
+              template< class, class, uint8_t ... > class TGraphProp,
               typename ...TArgs,
               uint8_t ...TWidths >
     inline void
-    load( SeqGraph< Succinct, TNodeProp, TEdgeProp, TWidths... >& graph,
+    load( SeqGraph< Succinct, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
           std::string fname,
           TArgs&&... args )
     {
-      SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... > dyn_graph;
+      using graph_type = std::decay_t< decltype( graph ) >;
+      typename graph_type::dynamic_type dyn_graph;
       extend( dyn_graph, fname, std::forward< TArgs >( args )... );
       graph = dyn_graph;
     }

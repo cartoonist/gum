@@ -36,13 +36,14 @@ namespace gum {
 
     template< template< class, uint8_t ... > class TNodeProp,
               template< class, class, uint8_t ... > class TEdgeProp,
+              template< class, class, uint8_t ... > class TGraphProp,
               uint8_t ...TWidths >
-    inline typename SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >::id_type
-    add( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >& graph,
+    inline typename SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >::id_type
+    add( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
          vg::Node const& node,
          bool id_as_name=false )
     {
-      using graph_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >;
+      using graph_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >;
       using node_type = typename graph_type::node_type;
       if ( node.name().empty() ) id_as_name = true;
       return graph.add_node( node_type( node.sequence(), ( id_as_name ?
@@ -52,14 +53,15 @@ namespace gum {
 
     template< template< class, uint8_t ... > class TNodeProp,
               template< class, class, uint8_t ... > class TEdgeProp,
+              template< class, class, uint8_t ... > class TGraphProp,
               uint8_t ...TWidths >
     inline void
-    add( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >& graph,
-         typename SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >::id_type src_id,
-         typename SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >::id_type sink_id,
+    add( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
+         typename SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >::id_type src_id,
+         typename SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >::id_type sink_id,
          vg::Edge const& edge )
     {
-      using graph_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >;
+      using graph_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >;
       using link_type = typename graph_type::link_type;
       using edge_type = typename graph_type::edge_type;
       graph.add_edge(
@@ -69,13 +71,14 @@ namespace gum {
 
     template< template< class, uint8_t ... > class TNodeProp,
               template< class, class, uint8_t ... > class TEdgeProp,
+              template< class, class, uint8_t ... > class TGraphProp,
               uint8_t ...TWidths >
     inline void
-    extend( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >& graph,
+    extend( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
             vg::Graph& other,
             bool id_as_name=false )
     {
-      using graph_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >;
+      using graph_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >;
       using id_type = typename graph_type::id_type;
 
       google::sparse_hash_map< decltype( vg::Node().id() ), id_type > ids;
@@ -91,9 +94,10 @@ namespace gum {
 
     template< template< class, uint8_t ... > class TNodeProp,
               template< class, class, uint8_t ... > class TEdgeProp,
+              template< class, class, uint8_t ... > class TGraphProp,
               uint8_t ...TWidths >
     inline void
-    extend_vg( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >& graph,
+    extend_vg( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
                std::istream& in )
     {
       std::function< void( vg::Graph& ) > handle_chunks =
@@ -105,9 +109,10 @@ namespace gum {
 
     template< template< class, uint8_t ... > class TNodeProp,
               template< class, class, uint8_t ... > class TEdgeProp,
+              template< class, class, uint8_t ... > class TGraphProp,
               uint8_t ...TWidths >
     inline void
-    extend_vg( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >& graph,
+    extend_vg( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
                std::string fname )
     {
       std::ifstream ifs( fname, std::ifstream::in | std::ifstream::binary );
@@ -119,9 +124,10 @@ namespace gum {
 
     template< template< class, uint8_t ... > class TNodeProp,
               template< class, class, uint8_t ... > class TEdgeProp,
+              template< class, class, uint8_t ... > class TGraphProp,
               uint8_t ...TWidths >
     inline void
-    extend( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >& graph,
+    extend( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
             std::string fname,
             VGFormat )
     {

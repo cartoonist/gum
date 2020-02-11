@@ -1406,9 +1406,10 @@ namespace gum {
         this->set_outdegree( pos, d_graph.outdegree( d_id ) );
         this->set_indegree( pos, d_graph.indegree( d_id ));
         // Add EDGES_OUT and EDGES_IN entries
-        this->fill_edges_entries( d_graph, d_id, static_cast< id_type >( pos ) );
+        id_type id = static_cast< id_type >( pos );
+        this->fill_edges_entries( d_graph, d_id, id );
         // Get the next node entry position.
-        pos += this->node_entry_len( static_cast< id_type >( pos ) );
+        pos += this->node_entry_len( id );
       }
       // The `identificate` function uses rank/select supports.
       sdsl::util::init_support( this->node_rank, &this->ids_bv );
@@ -1835,14 +1836,559 @@ namespace gum {
   };  /* --- end of template class EdgeProperty --- */
 
   /**
+   *  @brief  Graph property class (dynamic).
+   *
+   *  Represent data associated with each graph, mainly paths.
+   */
+  template< typename TDir, uint8_t ...TWidths >
+  class GraphProperty< Dynamic, TDir, TWidths... > {
+  public:
+    /* === TYPEDEFS === */
+    using spec_type = Dynamic;
+    using dir_type = TDir;
+    using trait_type = GraphPropertyTrait< spec_type, dir_type, TWidths... >;
+    using id_type = typename trait_type::id_type;
+    using rank_type = typename trait_type::rank_type;
+    using offset_type = typename trait_type::offset_type;
+    using common_type = typename trait_type::common_type;
+    using string_type = typename trait_type::string_type;
+    using path_type = typename trait_type::path_type;
+    using value_type = typename trait_type::value_type;
+    using container_type = typename trait_type::container_type;
+    using const_reference = typename trait_type::const_reference;
+    using const_iterator = typename trait_type::const_iterator;
+    using size_type = typename trait_type::size_type;
+    using rank_map_type = typename trait_type::rank_map_type;
+
+    /* === LIFECYCLE === */
+    GraphProperty( )
+      : max_id( 0 ), path_count( 0 )
+    {
+      trait_type::init_rank_map( this->path_rank );
+    }
+
+    GraphProperty( GraphProperty const& other ) = default;      /* copy constructor */
+    GraphProperty( GraphProperty&& other ) noexcept = default;  /* move constructor */
+    ~GraphProperty() noexcept = default;
+
+    /* === ACCESSORS === */
+    inline container_type const&
+    get_paths( ) const
+    {
+      return this->paths;
+    }
+
+    inline rank_type
+    get_path_count( ) const
+    {
+      return this->path_count;
+    }
+
+    /* === OPERATORS === */
+    GraphProperty& operator=( GraphProperty const& other ) = default;      /* copy assignment operator */
+    GraphProperty& operator=( GraphProperty&& other ) noexcept = default;  /* move assignment operator */
+
+    /* === METHODS === */
+    /**
+     *  @brief  Return the rank of a path by its ID.
+     *
+     *  @param  id A path ID.
+     *  @return The corresponding path rank.
+     */
+    inline rank_type
+    id_to_rank( id_type id ) const
+    {
+      assert( id > 0 );
+      auto found = this->path_rank.find( id );
+      if ( found == this->path_rank.end() ) return 0;
+      return found->second;
+    }
+
+    /**
+     *  @brief  Return the ID of a path by its rank.
+     *
+     *  NOTE: This function assumes that path rank is within the range
+     *  [1, path_count], otherwise the behaviour is undefined. The path rank
+     *  should be verified beforehand.
+     *
+     *  @param  rank A path rank.
+     *  @return The corresponding path ID.
+     */
+    inline id_type
+    rank_to_id( rank_type rank ) const
+    {
+      assert( 0 < rank && rank <= this->path_count );
+      return this->paths[ rank - 1 ].get_id();
+    }
+
+    /**
+     *  @brief  Return the ID of the successor path in rank.
+     *
+     *  @param  id A path id.
+     *  @return The path ID of the successor path of a path whose ID is `id` in the rank.
+     */
+    inline id_type
+    successor_id( id_type id ) const
+    {
+      rank_type rank = this->id_to_rank( id );
+      if ( rank == this->path_count ) return 0;
+      return this->rank_to_id( rank + 1 );
+    }
+
+    template< typename TIter >
+    inline id_type
+    add_path( TIter n_begin, TIter n_end, string_type name="" )
+    {
+      id_type new_id = this->add_path_imp( n_begin, n_end, std::move( name ) );
+      this->set_last_rank();
+      return new_id;
+    }
+
+    template< typename TIter1, typename TIter2 >
+    inline id_type
+    add_path( TIter1 n_begin, TIter1 n_end, TIter2 o_begin, TIter2 o_end,
+              string_type name="" )
+    {
+      id_type new_id = this->add_path_imp( n_begin, n_end, o_begin, o_end,
+                                           std::move( name ) );
+      this->set_last_rank();
+      return new_id;
+    }
+
+    inline bool
+    has_path( id_type id ) const
+    {
+      return this->path_rank.find( id ) != this->path_rank.end();
+    }
+
+    inline bool
+    for_each_path( std::function< bool( rank_type, id_type ) > callback,
+                   rank_type s_rank=1 ) const
+    {
+      rank_type rank = 1;
+      for ( auto const& path : this->paths ) {
+        if ( rank >= s_rank && !callback( rank, path.get_id() ) ) return false;
+        ++rank;
+      }
+      return true;
+    }
+
+    inline rank_type
+    path_length( id_type id ) const
+    {
+      rank_type rank = this->id_to_rank( id );
+      assert( rank != 0 );
+      return this->paths[ rank - 1 ].size();
+    }
+
+    inline string_type
+    path_name( id_type id ) const
+    {
+      rank_type rank = this->id_to_rank( id );
+      assert( rank != 0 );
+      return this->paths[ rank - 1 ].get_name( );
+    }
+
+    inline path_type const&
+    path( id_type id ) const
+    {
+      rank_type rank = this->id_to_rank( id );
+      assert( rank != 0 );
+      return this->paths[ rank - 1 ];
+    }
+
+  protected:
+    /* === ACCESSORS === */
+    inline container_type&
+    get_paths( )
+    {
+      return this->paths;
+    }
+
+    /* === METHODS === */
+    template< typename TIter >
+    inline id_type
+    add_path_imp( TIter n_begin, TIter n_end, string_type name="" )
+    {
+      value_type path( ++this->max_id, std::move( name ) );
+      for ( ; n_begin != n_end; ++n_begin ) {
+        path.add_node( *n_begin );
+      }
+      this->paths.push_back( std::move( path ) );
+      return this->max_id;
+    }
+
+    template< typename TIter1, typename TIter2 >
+    inline id_type
+    add_path_imp( TIter1 n_begin, TIter1 n_end, TIter2 o_begin, TIter2 o_end,
+                  string_type name="" )
+    {
+      assert( n_end - n_begin == o_end - o_begin );
+      value_type path( ++this->max_id, std::move( name ) );
+      for ( ; n_begin != n_end && o_begin != o_end; ++n_begin, ++o_begin ) {
+        path.add_node( *n_begin, *o_begin );
+      }
+      this->paths.push_back( std::move( path ) );
+      return path.get_id();
+    }
+
+  private:
+    /* === DATA MEMBERS === */
+    container_type paths;
+    rank_map_type path_rank;
+    id_type max_id;
+    rank_type path_count;
+
+    /* === METHODS === */
+    inline void
+    set_rank( const_iterator begin, const_iterator end )
+    {
+      assert( end - begin + this->path_count == this->paths.size() );
+      for ( ; begin != end; ++begin ) {
+        bool inserted;
+        std::tie( std::ignore, inserted ) =
+            this->path_rank.insert( { (*begin).get_id(), ++this->path_count } );
+        assert( inserted );  // avoid duplicate insersion from upstream.
+      }
+    }
+
+    inline void
+    set_rank( )
+    {
+      this->set_rank( this->paths.begin(), this->paths.end() );
+    }
+
+    inline void
+    set_last_rank( )
+    {
+      this->set_rank( this->paths.end() - 1, this->paths.end() );
+    }
+  };  /* --- end of template class GraphProperty --- */
+
+  /**
+   *  @brief  Graph property class (succinct).
+   *
+   *  Represent data associated with each graph, mainly paths.
+   */
+  template< typename TDir, uint8_t ...TWidths >
+  class GraphProperty< Succinct, TDir, TWidths... > {
+  public:
+    /* === TYPEDEFS === */
+    using spec_type = Succinct;
+    using dir_type = TDir;
+    using trait_type = GraphPropertyTrait< spec_type, dir_type, TWidths... >;
+    using id_type = typename trait_type::id_type;
+    using rank_type = typename trait_type::rank_type;
+    using offset_type = typename trait_type::offset_type;
+    using common_type = typename trait_type::common_type;
+    using string_type = typename trait_type::string_type;
+    using stringsize_type = typename trait_type::stringsize_type;
+    using value_type = typename trait_type::value_type;
+    using container_type = typename trait_type::container_type;
+    using size_type = typename trait_type::size_type;
+    using bv_type = typename trait_type::bv_type;
+    using rank_map_type = typename trait_type::rank_map_type;
+    using id_map_type = typename trait_type::id_map_type;
+    using path_type = typename trait_type::path_type;
+    using dynamic_type = GraphProperty< Dynamic, dir_type, TWidths... >;
+
+    /* === LIFECYCLE === */
+    GraphProperty( )
+      : path_count( 0 ),
+        paths( container_type( 1, 0 ) ),
+        ids_bv( bv_type( 1, 0 ) )
+    {
+      sdsl::util::init_support( this->path_rank, &this->ids_bv );
+      sdsl::util::init_support( this->path_id, &this->ids_bv );
+    }
+
+    GraphProperty( dynamic_type const& other )
+    {
+      this->construct( other );
+    }
+
+    /* copy constructor */
+    GraphProperty( GraphProperty const& other )
+      : path_count( other.path_count ),
+        paths( other.paths ),
+        ids_bv( other.ids_bv )
+    {
+      sdsl::util::init_support( this->path_rank, &this->ids_bv );
+      sdsl::util::init_support( this->path_id, &this->ids_bv );
+    }
+
+    /* move constructor */
+    GraphProperty( GraphProperty&& other ) noexcept
+      : path_count( other.path_count ),
+        paths( std::move( other.paths ) ),
+        ids_bv( std::move( other.ids_bv ) )
+    {
+      sdsl::util::init_support( this->path_rank, &this->ids_bv );
+      sdsl::util::init_support( this->path_id, &this->ids_bv );
+    }
+
+    ~GraphProperty() noexcept
+    {
+      sdsl::util::clear( this->path_rank );
+      sdsl::util::clear( this->path_id );
+    }
+
+    /* === ACCESSORS === */
+    inline rank_type
+    get_path_count( ) const
+    {
+      return this->path_count;
+    }
+
+    /* === OPERATORS === */
+    /* copy assignment operator */
+    GraphProperty&
+    operator=( GraphProperty const& other )
+    {
+      this->path_count = other.path_count;
+      this->paths = other.paths;
+      this->ids_bv = other.ids_bv;
+      sdsl::util::init_support( this->path_rank, &this->ids_bv );
+      sdsl::util::init_support( this->path_id, &this->ids_bv );
+    }
+
+    /* move assignment operator */
+    GraphProperty&
+    operator=( GraphProperty&& other ) noexcept
+    {
+      this->path_count = other.path_count;
+      this->paths = std::move( other.paths );
+      this->ids_bv = std::move( other.ids_bv );
+      sdsl::util::init_support( this->path_rank, &this->ids_bv );
+      sdsl::util::init_support( this->path_id, &this->ids_bv );
+    }
+
+    GraphProperty&
+    operator=( dynamic_type const& other )
+    {
+      this->construct( other );
+      return *this;
+    }
+
+    /* === METHODS === */
+    /**
+     *  @brief  Return the rank of a path by its ID.
+     *
+     *  NOTE: This function assumes that path ID exists in the graph, otherwise
+     *  the behaviour is undefined. The path ID can be verified by `has_path`
+     *  method before calling this one.
+     *
+     *  @param  id A path ID.
+     *  @return The corresponding path rank.
+     */
+    inline rank_type
+    id_to_rank( id_type id ) const
+    {
+      assert( this->has_path( id ) );
+      return this->path_rank( id );
+    }
+
+    /**
+     *  @brief  Return the ID of a path by its rank.
+     *
+     *  NOTE: This function assumes that path rank is within the range
+     *  [1, path_count], otherwise the behaviour is undefined. The path rank
+     *  should be verified beforehand.
+     *
+     *  @param  id A path rank.
+     *  @return The corresponding path ID.
+     */
+    inline id_type
+    rank_to_id( rank_type rank ) const
+    {
+      assert( 0 < rank && rank <= this->path_count );
+      return this->path_id( rank ) + 1;
+    }
+
+    /**
+     *  @brief  Return the ID of the successor path in rank.
+     *
+     *  @param  id A path id.
+     *  @return The path ID of the successor path of a path whose ID is `id` in the rank.
+     */
+    inline id_type
+    successor_id( id_type id ) const
+    {
+      assert( this->has_path( id ) );
+      id += this->path_entry_len( id );
+      return static_cast< size_type >( id ) < this->paths.size() ? id : 0;
+    }
+
+    inline bool
+    has_path( id_type id ) const
+    {
+      if ( id <= 0 || static_cast<size_type>( id ) >= this->paths.size() ) return false;
+      return this->ids_bv[ id - 1 ] == 1;
+    }
+
+    inline bool
+    for_each_path( std::function< bool( rank_type, id_type ) > callback,
+                   rank_type s_rank=1 ) const
+    {
+      id_type id = 1;
+      rank_type rank = 1;
+      while ( id != 0 ) {
+        if ( rank >= s_rank && !callback( rank, id ) ) return false;
+        id = this->successor_id( id );
+        ++rank;
+      }
+      return true;
+    }
+
+    inline rank_type
+    path_length( id_type id ) const
+    {
+      assert( this->has_path( id ) );
+      return trait_type::get_path_length( this->paths, id );
+    }
+
+    inline string_type
+    path_name( id_type id ) const
+    {
+      assert( this->has_path( id ) );
+      auto namelen = this->get_name_length( id );
+      string_type name( namelen, '\0' );
+      auto begin = this->names.begin() + this->get_name_position( id );
+      auto end = begin + namelen;
+      std::copy( begin, end, name.begin() );
+      return name;
+    }
+
+    inline path_type
+    path( id_type id ) const
+    {
+      assert( this->has_path( id ) );
+      return path_type( id,
+                        this->names.begin() + this->get_name_position( id ),
+                        this->get_name_length( id ),
+                        this->paths.begin() + this->nodes_pos( id ),
+                        this->path_length( id ) );
+    }
+
+  protected:
+    /* === METHODS === */
+    inline size_type
+    header_entry_len( ) const
+    {
+      return trait_type::HEADER_ENTRY_LEN;
+    }
+
+    inline size_type
+    path_entry_len( id_type id ) const
+    {
+      return this->header_entry_len() + this->path_length( id );
+    }
+
+    inline size_type
+    int_vector_len( rank_type nof_nodes ) const
+    {
+      return this->path_count * this->header_entry_len( ) +
+          nof_nodes +
+          1 /* the first dummy entry */;
+    }
+
+    inline size_type
+    nodes_pos( id_type id ) const
+    {
+      return id + this->header_entry_len();
+    }
+
+    inline void
+    set_path_length( id_type id, rank_type value )
+    {
+      trait_type::set_path_length( this->paths, id, value );
+    }
+
+    inline stringsize_type
+    get_name_position( id_type id ) const
+    {
+      return trait_type::get_name_position( this->paths, id );
+    }
+
+    inline void
+    set_name_position( id_type id, stringsize_type value )
+    {
+      trait_type::set_name_position( this->paths, id, value );
+    }
+
+    inline stringsize_type
+    get_name_length( id_type id ) const
+    {
+      return trait_type::get_name_length( this->paths, id );
+    }
+
+    inline void
+    set_name_length( id_type id, stringsize_type value )
+    {
+      trait_type::set_name_length( this->paths, id, value );
+    }
+
+  private:
+    /* === DATA MEMBERS === */
+    rank_type path_count;
+    container_type paths;
+    bv_type ids_bv;
+    rank_map_type path_rank;
+    id_map_type path_id;
+    string_type names;
+
+    /* === METHODS === */
+    inline rank_type
+    total_nof_nodes( dynamic_type const& other ) const
+    {
+      rank_type nof_nodes = 0;
+      for ( auto const& path : other.get_paths() ) {
+        nof_nodes += path.size();
+      }
+      return nof_nodes;
+    }
+
+    inline void
+    construct( dynamic_type const& other )
+    {
+      this->path_count = other.get_path_count();
+      auto len = this->int_vector_len( this->total_nof_nodes( other ) );
+      sdsl::util::assign( this->paths, container_type( len, 0 ) );
+      sdsl::util::assign( this->ids_bv, bv_type( len, 0 ) );
+      this->names = "";
+      size_type pos = 1;  // Leave the first entry as dummy.
+
+      for ( auto const& path : other.get_paths() ) {
+        // Set the bit at index `pos - 1` denoting the start of a node record.
+        this->ids_bv[ pos - 1 ] = 1;
+        // Fill out the path ID.
+        id_type id = static_cast< id_type >( pos );
+        this->paths[ pos ] = id;
+        this->set_path_length( id, path.size() );
+        auto old_size = this->names.size();
+        this->names += path.get_name();
+        this->set_name_position( id, old_size );
+        this->set_name_length( id, this->names.size() - old_size );
+        pos = this->nodes_pos( id );
+        for ( auto const& node : path ) {
+          this->paths[ pos++ ] = node;
+        }
+      }
+      sdsl::util::init_support( this->path_rank, &this->ids_bv );
+      sdsl::util::init_support( this->path_id, &this->ids_bv );
+    }
+  };  /* --- end of template class GraphProperty --- */
+
+  /**
    *  @brief  Bidirected sequence graph representation (dynamic).
    *
    *  Represent a sequence graph (node-labeled bidirected graph).
    */
   template< template< class, uint8_t ... > class TNodeProp,
             template< class, class, uint8_t ... > class TEdgeProp,
+            template< class, class, uint8_t ... > class TGraphProp,
             uint8_t ...TWidths >
-  class SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >
+  class SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >
     : public DirectedGraph< Dynamic, Bidirected, TWidths... > {
   public:
     /* === TYPEDEFS === */
@@ -1850,7 +2396,8 @@ namespace gum {
     using dir_type = Bidirected;
     using base_type = DirectedGraph< spec_type, dir_type, TWidths... >;
     using node_prop_type = TNodeProp< spec_type, TWidths... >;
-    using edge_prop_type = TEdgeProp< spec_type, dir_type, TWidths ... >;
+    using edge_prop_type = TEdgeProp< spec_type, dir_type, TWidths... >;
+    using graph_prop_type = TGraphProp< spec_type, dir_type, TWidths... >;
     using typename base_type::id_type;
     using typename base_type::offset_type;
     using typename base_type::value_type;
@@ -1863,7 +2410,8 @@ namespace gum {
     using node_type = typename node_prop_type::node_type;
     using sequence_type = typename node_prop_type::sequence_type;
     using edge_type = typename edge_prop_type::edge_type;
-    using succinct_type = SeqGraph< Succinct, TNodeProp, TEdgeProp, TWidths... >;
+    using path_type = typename graph_prop_type::path_type;
+    using succinct_type = SeqGraph< Succinct, TNodeProp, TEdgeProp, TGraphProp, TWidths... >;
 
     /* === LIFECYCLE === */
     SeqGraph() = default;                                  /* constructor      */
@@ -1890,11 +2438,35 @@ namespace gum {
       return this->edge_prop;
     }
 
+    inline graph_prop_type const&
+    get_graph_prop( ) const
+    {
+      return this->graph_prop;
+    }
+
+    inline rank_type
+    get_path_count( ) const
+    {
+      return this->graph_prop.get_path_count();
+    }
+
     /* === OPERATORS === */
     SeqGraph& operator=( SeqGraph const& other ) = default;      /* copy assignment operator */
     SeqGraph& operator=( SeqGraph&& other ) noexcept = default;  /* move assignment operator */
 
     /* === METHODS === */
+    inline rank_type
+    path_id_to_rank( id_type id ) const
+    {
+      return this->graph_prop.id_to_rank( id );
+    }
+
+    inline id_type
+    path_rank_to_id( rank_type rank ) const
+    {
+      return this->graph_prop.rank_to_id( rank );
+    }
+
     inline id_type
     add_node( node_type node=node_type() )
     {
@@ -1926,6 +2498,26 @@ namespace gum {
     has_edge( side_type from, side_type to ) const
     {
       return this->has_edge( base_type::make_link( from, to ) );
+    }
+
+    template< typename ...TArgs >
+    inline id_type
+    add_path( TArgs&&... args )
+    {
+      return this->graph_prop.add_path( std::forward< TArgs >( args )... );
+    }
+
+    inline bool
+    has_path( id_type id ) const
+    {
+      return this->graph_prop.has_path( id );
+    }
+
+    inline bool
+    for_each_path( std::function< bool( rank_type, id_type ) > callback,
+                   rank_type s_rank=1 ) const
+    {
+      return this->graph_prop.for_each_path( callback, s_rank );
     }
 
     inline sequence_type
@@ -1960,6 +2552,24 @@ namespace gum {
       return this->edge_overlap( this->make_link( from, to ) );
     }
 
+    inline rank_type
+    path_length( id_type id ) const
+    {
+      return this->graph_prop.path_length( id );
+    }
+
+    inline string_type
+    path_name( id_type id ) const
+    {
+      return this->graph_prop.path_name( id );
+    }
+
+    inline path_type const&
+    path( id_type id ) const
+    {
+      return this->graph_prop.path( id );
+    }
+
   protected:
     /* === ACCESSORS === */
     inline node_prop_type&
@@ -1980,10 +2590,17 @@ namespace gum {
       return this->edge_prop;
     }
 
+    inline graph_prop_type&
+    get_graph_prop( )
+    {
+      return this->graph_prop;
+    }
+
   private:
     /* === DATA MEMBERS === */
     node_prop_type node_prop;
     edge_prop_type edge_prop;
+    graph_prop_type graph_prop;
   };  /* --- end of template class SeqGraph --- */
 
   /**
@@ -1993,8 +2610,9 @@ namespace gum {
    */
   template< template< class, uint8_t ... > class TNodeProp,
             template< class, class, uint8_t ... > class TEdgeProp,
+            template< class, class, uint8_t ... > class TGraphProp,
             uint8_t ...TWidths >
-  class SeqGraph< Succinct, TNodeProp, TEdgeProp, TWidths... >
+  class SeqGraph< Succinct, TNodeProp, TEdgeProp, TGraphProp, TWidths... >
     : public DirectedGraph< Succinct, Bidirected, TWidths... > {
   public:
     /* === TYPEDEFS === */
@@ -2003,19 +2621,21 @@ namespace gum {
     using base_type = DirectedGraph< spec_type, dir_type, TWidths... >;
     using node_prop_type = TNodeProp< spec_type, TWidths... >;
     using edge_prop_type = void;
+    using graph_prop_type = TGraphProp< spec_type, dir_type, TWidths... >;
     using typename base_type::id_type;
     using typename base_type::offset_type;
     using typename base_type::value_type;
     using typename base_type::size_type;
     using typename base_type::rank_type;
+    using typename base_type::string_type;
     using typename base_type::padding_type;
     using typename base_type::side_type;
     using typename base_type::link_type;
     using typename base_type::linktype_type;
-    using typename base_type::string_type;
     using node_type = typename node_prop_type::node_type;
     using sequence_type = typename node_prop_type::sequence_type;
-    using dynamic_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TWidths... >;
+    using path_type = typename graph_prop_type::path_type;
+    using dynamic_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >;
 
     constexpr static padding_type NODE_PADDING = 2;
     constexpr static padding_type EDGE_PADDING = 1;
@@ -2033,7 +2653,8 @@ namespace gum {
 
     SeqGraph( dynamic_type const& d_graph )
       : base_type( d_graph, SeqGraph::NODE_PADDING, SeqGraph::EDGE_PADDING ),
-        node_prop( d_graph.get_node_prop( ) )
+        node_prop( d_graph.get_node_prop( ) ),
+        graph_prop( d_graph.get_graph_prop( ) )
     {
       this->fill_properties( d_graph );
     }
@@ -2055,6 +2676,18 @@ namespace gum {
       return this->node_prop( rank );
     }
 
+    inline graph_prop_type const&
+    get_graph_prop( ) const
+    {
+      return this->graph_prop;
+    }
+
+    inline rank_type
+    get_path_count( ) const
+    {
+      return this->graph_prop.get_path_count();
+    }
+
     /* === OPERATORS === */
     SeqGraph& operator=( SeqGraph const& other ) = default;      /* copy assignment operator */
     SeqGraph& operator=( SeqGraph&& other ) noexcept = default;  /* move assignment operator */
@@ -2065,10 +2698,36 @@ namespace gum {
       base_type::operator=( d_graph );
       this->node_prop = d_graph.get_node_prop( );
       this->fill_properties( d_graph );
+      this->graph_prop = d_graph.get_graph_prop( );
       return *this;
     }
 
     /* === METHODS === */
+    inline rank_type
+    path_id_to_rank( id_type id ) const
+    {
+      return this->graph_prop.id_to_rank( id );
+    }
+
+    inline id_type
+    path_rank_to_id( rank_type rank ) const
+    {
+      return this->graph_prop.rank_to_id( rank );
+    }
+
+    inline bool
+    has_path( id_type id ) const
+    {
+      return this->graph_prop.has_path( id );
+    }
+
+    inline bool
+    for_each_path( std::function< bool( rank_type, id_type ) > callback,
+                   rank_type s_rank=1 ) const
+    {
+      return this->graph_prop.for_each_path( callback, s_rank );
+    }
+
     inline sequence_type
     node_sequence( id_type id ) const
     {
@@ -2129,6 +2788,24 @@ namespace gum {
                                  this->linktype( sides ) );
     }
 
+    inline rank_type
+    path_length( id_type id ) const
+    {
+      return this->graph_prop.path_length( id );
+    }
+
+    inline string_type
+    path_name( id_type id ) const
+    {
+      return this->graph_prop.path_name( id );
+    }
+
+    inline path_type
+    path( id_type id ) const
+    {
+      return this->graph_prop.path( id );
+    }
+
   protected:
     /* === ACCESSORS === */
     inline node_prop_type&
@@ -2141,6 +2818,12 @@ namespace gum {
     get_node_prop( rank_type rank )
     {
       return this->node_prop( rank );
+    }
+
+    inline graph_prop_type&
+    get_graph_prop( )
+    {
+      return this->graph_prop;
     }
 
     /* === METHODS === */
@@ -2189,6 +2872,7 @@ namespace gum {
   private:
     /* === DATA MEMBERS === */
     node_prop_type node_prop;
+    graph_prop_type graph_prop;
 
     /* === METHODS === */
     inline void

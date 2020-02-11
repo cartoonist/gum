@@ -76,8 +76,8 @@ namespace gum {
    *  and edges to be reserved and populated later with the information from
    *  node/edge properties in the graph.
    *
-   *  GRAPH := NODES
-   *  NODES := {HEADER, EDGES_OUT, EDGES_IN}
+   *  GRAPH := {NODE, ...}
+   *  NODE := {HEADER, EDGES_OUT, EDGES_IN}
    *  HEADER := {id, outdegree, indegree, NODE_PROPS}
    *  EDGES_OUT := {EDGE_OUT, ...}
    *  EDGES_IN := {EDGE_IN, ...}
@@ -1039,12 +1039,382 @@ namespace gum {
   template< typename TSpec, typename TDir, uint8_t ...TWidths >
   using DefaultEdgeProperty = EdgeProperty< TSpec, TDir, TWidths... >;
 
-  template< typename TSpec, uint8_t TIdWidth, uint8_t TOffsetWidth >
+  template< typename TSpec, typename TDir, uint8_t ...TWidths >
+  class GraphPropertyTrait;
+
+  /**
+   *  @brief  PathBase class.
+   *
+   *  The base class for `Path` defining the methods for encoding and decoding
+   *  ID and orientation of nodes in a path.
+   *
+   *  NOTE: `value_type` stores the encoded value of a node ID and corresponding
+   *  orientation. The first bit of encoded value (MSB) denotes the orientation
+   *  of the node. It is set if the node is reversed in the path. Other bits are
+   *  use for storing the node ID.
+   *
+   *  NOTE: All IDs share the same type `id_type`; both paths and nodes.
+   */
+  template< typename TId >
+  class PathBase {
+  public:
+    /* === TYPEDEFS === */
+    using id_type = TId;
+    using value_type = std::make_unsigned_t< id_type >;
+
+    constexpr static uint8_t VALUE_WIDTH = widthof< value_type >::value;
+
+    /* === METHODS === */
+    constexpr static inline value_type
+    encode( id_type id, bool reversed )
+    {
+      value_type value = static_cast< value_type >( id );
+      if ( reversed ) value |= PathBase::get_orientation_bit();
+      return value;
+    }
+
+    constexpr static inline id_type
+    id_of( value_type value )
+    {
+      return value & PathBase::get_orientation_mask();
+    }
+
+    constexpr static inline bool
+    is_reverse( value_type value )
+    {
+      return value >> ( PathBase::VALUE_WIDTH - 1 );
+    }
+
+    constexpr static inline value_type
+    get_orientation_bit( )
+    {
+      return 1UL << ( PathBase::VALUE_WIDTH - 1 );
+    }
+
+    constexpr static inline value_type
+    get_orientation_mask( )
+    {
+      return ~( PathBase::get_orientation_bit() );
+    }
+  };  /* --- end of template class PathBase --- */
+
+  template< typename TDir, uint8_t ...TWidths >
+  class GraphPropertyTrait< Dynamic, TDir, TWidths... > {
+  private:
+    using spec_type = Dynamic;
+    using dir_type = TDir;
+    using trait_type = DirectedGraphTrait< spec_type, dir_type, TWidths... >;
+  public:
+    using id_type = typename trait_type::id_type;
+    using rank_type = typename trait_type::rank_type;
+    using offset_type = typename trait_type::offset_type;
+    using common_type = typename trait_type::common_type;
+    using string_type = typename trait_type::string_type;
+
+    class Path : public PathBase< id_type > {
+    public:
+      /* === TYPEDEFS === */
+      using base_type = PathBase< id_type >;
+      using typename base_type::value_type;
+      using container_type = std::vector< value_type >;
+      using const_reference = typename container_type::const_reference;
+      using const_iterator = typename container_type::const_iterator;
+      using size_type = typename container_type::size_type;
+
+      /* === LIFECYCLE === */
+      Path( id_type id_, string_type name_="" )    /* constructor */
+        : id( id_ ), name( std::move( name_ ) ) { }
+
+      /* === ACCESSORS === */
+      inline id_type
+      get_id( ) const
+      {
+        return this->id;
+      }
+
+      inline string_type const&
+      get_name( ) const
+      {
+        return this->name;
+      }
+
+      inline container_type const&
+      get_nodes( ) const
+      {
+        return this->nodes;
+      }
+
+      /* === METHODS === */
+      inline void
+      add_node( id_type id, bool reversed=false )
+      {
+        this->nodes.push_back( base_type::encode( id, reversed ) );
+      }
+
+      inline void
+      for_each_node( std::function< bool( id_type, bool ) > callback )
+      {
+        for ( auto it = this->nodes.begin(); it != this->nodes.end(); ++it ) {
+          callback( base_type::id_of( *it ), base_type::is_reverse( *it ) );
+        }
+      }
+
+      inline const_iterator
+      begin( ) const
+      {
+        return this->nodes.begin();
+      }
+
+      inline const_iterator
+      end( ) const
+      {
+        return this->nodes.end();
+      }
+
+      inline const_reference
+      back( ) const
+      {
+        return this->nodes.back();
+      }
+
+      inline const_reference
+      front( ) const
+      {
+        return this->nodes.front();
+      }
+
+      inline id_type
+      id_of( value_type value ) const
+      {
+        return base_type::id_of( value );
+      }
+
+      inline bool
+      is_reverse( value_type value ) const
+      {
+        return base_type::is_reverse( value );
+      }
+
+      inline rank_type
+      size( ) const
+      {
+        return this->nodes.size();
+      }
+
+    private:
+      /* === DATA MEMBERS === */
+      id_type id;
+      string_type name;
+      container_type nodes;
+    };  /* --- end of class Path --- */
+
+    using path_type = Path;
+    using value_type = path_type;
+    using container_type = std::vector< value_type >;
+    using const_reference = typename container_type::const_reference;
+    using const_iterator = typename container_type::const_iterator;
+    using size_type = typename container_type::size_type;
+    using rank_map_type = google::sparse_hash_map< id_type, rank_type >;
+
+    static inline void
+    init_rank_map( rank_map_type& m )
+    {
+      // `dense_hash_map` requires to set empty key before any `insert` call.
+      //m.set_empty_key( 0 );  // ID cannot be zero, so it can be used as empty key.
+    }
+  };  /* --- end of template class GraphPropertyTrait --- */
+
+  /**
+   *  @brief  Succinct graph property trait.
+   *
+   *  In the graph property class, paths are stored as an integer vector.
+   *
+   *  PROPERTY := {PATH, ...}
+   *  PATH := {HEADER, NODES}
+   *  HEADER := {id, plen, NAME}
+   *  NAME := {start, nlen}
+   *  NODES := {node, ...}
+   *
+   *  id: integer      // path ID
+   *  plen: integer    // path length
+   *  start: integer   // starting position of the path name
+   *  nlen: integer    // length of the path name
+   *  node: integer    // encoded value of node ID and orientation
+   */
+  template< typename TDir, uint8_t ...TWidths >
+  class GraphPropertyTrait< Succinct, TDir, TWidths... > {
+  private:
+    using spec_type = Succinct;
+    using dir_type = TDir;
+    using trait_type = DirectedGraphTrait< spec_type, dir_type, TWidths... >;
+  public:
+    using id_type = typename trait_type::id_type;
+    using rank_type = typename trait_type::rank_type;
+    using offset_type = typename trait_type::offset_type;
+    using common_type = typename trait_type::common_type;
+    using string_type = typename trait_type::string_type;
+    using stringsize_type = typename string_type::size_type;
+    using value_type = typename common_type::type;
+    using container_type = sdsl::int_vector< common_type::value >;
+    using size_type = typename container_type::size_type;
+    using bv_type = sdsl::bit_vector;
+    using rank_map_type = typename bv_type::rank_1_type;
+    using id_map_type = typename bv_type::select_1_type;
+
+    class Path : public PathBase< id_type > {
+    public:
+      /* === TYPEDEFS === */
+      using base_type = PathBase< id_type >;
+      using typename base_type::value_type;
+      using const_reference = typename container_type::const_reference;
+      using const_iterator = typename container_type::const_iterator;
+
+      /* === LIFECYCLE === */
+      Path( id_type id_,
+            typename string_type::const_iterator name_itr_, stringsize_type name_len_,
+            const_iterator nodes_itr_, size_type nodes_len_ )
+        : id( id_ ), name_itr( name_itr_ ), name_len( name_len_ ),
+          nodes_itr( nodes_itr_ ), nodes_len( nodes_len_ )
+      { }
+
+      /* === ACCESSORS === */
+      inline id_type
+      get_id( ) const
+      {
+        return this->id;
+      }
+
+      inline string_type
+      get_name( ) const
+      {
+        string_type name( this->name_len, '\0' );
+        std::copy( this->name_itr, this->name_itr+this->name_len, name.begin() );
+        return name;
+      }
+
+      inline container_type
+      get_nodes( ) const
+      {
+        container_type nodes( nodes_len, 0 );
+        std::copy( this->nodes_itr, this->nodes_itr+this->nodes_len, nodes.begin() );
+        return nodes;
+      }
+
+      /* === METHODS === */
+      inline void
+      for_each_node( std::function< bool( id_type, bool ) > callback )
+      {
+        auto nodes_end = this->end();
+        for ( auto it = this->begin(); it != nodes_end; ++it ) {
+          callback( base_type::id_of( *it ), base_type::is_reverse( *it ) );
+        }
+      }
+
+      inline const_iterator
+      begin( ) const
+      {
+        return this->nodes_itr;
+      }
+
+      inline const_iterator
+      end( ) const
+      {
+        return this->nodes_itr + this->nodes_len;
+      }
+
+      inline const_reference
+      back( ) const
+      {
+        return *( this->nodes_itr + this->nodes_len - 1 );
+      }
+
+      inline const_reference
+      front( ) const
+      {
+        return *this->nodes_itr;
+      }
+
+      inline id_type
+      id_of( value_type value ) const
+      {
+        return base_type::id_of( value );
+      }
+
+      inline bool
+      is_reverse( value_type value ) const
+      {
+        return base_type::is_reverse( value );
+      }
+
+      inline rank_type
+      size( ) const
+      {
+        return this->nodes_len;
+      }
+
+    private:
+      /* === DATA MEMBERS === */
+      id_type id;
+      typename string_type::const_iterator name_itr;
+      stringsize_type name_len;
+      const_iterator nodes_itr;
+      size_type nodes_len;
+    };  /* --- end of class Path --- */
+
+    using path_type = Path;
+
+    constexpr static size_type HEADER_ENTRY_LEN = 4;
+    constexpr static size_type PATH_LEN_OFFSET = 1;
+    constexpr static size_type NAME_POS_OFFSET = 2;
+    constexpr static size_type NAME_LEN_OFFSET = 3;
+
+    static inline rank_type
+    get_path_length( container_type const& paths, id_type id )
+    {
+      return paths[ id + GraphPropertyTrait::PATH_LEN_OFFSET ];
+    }
+
+    static inline void
+    set_path_length( container_type& paths, id_type id, rank_type value )
+    {
+      paths[ id + GraphPropertyTrait::PATH_LEN_OFFSET ] = value;
+    }
+
+    static inline stringsize_type
+    get_name_position( container_type const& paths, id_type id )
+    {
+      return paths[ id + GraphPropertyTrait::NAME_POS_OFFSET ];
+    }
+
+    static inline void
+    set_name_position( container_type& paths, id_type id, stringsize_type value )
+    {
+      paths[ id + GraphPropertyTrait::NAME_POS_OFFSET ] = value;
+    }
+
+    static inline stringsize_type
+    get_name_length( container_type const& paths, id_type id )
+    {
+      return paths[ id + GraphPropertyTrait::NAME_LEN_OFFSET ];
+    }
+
+    static inline void
+    set_name_length( container_type& paths, id_type id, stringsize_type value )
+    {
+      paths[ id + GraphPropertyTrait::NAME_LEN_OFFSET ] = value;
+    }
+  };  /* --- end of template class GraphPropertyTrait --- */
+
+  template< typename TSpec, typename TDir, uint8_t ...TWidths >
   class GraphProperty;
+
+  template< typename TSpec, typename TDir, uint8_t ...TWidths >
+  using DefaultGraphProperty = GraphProperty< TSpec, TDir, TWidths... >;
 
   template< typename TSpec,
             template< class, uint8_t ... > class TNodeProp = DefaultNodeProperty,
             template< class, class, uint8_t ... > class TEdgeProp = DefaultEdgeProperty,
+            template< class, class, uint8_t ... > class TGraphProp = DefaultGraphProperty,
             uint8_t ...TWidths >
   class SeqGraph;
 
