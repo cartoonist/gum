@@ -71,6 +71,30 @@ namespace gum {
       graph.add_edge( link, edge_type( elem.sink_end ) );
     }
 
+    template< typename TFunc,
+              template< class, uint8_t ... > class TNodeProp,
+              template< class, class, uint8_t ... > class TEdgeProp,
+              template< class, class, uint8_t ... > class TGraphProp,
+              uint8_t ...TWidths >
+    inline void
+    add( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
+         TFunc to_id,
+         gfak::path_elem const& elem )
+    {
+      using graph_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >;
+      using id_type = typename graph_type::id_type;
+      using elem_segments_type = std::decay_t< decltype( elem.segment_names ) >;
+      using elem_orients_type = std::decay_t< decltype( elem.orientations ) >;
+      using nodes_type = RandomAccessProxyContainer< elem_segments_type, id_type >;
+      using orientations_type = RandomAccessProxyContainer< elem_orients_type, bool >;
+
+      nodes_type nodes( &elem.segment_names, to_id );
+      orientations_type orients( &elem.orientations, []( bool fwd ) { return !fwd; } );
+      graph.add_path( nodes.begin(), nodes.end(),
+                      orients.begin(), orients.end(),
+                      elem.name );
+    }
+
     template< template< class, uint8_t ... > class TNodeProp,
               template< class, class, uint8_t ... > class TEdgeProp,
               template< class, class, uint8_t ... > class TGraphProp,
@@ -91,8 +115,10 @@ namespace gum {
           add( graph, ids[ elem.source_name ], ids[ elem.sink_name ], elem );
         }
       }
-      // :TODO:Tue Aug 20 16:51:\@cartoonist:
-      // Add paths as O-groups
+      auto to_id = [&ids]( auto const& name ) { return ids[ name ]; };
+      for ( auto const& rec : other.get_name_to_path() ) {
+        add( graph, to_id, rec.second );
+      }
     }
 
     template< template< class, uint8_t ... > class TNodeProp,
