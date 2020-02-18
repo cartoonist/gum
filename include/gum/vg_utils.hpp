@@ -118,8 +118,8 @@ namespace gum {
       using id_type = typename graph_type::id_type;
 
       google::sparse_hash_map< decltype( vg::Node().id() ), id_type > ids;
-        ids.insert( { node.id(), add( graph, node ) } );
       for ( auto const& node : other.node() ) {
+        ids.insert( { node.id(), add( graph, node, id_as_name ) } );
       }
       for ( auto const& edge : other.edge() ) {
         add( graph, ids[ edge.from() ], ids[ edge.to() ], edge );
@@ -133,14 +133,16 @@ namespace gum {
     template< template< class, uint8_t ... > class TNodeProp,
               template< class, class, uint8_t ... > class TEdgeProp,
               template< class, class, uint8_t ... > class TGraphProp,
+              typename ...TArgs,
               uint8_t ...TWidths >
     inline void
     extend_vg( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-               std::istream& in )
+               std::istream& in,
+               TArgs&&... args )
     {
       std::function< void( vg::Graph& ) > handle_chunks =
-          [&graph]( vg::Graph& other ) {
-            extend( graph, other );
+          [&]( vg::Graph& other ) {
+            extend( graph, other, std::forward< TArgs >( args )... );
           };
       vg::io::for_each( in, handle_chunks );
     }
@@ -148,28 +150,31 @@ namespace gum {
     template< template< class, uint8_t ... > class TNodeProp,
               template< class, class, uint8_t ... > class TEdgeProp,
               template< class, class, uint8_t ... > class TGraphProp,
+              typename ...TArgs,
               uint8_t ...TWidths >
     inline void
     extend_vg( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-               std::string fname )
+               std::string fname,
+               TArgs&&... args )
     {
       std::ifstream ifs( fname, std::ifstream::in | std::ifstream::binary );
       if( !ifs ) {
         throw std::runtime_error( "cannot open file '" + fname + "'" );
       }
-      extend_vg( graph, ifs );
+      extend_vg( graph, ifs, std::forward< TArgs >( args )... );
     }
 
     template< template< class, uint8_t ... > class TNodeProp,
               template< class, class, uint8_t ... > class TEdgeProp,
               template< class, class, uint8_t ... > class TGraphProp,
+              typename ...TArgs,
               uint8_t ...TWidths >
     inline void
     extend( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
             std::string fname,
-            VGFormat )
+            VGFormat, TArgs&&... args )
     {
-      extend_vg( graph, fname );
+      extend_vg( graph, fname, std::forward< TArgs >( args )... );
     }
   }  /* --- end of namespace util --- */
 }  /* --- end of namespace gum --- */
