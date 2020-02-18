@@ -598,13 +598,22 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
     auto integrity_test =
         []( auto const& graph ) {
           using graph_type = std::decay_t< decltype( graph ) >;
+          using id_type = typename graph_type::id_type;
           using rank_type = typename graph_type::rank_type;
           using link_type = typename graph_type::link_type;
+          using nodes_type = std::vector< std::pair< id_type, bool > >;
+          using pathset_type = std::unordered_map< std::string, nodes_type >;
 
           auto rtoi =
               [&graph]( rank_type rank ) {
                 return graph.rank_to_id( rank );
               };
+
+          rank_type path_count = 2;
+          std::string names[2] = { "x", "y" };
+          pathset_type pathset =
+              { { "x", { { 1, false }, { 2, false }, { 5, false }, { 8, false } } },
+                { "y", { { 4, false }, { 5, true }, { 7, false } } } };
 
           REQUIRE( graph.node_sequence( rtoi(1) ) == "TGGTCAAC" );
           REQUIRE( graph.node_sequence( rtoi(2) ) == "T" );
@@ -648,6 +657,47 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
           REQUIRE( graph.edge_overlap( rtoi(5), rtoi(6), graph.linktype( link_type( { rtoi(5), false, rtoi(6), false } ) ) ) == 1 );
           REQUIRE( graph.edge_overlap( rtoi(5), rtoi(7), graph.linktype( link_type( { rtoi(5), false, rtoi(7), false } ) ) ) == 0 );
           REQUIRE( graph.edge_overlap( rtoi(5), rtoi(8), graph.linktype( link_type( { rtoi(5), true, rtoi(8), false } ) ) ) == 0 );
+          REQUIRE( graph.get_path_count() == path_count );
+          REQUIRE( !graph.has_path( 0 ) );
+          REQUIRE( !graph.has_path( -1 ) );
+          REQUIRE( !graph.has_path( path_count + 1 ) );
+          graph.for_each_path(
+              [&graph, &path_count, &names, &pathset]( rank_type rank, id_type id ) {
+                std::string const& name = names[ rank - 1 ];
+                REQUIRE( graph.has_path( id ) );
+                REQUIRE( graph.path_rank_to_id( rank ) == id );
+                REQUIRE( graph.path_id_to_rank( id ) == rank );
+                REQUIRE( graph.path_name( id ) == name );
+                REQUIRE( graph.path_length( id ) == pathset[ name ].size() );
+                auto path = graph.path( id );
+                REQUIRE( path.get_id() == id );
+                REQUIRE( path.get_name() == name );
+                REQUIRE( path.size() == pathset[ name ].size() );
+                rank_type nidx = 0;
+                for ( auto const& node : path ) {
+                  REQUIRE( path.id_of( node ) == pathset[ name ][ nidx ].first );
+                  REQUIRE( path.is_reverse( node ) == pathset[ name ][ nidx ].second );
+                  ++nidx;
+                }
+                nidx = 0;
+                path.for_each_node(
+                    [&nidx, &name, &pathset]( id_type id, bool is_reverse ) {
+                      REQUIRE( id == pathset[ name ][ nidx ].first );
+                      REQUIRE( is_reverse == pathset[ name ][ nidx ].second );
+                      ++nidx;
+                      return true;
+                    } );
+                auto nodes = path.get_nodes();
+                nidx = 0;
+                for ( auto const& node : nodes ) {
+                  REQUIRE( path.id_of( node ) == pathset[ name ][ nidx ].first );
+                  REQUIRE( path.is_reverse( node ) == pathset[ name ][ nidx ].second );
+                  ++nidx;
+                }
+                --path_count;
+                return true;
+              } );
+          REQUIRE( !path_count );
         };
 
     WHEN( "Loaded a Dynamic SeqGraph from a file in GFA 2.0 format" )
