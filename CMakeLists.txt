@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.8)
 project(gum VERSION 0.0.1 LANGUAGES CXX)
 
+# Options
+option(BUILD_TESTING "Build test programs" OFF)
+
 # Adding CMake module path.
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 # Finding dependencies.
@@ -43,7 +46,9 @@ add_library(gum::gum ALIAS gum)
 install(DIRECTORY include/gum DESTINATION include)
 
 # Adding test submodule.
-add_subdirectory(test)
+if(BUILD_TESTING)
+  add_subdirectory(test)
+endif(BUILD_TESTING)
 
 # Registering tests.
 include(CTest)
