@@ -7,6 +7,7 @@ option(BUILD_TESTING "Build test programs" OFF)
 # Adding CMake module path.
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 # Finding dependencies.
+find_package(ZLIB REQUIRED)
 find_package(SparseHash REQUIRED)
 find_package(sdsl REQUIRED)
 find_package(GFAKluge)
