@@ -10,7 +10,7 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 find_package(SparseHash REQUIRED)
 find_package(sdsl REQUIRED)
 find_package(GFAKluge)
-find_package(VGio)
+find_package(VGio QUIET)
 find_package(OpenMP)
 # Include external dependencies
 include(${PROJECT_SOURCE_DIR}/ext/external.cmake)
