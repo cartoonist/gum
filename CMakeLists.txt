@@ -8,7 +8,7 @@ option(BUILD_TESTING "Build test programs" OFF)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 # Finding dependencies.
 find_package(SparseHash REQUIRED)
-find_package(SDSL REQUIRED)
+find_package(sdsl REQUIRED)
 find_package(GFAKluge)
 find_package(VGio)
 find_package(OpenMP)
