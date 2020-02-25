@@ -23,8 +23,10 @@ set(CMAKE_NO_SYSTEM_FROM_IMPORTED TRUE)
 file(GLOB HEADER_FILES "${PROJECT_SOURCE_DIR}/include/gum/*.hpp")
 # Creating an INTERFACE library
 add_library(gum INTERFACE)
+add_library(gum_novg INTERFACE)
 # Defining target sources
 target_sources(gum INTERFACE "$<BUILD_INTERFACE:${HEADER_FILES}>")
+target_sources(gum_novg INTERFACE "$<BUILD_INTERFACE:${HEADER_FILES}>")
 # Defining include directories
 target_include_directories(gum
   INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
@@ -33,16 +35,28 @@ target_include_directories(gum
   INTERFACE SparseHash::SparseHash
   INTERFACE GFAKluge::GFAKluge
   INTERFACE VGio::VGio)
+target_include_directories(gum_novg
+  INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+  SYSTEM INTERFACE $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>
+  INTERFACE sdsl::sdsl
+  INTERFACE SparseHash::SparseHash
+  INTERFACE GFAKluge::GFAKluge)
 # Defining link libraries
 target_link_libraries(gum
   INTERFACE sdsl::sdsl
   INTERFACE VGio::VGio
   INTERFACE GFAKluge::GFAKluge
   INTERFACE OpenMP::OpenMP_CXX)
+target_link_libraries(gum_novg
+  INTERFACE sdsl::sdsl
+  INTERFACE GFAKluge::GFAKluge
+  INTERFACE OpenMP::OpenMP_CXX)
 # Use C++17
 target_compile_features(gum INTERFACE cxx_std_17)
-# Defining `gum::gum` alias
+target_compile_features(gum_novg INTERFACE cxx_std_17)
+# Defining `gum::gum` and `gum::gum_novg` aliases
 add_library(gum::gum ALIAS gum)
+add_library(gum::gum_novg ALIAS gum_novg)
 # Install targets
 install(DIRECTORY include/gum DESTINATION include)
 
