@@ -67,7 +67,7 @@ endif(BUILD_TESTING)
 
 # Registering tests.
 include(CTest)
-add_test(NAME TestUtils COMMAND Tests "[utils]")
-add_test(NAME TestSeqGraph COMMAND Tests "[seqgraph]")
-add_test(NAME TestAlphabet COMMAND Tests "[alphabet]")
-add_test(NAME TestStringSet COMMAND Tests "[stringset]")
+add_test(NAME TestUtils COMMAND gum-tests "[utils]")
+add_test(NAME TestSeqGraph COMMAND gum-tests "[seqgraph]")
+add_test(NAME TestAlphabet COMMAND gum-tests "[alphabet]")
+add_test(NAME TestStringSet COMMAND gum-tests "[stringset]")

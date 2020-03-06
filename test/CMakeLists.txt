@@ -12,13 +12,13 @@ endif()
 # Defining the configure header file
 configure_file(src/test_config.hpp.in ${PROJECT_BINARY_DIR}/test/src/test_config.hpp @ONLY)
 
-# Defining target Tests
+# Defining target gum-tests
 file(GLOB TEST_SOURCES "src/*.cpp")
-add_executable(Tests ${TEST_SOURCES})
-target_compile_options(Tests PRIVATE -g -Wall -Wpedantic -Werror)
-target_include_directories(Tests
+add_executable(gum-tests ${TEST_SOURCES})
+target_compile_options(gum-tests PRIVATE -g -Wall -Wpedantic -Werror)
+target_include_directories(gum-tests
   PRIVATE ${PROJECT_BINARY_DIR}/test/src
   PRIVATE gum::gum)
-target_link_libraries(Tests
+target_link_libraries(gum-tests
   PRIVATE Catch2::Catch2
   PRIVATE gum::gum)
