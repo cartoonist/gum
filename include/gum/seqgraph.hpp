@@ -578,6 +578,7 @@ namespace gum {
     inline void
     add_edge_imp( side_type from, side_type to, bool safe=true )
     {
+      assert( this->has_node( from ) && this->has_node( to ) );
       if ( safe && this->has_edge( from, to ) ) return;
       this->adj_out[ from ].push_back( to );
       this->adj_in[ to ].push_back( from );
@@ -2500,11 +2501,13 @@ namespace gum {
       return this->has_edge( base_type::make_link( from, to ) );
     }
 
-    template< typename ...TArgs >
+    template< typename TIter, typename ...TArgs >
     inline id_type
-    add_path( TArgs&&... args )
+    add_path( TIter nbegin, TIter nend, TArgs&&... args )
     {
-      return this->graph_prop.add_path( std::forward< TArgs >( args )... );
+      assert( std::all_of( nbegin, nend, [this]( id_type nid )
+                                         { return this->has_node( nid ); } ) );
+      return this->graph_prop.add_path( nbegin, nend, std::forward< TArgs >( args )... );
     }
 
     inline bool

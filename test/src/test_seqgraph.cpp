@@ -1,5 +1,5 @@
 /**
- *    @file  test_seqgraph.h
+ *    @file  test_seqgraph.cpp
  *   @brief  Test cases for `seqgraph` module.
  *
  *  This source file includes test scenarios for `seqgraph` module.
