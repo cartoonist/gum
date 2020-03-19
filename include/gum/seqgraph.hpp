@@ -144,12 +144,22 @@ namespace gum {
       return new_id;
     }
 
+    /**
+     *  @brief  Add `count` number of nodes to the graph.
+     *
+     *  NOTE: The node whose IDs are given via the callback functions are not
+     *  ready to be queried/manipulated. This is merely a way to return added
+     *  node IDs without keeping them all in memory.
+     *
+     *  @param  count The number of nodes to be added.
+     *  @param  callback A function to be called on IDs of added nodes.
+     */
     inline void
     add_nodes( size_type count,
                std::function< void( id_type ) > callback = []( id_type ){} )
     {
       for ( size_type i = 0; i < count; ++i ) callback( this->add_node_imp() );
-      this->set_rank();
+      this->set_last_rank( count );
     }
 
     inline bool
@@ -622,9 +632,9 @@ namespace gum {
     }
 
     inline void
-    set_last_rank( )
+    set_last_rank( size_type count=1 )
     {
-      this->set_rank( this->nodes.end() - 1, this->nodes.end() );
+      this->set_rank( this->nodes.end() - count, this->nodes.end() );
     }
   };  /* --- end of template class DirectedGraph --- */
 
@@ -2030,7 +2040,7 @@ namespace gum {
         path.add_node( *n_begin, *o_begin );
       }
       this->paths.push_back( std::move( path ) );
-      return path.get_id();
+      return this->max_id;
     }
 
   private:
@@ -2471,7 +2481,7 @@ namespace gum {
     inline id_type
     add_node( node_type node=node_type() )
     {
-      this->node_prop.add_node( node );
+      this->node_prop.add_node( std::move( node ) );
       return base_type::add_node( );
     }
 
