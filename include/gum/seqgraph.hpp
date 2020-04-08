@@ -55,7 +55,7 @@ namespace gum {
 
     /* === LIFECYCLE === */
     DirectedGraph( )                                            /* constructor      */
-      : max_id( 0 ), node_count( 0 ), edge_count( 0 )
+      : node_count( 0 ), edge_count( 0 )
     {
       trait_type::init_rank_map( this->node_rank );
       trait_type::init_adj_map( this->adj_in );
@@ -136,10 +136,24 @@ namespace gum {
       return this->rank_to_id( rank + 1 );
     }
 
+    /**
+     *  @brief  Add a node to the graph.
+     *
+     *  The ID of the new node can be specified by `ext_id` which should have
+     *  not been already in the graph. If `ext_id` is not specified or is zero,
+     *  the node ID are chosen internally.
+     *
+     *  NOTE: The time complexity of adding node is constant if either no ID or
+     *  all IDs are specified externally. Switching between these two approaches
+     *  may result going through all nodes to determine the new node ID.
+     *
+     *  @param  ext_id External node id.
+     *  @return The node ID of the added node in the graph.
+     */
     inline id_type
-    add_node( )
+    add_node( id_type ext_id=0 )
     {
-      id_type new_id = this->add_node_imp( );
+      id_type new_id = this->add_node_imp( ext_id );
       this->set_last_rank();
       return new_id;
     }
@@ -159,6 +173,32 @@ namespace gum {
                std::function< void( id_type ) > callback = []( id_type ){} )
     {
       for ( size_type i = 0; i < count; ++i ) callback( this->add_node_imp() );
+      this->set_last_rank( count );
+    }
+
+    /**
+     *  @brief  Add `count` number of nodes to the graph.
+     *
+     *  NOTE: The node whose IDs are given via the callback functions are not
+     *  ready to be queried/manipulated. This is merely a way to return added
+     *  node IDs without keeping them all in memory.
+     *
+     *  @param  count The number of nodes to be added.
+     *  @param  callback A function to be called on IDs of added nodes.
+     *  @param  begin The begin iterator of external node IDs.
+     *  @param  end The end iterator of external node IDs.
+     */
+    template< typename TIter >
+    inline void
+    add_nodes( size_type count,
+               TIter begin,
+               TIter end,
+               std::function< void( id_type ) > callback = []( id_type ){} )
+    {
+      for ( size_type i = 0; i < count; ++i ) {
+        if ( begin != end ) callback( this->add_node_imp( *begin++ ) );
+        else callback( this->add_node_imp() );
+      }
       this->set_last_rank( count );
     }
 
@@ -579,10 +619,21 @@ namespace gum {
 
     /* === METHODS === */
     inline id_type
-    add_node_imp( )
+    add_node_imp( id_type ext_id=0 )
     {
-      this->nodes.push_back( ++this->max_id );
-      return this->max_id;
+      if ( ext_id == 0 ) {                      // ID is not externally specified.
+        if ( this->nodes.empty() ) ext_id = 1;  // IDs start from 1.
+        else {
+          ext_id = this->nodes.back() + 1;      // and they are assigned sequentially.
+          if ( this->has_node( ext_id ) ) {     // Otherwise, find the max (expensive).
+            ext_id = *std::max_element( this->nodes.begin(), this->nodes.end() ) + 1;
+          }
+        }
+      }
+      if ( this->has_node( ext_id ) )
+        throw std::runtime_error( "adding a node with invalid/duplicate ID" );
+      this->nodes.push_back( ext_id );
+      return ext_id;
     }
 
     inline void
@@ -607,7 +658,6 @@ namespace gum {
     rank_map_type node_rank;
     adj_map_type adj_out;
     adj_map_type adj_in;
-    id_type max_id;
     rank_type node_count;
     rank_type edge_count;
 
@@ -621,7 +671,7 @@ namespace gum {
         bool inserted;
         std::tie( std::ignore, inserted ) =
             this->node_rank.insert( { *begin, ++this->node_count } );
-        assert( inserted );  // avoid duplicate insersion from upstream.
+        assert( inserted );  // avoid duplicate insertion from upstream.
       }
     }
 
@@ -808,7 +858,7 @@ namespace gum {
      *  [1, node_count], otherwise the behaviour is undefined. The node rank
      *  should be verified beforehand.
      *
-     *  @param  id A node rank.
+     *  @param  rank A node rank.
      *  @return The corresponding node ID.
      */
     inline id_type
@@ -1412,8 +1462,8 @@ namespace gum {
         id_type d_id = d_graph.rank_to_id( rank );
         // Set the bit at index `pos - 1` denoting the start of a node record.
         this->ids_bv[ pos - 1 ] = 1;
-        // Fill out the `nodes` vector by rank in the first pass.
-        this->nodes[ pos ] = rank;
+        // Embed the coordinate system of `Dynamic` graph.
+        this->nodes[ pos ] = d_id;
         this->set_outdegree( pos, d_graph.outdegree( d_id ) );
         this->set_indegree( pos, d_graph.indegree( d_id ));
         // Add EDGES_OUT and EDGES_IN entries
@@ -1462,13 +1512,6 @@ namespace gum {
     inline void
     identificate( )
     {
-      // Replace all `id` field in the headers with their indices in the nodes list.
-      this->for_each_node(
-          [this]( rank_type rank, id_type id ) {
-            this->nodes[ id ] = id;
-            return true;
-          }
-        );
       // Replace other node IDs in adjacency lists.
       this->for_each_node(
           [this]( rank_type rank, id_type id ) {
@@ -1616,13 +1659,13 @@ namespace gum {
     }
 
     inline sequenceset_type
-    sequences() const
+    sequences( ) const
     {
       return sequenceset_type( this, this->nodes );
     }
 
     inline stringset_type
-    names() const
+    names( ) const
     {
       return stringset_type( this, this->nodes );
     }
@@ -2059,7 +2102,7 @@ namespace gum {
         bool inserted;
         std::tie( std::ignore, inserted ) =
             this->path_rank.insert( { (*begin).get_id(), ++this->path_count } );
-        assert( inserted );  // avoid duplicate insersion from upstream.
+        assert( inserted );  // avoid duplicate insertion from upstream.
       }
     }
 
@@ -2479,10 +2522,17 @@ namespace gum {
     }
 
     inline id_type
-    add_node( node_type node=node_type() )
+    add_node( node_type node, id_type ext_id=0 )
     {
       this->node_prop.add_node( std::move( node ) );
-      return base_type::add_node( );
+      return base_type::add_node( ext_id );
+    }
+
+    inline id_type
+    add_node( id_type ext_id=0 )
+    {
+      this->node_prop.add_node( node_type() );
+      return base_type::add_node( ext_id );
     }
 
     inline void
