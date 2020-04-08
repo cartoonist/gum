@@ -609,6 +609,17 @@ namespace gum {
       return this->indegree( side ) > 1;
     }
 
+    inline void
+    clear( )
+    {
+      this->nodes.clear();
+      this->node_rank.clear();
+      this->adj_out.clear();
+      this->adj_in.clear();
+      this->node_count = 0;
+      this->edge_count = 0;
+    }
+
   protected:
     /* === ACCESSORS === */
     inline nodes_type&
@@ -1299,6 +1310,19 @@ namespace gum {
       return this->indegree( side ) > 1;
     }
 
+    inline void
+    clear( )
+    {
+      this->node_count = 0;
+      this->edge_count = 0;
+      this->nodes.resize( 1 );
+      this->nodes[ 0 ] = 0;
+      this->ids_bv.resize( 1 );
+      this->ids_bv[ 0 ] = 0;
+      sdsl::util::init_support( this->node_rank, &this->ids_bv );
+      sdsl::util::init_support( this->node_id, &this->ids_bv );
+    }
+
   protected:
     /* === METHODS === */
     inline size_type
@@ -1670,6 +1694,14 @@ namespace gum {
       return stringset_type( this, this->nodes );
     }
 
+    inline void
+    clear( )
+    {
+      this->nodes.clear();
+      this->sequences_len_sum = 0;
+      this->names_len_sum = 0;
+    }
+
   private:
     /* === DATA MEMBERS === */
     container_type nodes;
@@ -1808,6 +1840,13 @@ namespace gum {
       return this->nameset;
     }
 
+    inline void
+    clear( )
+    {
+      this->seqset.clear();
+      this->nameset.clear();
+    }
+
   private:
     /* === DATA MEMBERS === */
     sequenceset_type seqset;
@@ -1882,6 +1921,12 @@ namespace gum {
     has_edge( key_type sides ) const
     {
       return this->edges.find( sides ) != this->edges.end();
+    }
+
+    inline void
+    clear( )
+    {
+      this->edges.clear();
     }
 
   private:
@@ -2049,6 +2094,15 @@ namespace gum {
       rank_type rank = this->id_to_rank( id );
       assert( rank != 0 );
       return this->paths[ rank - 1 ];
+    }
+
+    inline void
+    clear( )
+    {
+      this->paths.clear();
+      this->path_rank.clear();
+      this->max_id = 0;
+      this->path_count = 0;
     }
 
   protected:
@@ -2322,6 +2376,17 @@ namespace gum {
                         this->get_name_length( id ),
                         this->paths.begin() + this->nodes_pos( id ),
                         this->path_length( id ) );
+    }
+
+    inline void
+    clear( )
+    {
+      this->path_count = 0;
+      this->paths.resize( 0 );
+      sdsl::util::clear( this->ids_bv );
+      sdsl::util::clear( this->path_rank );
+      sdsl::util::clear( this->path_id );
+      this->names.clear();
     }
 
   protected:
@@ -2633,6 +2698,15 @@ namespace gum {
       return this->graph_prop.path( id );
     }
 
+    inline void
+    clear( )
+    {
+      this->node_prop.clear();
+      this->edge_prop.clear();
+      this->graph_prop.clear();
+      base_type::clear();
+    }
+
   protected:
     /* === ACCESSORS === */
     inline node_prop_type&
@@ -2867,6 +2941,14 @@ namespace gum {
     path( id_type id ) const
     {
       return this->graph_prop.path( id );
+    }
+
+    inline void
+    clear( )
+    {
+      this->node_prop.clear();
+      this->graph_prop.clear();
+      base_type::clear();
     }
 
   protected:

@@ -291,6 +291,16 @@ namespace gum {
       this->_extend( begin, end, len_sum );
     }
 
+    inline void
+    clear( )
+    {
+      sdsl::util::clear( this->strset );
+      sdsl::util::clear( this->breaks );
+      sdsl::util::clear( this->rank );
+      sdsl::util::clear( this->select );
+      this->count = 0;
+    }
+
   private:
     /* === DATA MEMBERS === */
     container_type strset;
