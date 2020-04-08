@@ -1682,6 +1682,15 @@ namespace gum {
       this->nodes.push_back( std::move( node ) );
     }
 
+    inline void
+    update_node( rank_type rank, value_type node )
+    {
+      value_type& old = this->nodes[ rank - 1 ];
+      this->sequences_len_sum += node.sequence.size() - old.sequence.size();
+      this->names_len_sum += node.name.size() - old.name.size();
+      old = std::move( node );
+    }
+
     inline sequenceset_type
     sequences( ) const
     {
@@ -2598,6 +2607,13 @@ namespace gum {
     {
       this->node_prop.add_node( node_type() );
       return base_type::add_node( ext_id );
+    }
+
+    inline void
+    update_node( id_type id, node_type node )
+    {
+      rank_type rank = base_type::id_to_rank( id );
+      this->node_prop.update_node( rank, std::move( node ) );
     }
 
     inline void
