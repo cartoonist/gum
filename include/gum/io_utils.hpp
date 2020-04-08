@@ -22,8 +22,21 @@
 #include "vg_utils.hpp"
 #include "gfa_utils.hpp"
 
+
 namespace gum {
   namespace util {
+    /**
+     *  @brief  Extend a Dynamic SeqGraph from a file.
+     *
+     *  It extends the given `Dynamic` graph by the graph defined in the input
+     *  file. The file format of the input file will be determined by the file
+     *  extension.
+     *
+     *  @param  graph The `Dynamic` graph.
+     *  @param  fname The input file path.
+     *  @param  args The parameters forwarded to lower-level functions (see
+     *               `gum::util::extend_gfa` or `gum::util::extend_vg`).
+     */
     template< template< class, uint8_t ... > class TNodeProp,
               template< class, class, uint8_t ... > class TEdgeProp,
               template< class, class, uint8_t ... > class TGraphProp,
@@ -34,15 +47,59 @@ namespace gum {
             std::string fname,
             TArgs&&... args )
     {
-      if ( util::ends_with( fname, VG_FILE_EXT ) ) {
+      if ( util::ends_with( fname, VGFormat::FILE_EXTENSION ) ) {
         extend_vg( graph, fname, std::forward< TArgs >( args )... );
       }
-      else if ( util::ends_with( fname, GFA_FILE_EXT ) ) {
+      else if ( util::ends_with( fname, GFAFormat::FILE_EXTENSION ) ) {
         extend_gfa( graph, fname, std::forward< TArgs >( args )... );
       }
       else throw std::runtime_error( "unsupported input file format" );
     }
 
+    /**
+     *  @brief  Load a Dynamic SeqGraph from a file.
+     *
+     *  It constructs the given `Dynamic` graph from the input file. The file
+     *  format of the input file will be determined by the file extension.
+     *
+     *  @param  graph The `Dynamic` graph.
+     *  @param  fname The input file path.
+     *  @param  args The parameters forwarded to lower-level functions (see
+     *               `gum::util::load_gfa` or `gum::util::load_vg`).
+     */
+    template< template< class, uint8_t ... > class TNodeProp,
+              template< class, class, uint8_t ... > class TEdgeProp,
+              template< class, class, uint8_t ... > class TGraphProp,
+              typename ...TArgs,
+              uint8_t ...TWidths >
+    inline void
+    load( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
+          std::string fname,
+          TArgs&&... args )
+    {
+      if ( util::ends_with( fname, VGFormat::FILE_EXTENSION ) ) {
+        load_vg( graph, fname, std::forward< TArgs >( args )... );
+      }
+      else if ( util::ends_with( fname, GFAFormat::FILE_EXTENSION ) ) {
+        load_gfa( graph, fname, std::forward< TArgs >( args )... );
+      }
+      else throw std::runtime_error( "unsupported input file format" );
+    }
+
+    /**
+     *  @brief  Load a Succinct SeqGraph from a file.
+     *
+     *  It constructs the given `Succinct` graph from the input file. The file
+     *  format of the input file will be determined by the file extension.
+     *
+     *  NOTE: The `Succinct` specialisation of `SeqGraph` cannot be extended as
+     *        it is immutable.
+     *
+     *  @param  graph The `Succinct` graph.
+     *  @param  fname The input file path.
+     *  @param  args The parameters forwarded to lower-level functions (see
+     *               `gum::util::load_gfa` or `gum::util::load_vg`).
+     */
     template< template< class, uint8_t ... > class TNodeProp,
               template< class, class, uint8_t ... > class TEdgeProp,
               template< class, class, uint8_t ... > class TGraphProp,
