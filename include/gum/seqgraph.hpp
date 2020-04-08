@@ -2043,6 +2043,14 @@ namespace gum {
       return this->rank_to_id( rank + 1 );
     }
 
+    inline id_type
+    add_path( string_type name )
+    {
+      id_type new_id = this->add_path_imp( std::move( name ) );
+      this->set_last_rank();
+      return new_id;
+    }
+
     template< typename TIter >
     inline id_type
     add_path( TIter n_begin, TIter n_end, string_type name="" )
@@ -2061,6 +2069,27 @@ namespace gum {
                                            std::move( name ) );
       this->set_last_rank();
       return new_id;
+    }
+
+    template< typename TIter >
+    inline void
+    extend_path( id_type id, TIter n_begin, TIter n_end )
+    {
+      value_type& path = this->path( id );
+      for ( ; n_begin != n_end; ++n_begin ) {
+        path.add_node( *n_begin );
+      }
+    }
+
+    template< typename TIter1, typename TIter2 >
+    inline void
+    extend_path( id_type id, TIter1 n_begin, TIter1 n_end, TIter2 o_begin, TIter2 o_end )
+    {
+      assert( n_end - n_begin == o_end - o_begin );
+      value_type& path = this->path( id );
+      for ( ; n_begin != n_end && o_begin != o_end; ++n_begin, ++o_begin ) {
+        path.add_node( *n_begin, *o_begin );
+      }
     }
 
     inline bool
@@ -2123,6 +2152,22 @@ namespace gum {
     }
 
     /* === METHODS === */
+    inline path_type&
+    path( id_type id )
+    {
+      rank_type rank = this->id_to_rank( id );
+      assert( rank != 0 );
+      return this->paths[ rank - 1 ];
+    }
+
+    inline id_type
+    add_path_imp( string_type name )
+    {
+      value_type path( ++this->max_id, std::move( name ) );
+      this->paths.push_back( std::move( path ) );
+      return this->max_id;
+    }
+
     template< typename TIter >
     inline id_type
     add_path_imp( TIter n_begin, TIter n_end, string_type name="" )
@@ -2642,6 +2687,12 @@ namespace gum {
       return this->has_edge( base_type::make_link( from, to ) );
     }
 
+    inline id_type
+    add_path( string_type name )
+    {
+      return this->graph_prop.add_path( std::move( name ) );
+    }
+
     template< typename TIter, typename ...TArgs >
     inline id_type
     add_path( TIter nbegin, TIter nend, TArgs&&... args )
@@ -2649,6 +2700,15 @@ namespace gum {
       assert( std::all_of( nbegin, nend, [this]( id_type nid )
                                          { return this->has_node( nid ); } ) );
       return this->graph_prop.add_path( nbegin, nend, std::forward< TArgs >( args )... );
+    }
+
+    template< typename TIter, typename ...TArgs >
+    inline void
+    extend_path( id_type id, TIter nbegin, TIter nend, TArgs&&... args )
+    {
+      assert( std::all_of( nbegin, nend, [this]( id_type nid )
+                                         { return this->has_node( nid ); } ) );
+      this->graph_prop.extend_path( id, nbegin, nend, std::forward< TArgs >( args )... );
     }
 
     inline bool
