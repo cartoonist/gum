@@ -278,6 +278,7 @@ namespace gum {
     extend( TContainer const& ext_strset )
     {
       auto len_sum = util::length_sum( ext_strset );
+      if ( len_sum == 0 ) return;
       this->_extend( ext_strset.begin(), ext_strset.end(), len_sum );
     }
 
@@ -286,6 +287,7 @@ namespace gum {
     extend( TIter begin, TIter end )
     {
       auto len_sum = util::length_sum( begin, end );
+      if ( len_sum == 0 ) return;
       this->_extend( begin, end, len_sum );
     }
 
@@ -321,6 +323,7 @@ namespace gum {
     inline void
     _extend( TIter begin, TIter end, size_type len_sum )
     {
+      assert( len_sum != 0 );
       size_type old_size = this->expand( len_sum );
       auto cpos = this->strset.begin() + old_size;
       for ( ; begin != end; ++begin ) {
