@@ -123,6 +123,26 @@ namespace gum {
     }
 
     /**
+     *  @brief  Return the embedded coordinate ID of a node by its internal ID.
+     *
+     *  `Dynamic` graphs only hold one coordinate system. So, this is an
+     *  identity function to maintain the same interface for both `Dynamic` and
+     *  `Succinct` graphs.
+     *
+     *  NOTE: This function assumes that node ID exists in the graph, otherwise
+     *  the behaviour is undefined. The node ID can be verified by `has_node`
+     *  method before calling this one.
+     *
+     *  @param  id A node ID.
+     *  @return The corresponding node embedded coordinate ID.
+     */
+    constexpr inline id_type
+    coordinate_id( id_type id ) const
+    {
+      return id;
+    }
+
+    /**
      *  @brief  Return the ID of the successor node in rank.
      *
      *  @param  id A node id.
@@ -877,6 +897,23 @@ namespace gum {
     {
       assert( 0 < rank && rank <= this->node_count );
       return this->node_id( rank ) + 1;
+    }
+
+    /**
+     *  @brief  Return the embedded coordinate ID of a node by its internal ID.
+     *
+     *  NOTE: This function assumes that node ID exists in the graph, otherwise
+     *  the behaviour is undefined. The node ID can be verified by `has_node`
+     *  method before calling this one.
+     *
+     *  @param  id A node ID.
+     *  @return The corresponding node embedded coordinate ID.
+     */
+    inline id_type
+    coordinate_id( id_type id ) const
+    {
+      assert( this->has_node( id ) );
+      return this->nodes[ id ];
     }
 
     /**
