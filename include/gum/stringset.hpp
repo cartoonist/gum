@@ -314,10 +314,10 @@ namespace gum {
     resize( size_type new_size )
     {
       auto old_size = this->strset.size();
+      if ( new_size == old_size ) return old_size;
       this->strset.resize( new_size );
-      bv_type new_breaks( new_size, 0 );
-      if ( old_size != 0 ) util::bv_icopy( this->breaks, new_breaks, 0, old_size );
-      sdsl::util::assign( this->breaks, std::move( new_breaks ) );
+      this->breaks.resize( new_size );
+      util::bv_izero( this->breaks, old_size );
       return old_size;
     }
 
