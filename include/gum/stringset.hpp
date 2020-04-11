@@ -208,7 +208,7 @@ namespace gum {
     inline const_reference
     operator[]( size_type i ) const
     {
-      return this->extract( this->position( i ), this->position( i + 1 ) );
+      return this->extract( this->start_position( i ), this->end_position( i ) );
     }
 
     /* === METHODS === */
@@ -226,21 +226,29 @@ namespace gum {
     }
 
     inline size_type
-    position( size_type i ) const
+    start_position( size_type i ) const
     {
-      return ( 0 <= i && i < this->count ) ? this->select( i + 1 ) : this->strset.size();
+      if ( i == 0 ) return 0;
+      if ( i >= this->size() ) return this->strset.size();
+      return this->select( i ) + 1;
+    }
+
+    inline size_type
+    end_position( size_type i ) const
+    {
+      return this->select( i + 1 );
     }
 
     inline size_type
     length( size_type i ) const
     {
-      return this->position( i + 1 ) - this->position( i );
+      return this->end_position( i ) - this->start_position( i );
     }
 
     inline size_type
     length_sum( ) const
     {
-      return this->strset.size();
+      return this->strset.size() - this->size() /* number of delimiters */;
     }
 
     inline bool
@@ -278,7 +286,6 @@ namespace gum {
     extend( TContainer const& ext_strset )
     {
       auto len_sum = util::length_sum( ext_strset );
-      if ( len_sum == 0 ) return;
       this->_extend( ext_strset.begin(), ext_strset.end(), len_sum );
     }
 
@@ -287,7 +294,6 @@ namespace gum {
     extend( TIter begin, TIter end )
     {
       auto len_sum = util::length_sum( begin, end );
-      if ( len_sum == 0 ) return;
       this->_extend( begin, end, len_sum );
     }
 
@@ -333,22 +339,42 @@ namespace gum {
     inline void
     _extend( TIter begin, TIter end, size_type len_sum )
     {
-      assert( len_sum != 0 );
-      size_type old_size = this->expand( len_sum );
-      auto cpos = this->strset.begin() + old_size;
+      size_type cpos = this->expand( len_sum + ( end - begin ) );
       for ( ; begin != end; ++begin ) {
-        this->breaks[ cpos - this->strset.begin() ] = 1;
-        assert( cpos < this->strset.end() );
         // It's important to have a `const` reference from the element, because
         // it may be returned by value. In that case the `*begin` would be
         // temporary object for which different multiple call of `begin` or `end`
         // methods returns iterators for different containers.
         auto const& str = *begin;
-        cpos = util::encode( str.begin(), str.end(), cpos, alphabet_type() );
-        ++count;
+        cpos = this->put( str, cpos );
       }
       sdsl::util::init_support( this->rank, &this->breaks );
       sdsl::util::init_support( this->select, &this->breaks );
+    }
+
+    /**
+     *  @brief  Put the given string at the specified position.
+     *
+     *  NOTE: The required space should be allocated beforehand.
+     *  NOTE: It does not initialise the rank/select supports. Those should be
+     *        done afterwards.
+     *
+     *  @param  str A string.
+     *  @param  pos Put the given string in this position in the `strset`.
+     *  @return The location immediately after the last character copied in the
+     *          `strset`.
+     */
+    inline size_type
+    put( value_type const& str, size_type pos )
+    {
+      assert( pos < this->strset.size() );
+      auto citer = this->strset.begin() + pos;
+      citer = util::encode( str.begin(), str.end(), citer, alphabet_type() );
+      *citer = 0;  // write delimiter
+      pos += str.size() + 1;  // update current position
+      this->breaks[ pos - 1 ] = 1;  // mark delimiter
+      ++this->count;
+      return pos;
     }
 
     inline value_type

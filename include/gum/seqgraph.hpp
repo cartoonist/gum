@@ -3121,7 +3121,7 @@ namespace gum {
       this->for_each_node(
           [this, &d_graph]( rank_type rank, id_type id ) {
             this->set_np_value( id, SeqGraph::NP_SEQSTART_OFFSET,
-                                this->node_prop.sequences().position( rank - 1 ) );
+                                this->node_prop.sequences().start_position( rank - 1 ) );
             this->set_np_value( id, SeqGraph::NP_SEQLEN_OFFSET,
                                 this->node_prop.sequences().length( rank - 1 ) );
             id_type d_id = d_graph.rank_to_id( rank );
