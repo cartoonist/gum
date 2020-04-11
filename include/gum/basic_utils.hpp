@@ -74,15 +74,13 @@ namespace gum {
      *  Bitvector identical-range copy. The [idx...idx+len) from `src` is copied
      *  to the same range in `dst`.
      */
-    template< typename TBitVector >
+    template< typename TBitVector, uint8_t WLEN=64 >
     inline void
     bv_icopy( TBitVector const& src,
               TBitVector& dst,
               typename TBitVector::size_type idx=0,
               typename TBitVector::size_type len=0 )
     {
-      static const short int WLEN = 64;
-
       assert( idx < src.size() );
       assert( dst.size() >= src.size() );
 
@@ -95,6 +93,30 @@ namespace gum {
       }
       i -= WLEN;
       for ( ; i < idx + len; ++i ) dst[ i ] = src[ i ];
+    }
+
+    /**
+     *  @brief  Set all bits in [idx...idx+len) to zero.
+     *
+     *  @param  bv The bit vector.
+     *  @param  idx The start of the range.
+     *  @param  len The length of the range.
+     */
+    template< typename TBitVector, uint8_t WLEN=64 >
+    inline void
+    bv_izero( TBitVector& bv,
+              typename TBitVector::size_type idx=0,
+              typename TBitVector::size_type len=0 )
+    {
+      assert( idx < bv.size() );
+      if ( len == 0 ) len = bv.size();
+      if ( len + idx > bv.size() ) len = bv.size() - idx;
+      auto i = idx + WLEN;
+      for ( ; i < idx + len /* && i < bv.size() */; i += WLEN ) {
+        bv.set_int( i - WLEN, 0, WLEN );
+      }
+      i -= WLEN;
+      for ( ; i < idx + len; ++i ) bv[ i ] = 0;
     }
 
     /**

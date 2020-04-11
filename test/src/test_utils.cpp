@@ -108,7 +108,7 @@ TEMPLATE_SCENARIO( "Prefix and suffix check of a string", "[utils][template]",
   }
 }
 
-SCENARIO( "Word-wise range copy for bit-vectors", "[utils]" )
+SCENARIO( "Word-wise range operations for bit-vectors", "[utils]" )
 {
   GIVEN( "A bit vector whose size is less than a word length (64-bit)" )
   {
@@ -147,6 +147,33 @@ SCENARIO( "Word-wise range copy for bit-vectors", "[utils]" )
       THEN( "The suffix part of destination bit vector should be equal to the source" )
       {
         REQUIRE( dbv.get_int( 0 ) == 0xfffffffffffff83f );
+      }
+    }
+
+    WHEN( "The whole bit vector is set to zero" )
+    {
+      util::bv_izero( sbv );
+      THEN( "All bits should be zero" )
+      {
+        REQUIRE( sbv.get_int( 0 ) == 0 );
+      }
+    }
+
+    WHEN( "The bit vector is partially set to zero" )
+    {
+      util::bv_izero( sbv, 5, 6 );
+      THEN( "All bits in the region should be zero" )
+      {
+        REQUIRE( sbv.get_int( 0 ) == 0x801 );
+      }
+    }
+
+    WHEN( "A suffix of the bit vector is set to zero" )
+    {
+      util::bv_izero( sbv, 6 );
+      THEN( "The bits in the suffix should be zero" )
+      {
+        REQUIRE( sbv.get_int( 0 ) == 0x21 );
       }
     }
   }
@@ -207,6 +234,45 @@ SCENARIO( "Word-wise range copy for bit-vectors", "[utils]" )
         REQUIRE( dbv.get_int( 7808 ) == 0xaaaaaaaaaaaaaaaa );
       }
     }
+
+    WHEN( "The whole bit vector is set to zero" )
+    {
+      util::bv_izero( sbv );
+      THEN( "All bits should be zero" )
+      {
+        REQUIRE( sbv.get_int( 0 ) == 0 );
+      }
+    }
+
+    WHEN( "The bit vector is partially set to zero" )
+    {
+      util::bv_izero( sbv, 542, 60 );
+      THEN( "All bits in the region should be zero" )
+      {
+        REQUIRE( sbv.get_int( 0 ) == 0x0 );
+        REQUIRE( sbv.get_int( 100 ) == 0x0 );
+        REQUIRE( sbv.get_int( 478 ) == 0x0 );
+        REQUIRE( sbv.get_int( 542 ) == 0x9000000000000000 );
+        REQUIRE( sbv.get_int( 893 ) == 0x0 );
+        REQUIRE( sbv.get_int( 7744 ) == 0x0 );
+        REQUIRE( sbv.get_int( 7808 ) == 0xaaaaaaaaaaaaaaaa );
+      }
+    }
+
+    WHEN( "A suffix of the bit vector is set to zero" )
+    {
+      util::bv_izero( sbv, 7812 );
+      THEN( "All bits in the region should be zero" )
+      {
+        REQUIRE( sbv.get_int( 0 ) == 0x0 );
+        REQUIRE( sbv.get_int( 100 ) == 0x0 );
+        REQUIRE( sbv.get_int( 478 ) == 0x0 );
+        REQUIRE( sbv.get_int( 542 ) == 0x900000000fafabcd );
+        REQUIRE( sbv.get_int( 893 ) == 0x0 );
+        REQUIRE( sbv.get_int( 7744 ) == 0x0 );
+        REQUIRE( sbv.get_int( 7808 ) == 0x000000000000000a );
+      }
+    }
   }
 
   GIVEN( "A bit vector whose size is larger than word length (64-bit)" )
@@ -265,6 +331,45 @@ SCENARIO( "Word-wise range copy for bit-vectors", "[utils]" )
         REQUIRE( dbv.get_int( 6936 ) == 0xffffffffffffffff );
         REQUIRE( dbv.get_int( 7672 ) == 0xffffffffffffffff );
         REQUIRE( dbv.get_int( 7736 ) == 0xaaaaaaaaaaaaaaaa );
+      }
+    }
+
+    WHEN( "The whole bit vector is set to zero" )
+    {
+      util::bv_izero( sbv );
+      THEN( "All bits should be zero" )
+      {
+        REQUIRE( sbv.get_int( 0 ) == 0 );
+      }
+    }
+
+    WHEN( "The bit vector is partially set to zero" )
+    {
+      util::bv_izero( sbv, 528, 74 );
+      THEN( "All bits in the region should be zero" )
+      {
+        REQUIRE( sbv.get_int( 0 ) == 0xdddddddddddddddd );
+        REQUIRE( sbv.get_int( 100 ) == 0x0 );
+        REQUIRE( sbv.get_int( 478 ) == 0x0 );
+        REQUIRE( sbv.get_int( 528 ) == 0x0 );
+        REQUIRE( sbv.get_int( 542 ) == 0x9000000000000000 );
+        REQUIRE( sbv.get_int( 893 ) == 0x0 );
+        REQUIRE( sbv.get_int( 7736 ) == 0xaaaaaaaaaaaaaaaa );
+      }
+    }
+
+    WHEN( "A suffix of the bit vector is set to zero" )
+    {
+      util::bv_izero( sbv, 7740 );
+      THEN( "All bits in the region should be zero" )
+      {
+        REQUIRE( sbv.get_int( 0 ) == 0xdddddddddddddddd );
+        REQUIRE( sbv.get_int( 100 ) == 0x0 );
+        REQUIRE( sbv.get_int( 478 ) == 0x0 );
+        REQUIRE( sbv.get_int( 542 ) == 0x900000000fafabcd );
+        REQUIRE( sbv.get_int( 893 ) == 0x0 );
+        REQUIRE( sbv.get_int( 7672 ) == 0x0 );
+        REQUIRE( sbv.get_int( 7736 ) == 0x000000000000000a );
       }
     }
   }
