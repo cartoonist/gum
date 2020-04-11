@@ -268,7 +268,7 @@ namespace gum {
       }
 
       inline void
-      compress( )
+      shrink_to_fit( )
       {
         this->ids.resize( this->size() );
         sdsl::util::bit_compress( this->ids );

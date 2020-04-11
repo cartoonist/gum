@@ -298,6 +298,30 @@ namespace gum {
     }
 
     inline void
+    push_back( value_type const& str )
+    {
+      size_type cpos = this->expand( str.size() + 1 );
+      this->put( str, cpos );
+      sdsl::util::init_support( this->rank, &this->breaks );
+      sdsl::util::init_support( this->select, &this->breaks );
+    }
+
+    inline void
+    push_back( value_type&& str )
+    {
+      this->push_back( str );
+    }
+
+    inline void
+    shrink_to_fit( )
+    {
+      sdsl::util::bit_compress( this->strset );
+      sdsl::util::bit_compress( this->breaks );
+      sdsl::util::init_support( this->rank, &this->breaks );
+      sdsl::util::init_support( this->select, &this->breaks );
+    }
+
+    inline void
     clear( )
     {
       sdsl::util::clear( this->strset );
