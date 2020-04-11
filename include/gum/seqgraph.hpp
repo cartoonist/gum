@@ -196,32 +196,6 @@ namespace gum {
       this->set_last_rank( count );
     }
 
-    /**
-     *  @brief  Add `count` number of nodes to the graph.
-     *
-     *  NOTE: The node whose IDs are given via the callback functions are not
-     *  ready to be queried/manipulated. This is merely a way to return added
-     *  node IDs without keeping them all in memory.
-     *
-     *  @param  count The number of nodes to be added.
-     *  @param  callback A function to be called on IDs of added nodes.
-     *  @param  begin The begin iterator of external node IDs.
-     *  @param  end The end iterator of external node IDs.
-     */
-    template< typename TIter >
-    inline void
-    add_nodes( size_type count,
-               TIter begin,
-               TIter end,
-               std::function< void( id_type ) > callback = []( id_type ){} )
-    {
-      for ( size_type i = 0; i < count; ++i ) {
-        if ( begin != end ) callback( this->add_node_imp( *begin++ ) );
-        else callback( this->add_node_imp() );
-      }
-      this->set_last_rank( count );
-    }
-
     inline bool
     has_node( id_type id ) const
     {
@@ -2689,6 +2663,14 @@ namespace gum {
     {
       this->node_prop.add_node( node_type() );
       return base_type::add_node( ext_id );
+    }
+
+    inline void
+    add_nodes( size_type count,
+               std::function< void( id_type ) > callback = []( id_type ){} )
+    {
+      for ( size_type i = 0; i < count; ++i ) this->node_prop.add_node( node_type() );
+      base_type::add_nodes( count, callback );
     }
 
     inline void
