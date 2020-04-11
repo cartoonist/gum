@@ -61,14 +61,16 @@ TEMPLATE_SCENARIO( "StringSet basic functionalities", "[stringset]",
 {
   using alphabet_type = TestType;
   using stringset_type = gum::StringSet< alphabet_type >;
+  using stdstringset_type = std::vector< std::string >;
 
   auto get_stdstrset =
       []( ) {
-        std::vector< std::string > retval;
+        stdstringset_type retval;
         if ( std::is_same< alphabet_type, gum::DNA >::value ) {
           retval.push_back( "ATTTCTAGCGCTAGCTATTACAACACACGAGATATA" );
           retval.push_back( "CGCATGCTGATTACGCGAGGGGTACGCGATA" );
           retval.push_back( "TTTTTTTTTTCCCCCGGAG" );
+          retval.push_back( "" );
           retval.push_back( "GGGGAGGGATCAGTAAGAGAGAGATAGATCCC" );
           retval.push_back( "GGC" );
         }
@@ -76,20 +78,23 @@ TEMPLATE_SCENARIO( "StringSet basic functionalities", "[stringset]",
           retval.push_back( "NTNNNNNNNGCTAGNTATTACNACANNCGAGATATA" );
           retval.push_back( "CGCANGCTGATTACGCGAGGNGTANGCGATA" );
           retval.push_back( "TTTTTTTTTTCCCCCGGAG" );
+          retval.push_back( "" );
           retval.push_back( "NGGGAGGGATCAGTAAGAGAGANATAGATCCC" );
           retval.push_back( "NNN" );
         }
         return retval;
       };
 
-  std::vector< std::string > stdstrset;
+  stdstringset_type stdstrset;
 
   auto basic_test =
-      []( stringset_type& strset, std::vector< std::string >& stdstrset ) {
+      []( stringset_type& strset, stdstringset_type& stdstrset ) {
         using size_type = typename stringset_type::size_type;
 
         REQUIRE( !strset.empty() );
         REQUIRE( strset.size() == stdstrset.size() );
+        size_type iter_diff = strset.end() - strset.begin();
+        REQUIRE( iter_diff == stdstrset.size() );
         auto begin_stdstrset = stdstrset.begin();
         for ( auto str : strset ) {
           assert( begin_stdstrset != stdstrset.end() );
@@ -98,6 +103,7 @@ TEMPLATE_SCENARIO( "StringSet basic functionalities", "[stringset]",
         }
         for ( size_type i = 0; i < strset.size(); ++i ) {
           REQUIRE( strset[ i ] == stdstrset[ i ] );
+          REQUIRE( strset.length( i ) == stdstrset[ i ].size() );
           REQUIRE( strset.at( i ) == stdstrset.at( i ) );
         }
         REQUIRE_THROWS( strset.at( strset.size() ) );
@@ -107,14 +113,25 @@ TEMPLATE_SCENARIO( "StringSet basic functionalities", "[stringset]",
         REQUIRE( strset.back() == stdstrset.back() );
         if ( std::is_same< alphabet_type, gum::DNA >::value ) {
           REQUIRE( strset( 21, 5 ) == "AACAC" );
-          REQUIRE( strset( 32, 18 ) == "TATACGCATGCTGATTAC" );
-          REQUIRE( strset( 117, 4 ) == "CGGC" );
+          REQUIRE( strset( 32, 18 ) == "TATAACGCATGCTGATTA" );
+          REQUIRE( strset( 120, 4 ) == "CCAG" );
         }
         else if ( std::is_same< alphabet_type, gum::DNA5 >::value ) {
           REQUIRE( strset( 21, 5 ) == "NACAN" );
-          REQUIRE( strset( 32, 18 ) == "TATACGCANGCTGATTAC" );
-          REQUIRE( strset( 117, 4 ) == "CNNN" );
+          REQUIRE( strset( 32, 18 ) == "TATAACGCANGCTGATTA" );
+          REQUIRE( strset( 120, 4 ) == "CCAN" );
         }
+      };
+
+  auto basic_test_empty =
+      []( stringset_type& strset ){
+        REQUIRE( strset.empty() );
+        REQUIRE( strset.size() == 0 );
+        REQUIRE( strset.length_sum() == 0 );
+        REQUIRE( strset.begin() == strset.end() );
+        REQUIRE_THROWS( strset.at( 0 ) );
+        REQUIRE_THROWS( strset.at( 1 ) );
+        REQUIRE_THROWS( strset.at( -1 ) );
       };
 
   GIVEN( "A set of standard strings in the given alphabet" )
@@ -126,6 +143,7 @@ TEMPLATE_SCENARIO( "StringSet basic functionalities", "[stringset]",
       THEN( "It should pass basic test cases" )
       {
         basic_test( strset, stdstrset );
+        REQUIRE( strset.length_sum() == 121 );
       }
     }
 
@@ -136,6 +154,31 @@ TEMPLATE_SCENARIO( "StringSet basic functionalities", "[stringset]",
       THEN( "It should pass basic test cases" )
       {
         basic_test( strset, stdstrset );
+        REQUIRE( strset.length_sum() == 121 );
+      }
+    }
+
+    WHEN( "StringSet is constructed by pushing back each element passed by value" )
+    {
+      stringset_type strset;
+      for ( auto const& str : stdstrset ) strset.push_back( str );
+      strset.shrink_to_fit();
+      THEN( "It should pass basic test cases" )
+      {
+        basic_test( strset, stdstrset );
+        REQUIRE( strset.length_sum() == 121 );
+      }
+    }
+
+    WHEN( "StringSet is constructed by pushing back each element passed by rvalue reference" )
+    {
+      stringset_type strset;
+      for ( auto str : stdstrset ) strset.push_back( std::move( str ) );
+      strset.shrink_to_fit();
+      THEN( "It should pass basic test cases" )
+      {
+        basic_test( strset, stdstrset );
+        REQUIRE( strset.length_sum() == 121 );
       }
     }
 
@@ -150,6 +193,20 @@ TEMPLATE_SCENARIO( "StringSet basic functionalities", "[stringset]",
       THEN( "It should pass basic test cases" )
       {
         basic_test( strset, stdstrset );
+        REQUIRE( strset.length_sum() == 242 );
+      }
+    }
+
+    WHEN( "An empty StringSet is extended by an empty set of strings" )
+    {
+      stdstringset_type emptystrset;
+      stringset_type strset;
+      strset.extend( stdstrset.begin(), stdstrset.end() );
+      strset.extend( emptystrset.begin(), emptystrset.end() );
+      THEN( "It should pass basic test cases" )
+      {
+        basic_test( strset, stdstrset );
+        REQUIRE( strset.length_sum() == 121 );
       }
     }
 
@@ -161,6 +218,7 @@ TEMPLATE_SCENARIO( "StringSet basic functionalities", "[stringset]",
       THEN( "It should pass basic test cases" )
       {
         basic_test( strset, stdstrset );
+        REQUIRE( strset.length_sum() == 121 );
       }
     }
 
@@ -171,6 +229,7 @@ TEMPLATE_SCENARIO( "StringSet basic functionalities", "[stringset]",
       THEN( "It should pass basic test cases" )
       {
         basic_test( strset, stdstrset );
+        REQUIRE( strset.length_sum() == 121 );
       }
     }
 
@@ -182,6 +241,7 @@ TEMPLATE_SCENARIO( "StringSet basic functionalities", "[stringset]",
       THEN( "It should pass basic test cases" )
       {
         basic_test( strset, stdstrset );
+        REQUIRE( strset.length_sum() == 121 );
       }
     }
 
@@ -193,6 +253,40 @@ TEMPLATE_SCENARIO( "StringSet basic functionalities", "[stringset]",
       THEN( "It should pass basic test cases" )
       {
         basic_test( strset, stdstrset );
+        REQUIRE( strset.length_sum() == 121 );
+      }
+    }
+
+    WHEN( "StringSet is cleared" )
+    {
+      stringset_type strset( stdstrset.begin(), stdstrset.end() );
+      THEN( "It should be an empty string set" )
+      {
+        strset.clear();
+        basic_test_empty( strset );
+      }
+    }
+  }
+
+  GIVEN( "An empty string set" )
+  {
+    stdstringset_type emptystrset;
+    WHEN( "StringSet is constructed from an empty set of strings" )
+    {
+      stringset_type strset( emptystrset.begin(), emptystrset.end() );
+      THEN( "It should be an empty string set" )
+      {
+        basic_test_empty( strset );
+      }
+    }
+
+    WHEN( "An empty StringSet is extended by an empty set of strings" )
+    {
+      stringset_type strset;
+      strset.extend( emptystrset.begin(), emptystrset.end() );
+      THEN( "It should be an empty string set" )
+      {
+        basic_test_empty( strset );
       }
     }
   }
