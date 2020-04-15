@@ -928,7 +928,7 @@ namespace gum {
     for_each_node( std::function< bool( rank_type, id_type ) > callback,
                    rank_type s_rank=1 ) const
     {
-      id_type id = 1;
+      id_type id = ( this->get_node_count() != 0 ) ? 1 : 0;
       rank_type rank = 1;
       while ( id != 0 ) {
         if ( rank >= s_rank && !callback( rank, id ) ) return false;
@@ -2403,7 +2403,7 @@ namespace gum {
     for_each_path( std::function< bool( rank_type, id_type ) > callback,
                    rank_type s_rank=1 ) const
     {
-      id_type id = 1;
+      id_type id = ( this->get_path_count() != 0 ) ? 1 : 0;
       rank_type rank = 1;
       while ( id != 0 ) {
         if ( rank >= s_rank && !callback( rank, id ) ) return false;
