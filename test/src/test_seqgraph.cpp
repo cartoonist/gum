@@ -74,6 +74,30 @@ TEMPLATE_SCENARIO( "Generic functionality of DirectedGraph", "[seqgraph][templat
           REQUIRE( !graph.has_node( abs_id ) );
         };
 
+    auto empty_graph_test =
+        [&nodes]( auto const& graph ) {
+          using graph_type = std::decay_t< decltype( graph ) >;
+          using id_type = typename graph_type::id_type;
+          using rank_type = typename graph_type::rank_type;
+
+          REQUIRE( graph.get_node_count() == 0 );
+          rank_type counter = 0;
+          graph.for_each_node(
+              [&counter]( rank_type rank, id_type id ) {
+                ++counter;
+                return true;
+              } );
+          REQUIRE( counter == 0 );
+          counter = 3;
+          graph.for_each_node(
+              [&counter]( rank_type rank, id_type id ) {
+                ++counter;
+                return true;
+              }, counter );
+          REQUIRE( counter == 3 );
+          for ( id_type nid : nodes ) REQUIRE( !graph.has_node( nid ) );
+        };
+
     WHEN( "It is constructed incrementally" )
     {
       for ( rank_type i = 1; i <= node_count; ++i )
@@ -81,6 +105,15 @@ TEMPLATE_SCENARIO( "Generic functionality of DirectedGraph", "[seqgraph][templat
       THEN( "The resulting graph should pass integrity tests" )
       {
         integrity_test( graph );
+      }
+
+      AND_WHEN( "It is cleared" )
+      {
+        graph.clear();
+        THEN( "The graph should be empty" )
+        {
+          empty_graph_test( graph );
+        }
       }
     }
 
@@ -106,6 +139,15 @@ TEMPLATE_SCENARIO( "Generic functionality of DirectedGraph", "[seqgraph][templat
       THEN( "The resulting graph should pass integrity tests" )
       {
         integrity_test( sc_graph );
+      }
+
+      AND_WHEN( "It is cleared" )
+      {
+        sc_graph.clear();
+        THEN( "The graph should be empty" )
+        {
+          empty_graph_test( sc_graph );
+        }
       }
     }
   }
@@ -273,6 +315,16 @@ TEMPLATE_SCENARIO( "Specialised functionality of DirectedGraph", "[seqgraph][tem
           REQUIRE( !graph.is_merge( { rtoi(6) } ) );
         };
 
+    auto empty_graph_test =
+        [&edges]( auto const& graph ) {
+          REQUIRE( graph.get_edge_count() == 0 );
+          for ( auto const& edge: edges ) {
+            REQUIRE( !graph.has_edge( edge.first, edge.second ) );
+            REQUIRE( !graph.has_edge( edge.second, edge.first ) );
+            REQUIRE( !graph.has_edge( edge ) );
+          }
+        };
+
     WHEN( "It is constructed incrementally" )
     {
       for ( rank_type i = 1; i <= node_count; ++i )
@@ -296,6 +348,15 @@ TEMPLATE_SCENARIO( "Specialised functionality of DirectedGraph", "[seqgraph][tem
       {
         integrity_test( graph );
       }
+
+      AND_WHEN( "It is cleared" )
+      {
+        graph.clear();
+        THEN( "The graph should be empty" )
+        {
+          empty_graph_test( graph );
+        }
+      }
     }
 
     WHEN( "A Succinct graph is constructed from Dynamic one" )
@@ -314,6 +375,15 @@ TEMPLATE_SCENARIO( "Specialised functionality of DirectedGraph", "[seqgraph][tem
       THEN( "The resulting graph should pass integrity tests" )
       {
         integrity_test( sc_graph );
+      }
+
+      AND_WHEN( "It is cleared" )
+      {
+        sc_graph.clear();
+        THEN( "The graph should be empty" )
+        {
+          empty_graph_test( sc_graph );
+        }
       }
     }
   }
@@ -524,6 +594,16 @@ TEMPLATE_SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[se
           REQUIRE( graph.is_merge( rtoi(8) ) );
         };
 
+    auto empty_graph_test =
+        [&edges]( auto const& graph ) {
+          REQUIRE( graph.get_edge_count() == 0 );
+          for ( auto const& edge: edges ) {
+            REQUIRE( !graph.has_edge( graph.from_side( edge ), graph.to_side( edge ) ) );
+            REQUIRE( !graph.has_edge( graph.to_side( edge ), graph.from_side( edge ) ) );
+            REQUIRE( !graph.has_edge( edge ) );
+          }
+        };
+
     WHEN( "It is constructed incrementally" )
     {
       for ( rank_type i = 1; i <= node_count; ++i )
@@ -549,6 +629,15 @@ TEMPLATE_SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[se
       {
         integrity_test( graph );
       }
+
+      AND_WHEN( "It is cleared" )
+      {
+        graph.clear();
+        THEN( "The graph should be empty" )
+        {
+          empty_graph_test( graph );
+        }
+      }
     }
 
     WHEN( "A Succinct graph is constructed from Dynamic one" )
@@ -567,6 +656,15 @@ TEMPLATE_SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[se
       THEN( "The resulting graph should pass integrity tests" )
       {
         integrity_test( sc_graph );
+      }
+
+      AND_WHEN( "It is cleared" )
+      {
+        sc_graph.clear();
+        THEN( "The graph should be empty" )
+        {
+          empty_graph_test( sc_graph );
+        }
       }
     }
 
@@ -700,6 +798,31 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
           REQUIRE( !path_count );
         };
 
+    auto empty_graph_test =
+        []( auto const& graph ) {
+          using graph_type = std::decay_t< decltype( graph ) >;
+          using id_type = typename graph_type::id_type;
+          using rank_type = typename graph_type::rank_type;
+
+          REQUIRE( graph.get_path_count() == 0 );
+          REQUIRE( !graph.has_path( 0 ) );
+          REQUIRE( !graph.has_path( 1 ) );
+          rank_type counter = 0;
+          graph.for_each_path(
+              [&counter]( rank_type rank, id_type id ) {
+                ++counter;
+                return true;
+              } );
+          REQUIRE( counter == 0 );
+          counter = 3;
+          graph.for_each_path(
+              [&counter]( rank_type rank, id_type id ) {
+                ++counter;
+                return true;
+              }, counter );
+          REQUIRE( counter == 3 );
+        };
+
     WHEN( "Loaded a Dynamic SeqGraph from a file in GFA 2.0 format" )
     {
       gum::util::extend( graph, test_data_dir + "/graph_simple_v2.gfa" );
@@ -708,12 +831,30 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
         integrity_test( graph );
       }
 
+      AND_WHEN( "It is cleared" )
+      {
+        graph.clear();
+        THEN( "The graph should be empty" )
+        {
+          empty_graph_test( graph );
+        }
+      }
+
       WHEN( "A Succinct graph is constructed from Dynamic one" )
       {
         succinct_type sc_graph( graph );
         THEN( "The resulting graph should pass integrity tests" )
         {
           integrity_test( sc_graph );
+        }
+
+        AND_WHEN( "It is cleared" )
+        {
+          sc_graph.clear();
+          THEN( "The graph should be empty" )
+          {
+            empty_graph_test( sc_graph );
+          }
         }
       }
     }
@@ -726,6 +867,15 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
       {
         integrity_test( sc_graph );
       }
+
+      AND_WHEN( "It is cleared" )
+      {
+        sc_graph.clear();
+        THEN( "The graph should be empty" )
+        {
+          empty_graph_test( sc_graph );
+        }
+      }
     }
 
     WHEN( "Loaded a Dynamic SeqGraph from a file in vg format" )
@@ -736,12 +886,30 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
         integrity_test( graph );
       }
 
+      AND_WHEN( "It is cleared" )
+      {
+        graph.clear();
+        THEN( "The graph should be empty" )
+        {
+          empty_graph_test( graph );
+        }
+      }
+
       WHEN( "A Succinct graph is constructed from Dynamic one" )
       {
         succinct_type sc_graph( graph );
         THEN( "The resulting graph should pass integrity tests" )
         {
           integrity_test( sc_graph );
+        }
+
+        AND_WHEN( "It is cleared" )
+        {
+          sc_graph.clear();
+          THEN( "The graph should be empty" )
+          {
+            empty_graph_test( sc_graph );
+          }
         }
       }
     }
@@ -753,6 +921,15 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
       THEN( "The resulting graph should pass integrity tests" )
       {
         integrity_test( sc_graph );
+      }
+
+      AND_WHEN( "It is cleared" )
+      {
+        sc_graph.clear();
+        THEN( "The graph should be empty" )
+        {
+          empty_graph_test( sc_graph );
+        }
       }
     }
   }
