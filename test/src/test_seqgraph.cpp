@@ -17,6 +17,8 @@
 
 #include <vector>
 #include <utility>
+#include <algorithm>
+#include <random>
 
 #include <gum/seqgraph.hpp>
 #include <gum/io_utils.hpp>
@@ -147,6 +149,116 @@ TEMPLATE_SCENARIO( "Generic functionality of DirectedGraph", "[seqgraph][templat
         THEN( "The graph should be empty" )
         {
           empty_graph_test( sc_graph );
+        }
+      }
+    }
+
+    WHEN( "Node are added without specifying external IDs" )
+    {
+      std::size_t node_count = 20;
+      for ( std::size_t i = 0; i < node_count / 2; ++i ) graph.add_node();
+      graph.add_nodes( node_count / 2 );
+      THEN( "The node IDs should be sequential" )
+      {
+        graph.for_each_node( []( rank_type rank, id_type id ) {
+                               REQUIRE( rank == static_cast< rank_type >( id ) );
+                               return true;
+                             } );
+      }
+
+      AND_WHEN( "A Succinct graph is constructed from Dynamic one" )
+      {
+        succinct_type sc_graph( graph );
+        THEN( "The node coordinate IDs should be sequential" )
+        {
+          graph.for_each_node(
+              [&graph]( rank_type rank, id_type id ) {
+                REQUIRE( rank == static_cast< rank_type >( graph.coordinate_id( id ) ) );
+                return true;
+              } );
+        }
+      }
+    }
+
+    WHEN( "Node are added by specifying random external IDs" )
+    {
+      std::random_device rd;     // Will be used to obtain a seed for the random number engine.
+      std::mt19937 gen( rd() );  // Standard mersenne_twister_engine seeded with rd().
+      std::uniform_int_distribution< id_type > dis( 1 );
+      std::size_t node_count = 200;
+      std::vector< id_type > ids;
+      std::size_t i = 0;
+      while ( i < node_count )
+      {
+        id_type candidate = dis( gen );
+        if ( std::find( ids.begin(), ids.end(), candidate ) != ids.end() ) continue;
+        ids.push_back( candidate );
+        ++i;
+      }
+      for ( auto const& nid : ids ) graph.add_node( nid );
+      THEN( "The nodes should be added by their specified IDs" )
+      {
+        graph.for_each_node( [&ids]( rank_type rank, id_type id ) {
+                               REQUIRE( id == ids[ rank - 1 ] );
+                               return true;
+                             } );
+      }
+
+      AND_WHEN( "A Succinct graph is constructed from Dynamic one" )
+      {
+        succinct_type sc_graph( graph );
+        THEN( "The node coordinate IDs should be sequential" )
+        {
+          graph.for_each_node(
+              [&graph, &ids]( rank_type rank, id_type id ) {
+                REQUIRE( graph.coordinate_id( id ) == ids[ rank - 1 ] );
+                return true;
+              } );
+        }
+      }
+    }
+
+    WHEN( "Node are added by mixed ID specification approach" )
+    {
+      std::random_device rd;     // Will be used to obtain a seed for the random number engine.
+      std::mt19937 gen( rd() );  // Standard mersenne_twister_engine seeded with rd().
+      std::uniform_int_distribution< id_type > dis( 1 );
+      std::size_t node_count = 200;
+      std::vector< id_type > ids;
+      ids.push_back( dis( gen ) );
+      graph.add_node( ids.back() );
+      graph.add_nodes( 100 );
+      std::size_t i = 0;
+      id_type tmp = ids.back();
+      for ( ; i < 100; ++i ) ids.push_back( ++tmp );
+      i = ids.size();
+      while ( i < node_count - 1 )
+      {
+        id_type candidate = dis( gen );
+        if ( std::find( ids.begin(), ids.end(), candidate ) != ids.end() ) continue;
+        ids.push_back( candidate );
+        ++i;
+      }
+      for ( i = graph.get_node_count(); i < node_count - 1; ++i ) graph.add_node( ids[ i ] );
+      ids.push_back( graph.add_node( ) );
+      THEN( "The nodes should be added by their specified IDs" )
+      {
+        graph.for_each_node( [&ids]( rank_type rank, id_type id ) {
+                               REQUIRE( id == ids[ rank - 1 ] );
+                               return true;
+                             } );
+      }
+
+      AND_WHEN( "A Succinct graph is constructed from Dynamic one" )
+      {
+        succinct_type sc_graph( graph );
+        THEN( "The node coordinate IDs should be sequential" )
+        {
+          graph.for_each_node(
+              [&graph, &ids]( rank_type rank, id_type id ) {
+                REQUIRE( graph.coordinate_id( id ) == ids[ rank - 1 ] );
+                return true;
+              } );
         }
       }
     }
