@@ -599,5 +599,25 @@ SCENARIO( "Sanity check for deserialising a SeqGraph", "[ioutils]" )
         integrity_test( sc_graph, false );
       }
     }
+
+    WHEN( "Extend a Dynamic SeqGraph by another graph in GFA 2.0 format" )
+    {
+      gum::util::load( graph, test_data_dir + "/tiny_p1.gfa" );
+      gum::util::extend( graph, test_data_dir + "/tiny_p2.gfa" );
+      THEN( "The resulting graph should pass integrity tests" )
+      {
+        integrity_test( graph, true );
+      }
+    }
+
+    WHEN( "Extend a Dynamic SeqGraph by another graph in vg format" )
+    {
+      gum::util::load( graph, test_data_dir + "/tiny_p1.vg" );
+      gum::util::extend( graph, test_data_dir + "/tiny_p2.vg" );
+      THEN( "The resulting graph should pass integrity tests" )
+      {
+        integrity_test( graph, false );
+      }
+    }
   }
 }
