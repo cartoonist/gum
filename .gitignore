@@ -7,12 +7,18 @@
 
 # ctags
 tags
+GTAGS
+GRTAGS
+GPATH
 
 # Compile flags
 compile_commands.json
 
 # Build directory
 build
+
+# Generated files
+gum.pc
 
 ## GitHub defaults ##
 # Compiled Object files
