@@ -57,8 +57,11 @@ target_compile_features(gum_novg INTERFACE cxx_std_17)
 # Defining `gum::gum` and `gum::gum_novg` aliases
 add_library(gum::gum ALIAS gum)
 add_library(gum::gum_novg ALIAS gum_novg)
+# Generating pkgconfig file
+configure_file(gum.pc.in ${PROJECT_SOURCE_DIR}/gum.pc @ONLY)
 # Install targets
-install(DIRECTORY include/gum DESTINATION include)
+install(FILES ${HEADER_FILES} DESTINATION include/gum)
+install(FILES gum.pc DESTINATION lib/pkgconfig)
 
 # Adding test submodule.
 if(BUILD_TESTING)

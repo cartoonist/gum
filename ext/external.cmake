@@ -1,5 +1,9 @@
 include(ExternalProject)
 
+if(GFAKluge_FOUND)
+  set(GFAKluge_PKG_CFLAGS "-I${GFAKluge_INCLUDE_DIRS}")
+endif(GFAKluge_FOUND)
+
 if(NOT TARGET GFAKluge::GFAKluge)
   set(GFAKluge_SOURCE_DIR ${PROJECT_SOURCE_DIR}/ext/gfakluge)
   ExternalProject_Add(gfakluge_git
