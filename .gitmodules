@@ -4,3 +4,6 @@
 [submodule "ext/gfakluge"]
 	path = ext/gfakluge
 	url = https://github.com/cartoonist/gfakluge.git
+[submodule "ext/parallel-hashmap"]
+	path = ext/parallel-hashmap
+	url = https://github.com/greg7mdp/parallel-hashmap.git
