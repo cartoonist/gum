@@ -23,7 +23,7 @@
 #include <utility>
 #include <tuple>
 
-#include <sparsehash/sparse_hash_map>
+#include <parallel_hashmap/phmap.h>
 #include <sdsl/int_vector.hpp>
 #include <sdsl/bit_vectors.hpp>
 
@@ -56,7 +56,7 @@ namespace gum {
     using nodes_type = std::vector< id_type >;
     using size_type = typename nodes_type::size_type;
     using rank_type = typename nodes_type::size_type;
-    using rank_map_type = google::sparse_hash_map< id_type, rank_type >;
+    using rank_map_type = phmap::flat_hash_map< id_type, rank_type >;
     using string_type = std::string;  // for node and path names
 
     static inline void
@@ -633,7 +633,7 @@ namespace gum {
       }
     };  /* --- end of struct hash_link --- */
 
-    using adj_map_type = google::sparse_hash_map< side_type, adjs_type, hash_side >;
+    using adj_map_type = phmap::flat_hash_map< side_type, adjs_type, hash_side >;
 
     static inline void
     init_adj_map( adj_map_type& m )
@@ -685,7 +685,7 @@ namespace gum {
       }
     };  /* --- end of struct hash_link --- */
 
-    using adj_map_type = google::sparse_hash_map< side_type, adjs_type, hash_side >;
+    using adj_map_type = phmap::flat_hash_map< side_type, adjs_type, hash_side >;
 
     static inline void
     init_adj_map( adj_map_type& m )
@@ -1021,7 +1021,7 @@ namespace gum {
     using edge_type = Edge;
     using key_type = link_type;
     using value_type = edge_type;
-    using container_type = google::sparse_hash_map< key_type, value_type,
+    using container_type = phmap::flat_hash_map< key_type, value_type,
                                                     typename trait_type::hash_link >;
 
     static inline void
@@ -1213,7 +1213,7 @@ namespace gum {
     using const_reference = typename container_type::const_reference;
     using const_iterator = typename container_type::const_iterator;
     using size_type = typename container_type::size_type;
-    using rank_map_type = google::sparse_hash_map< id_type, rank_type >;
+    using rank_map_type = phmap::flat_hash_map< id_type, rank_type >;
 
     static inline void
     init_rank_map( rank_map_type& m )

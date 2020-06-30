@@ -23,7 +23,7 @@
 #include <type_traits>
 #include <algorithm>
 
-#include <sparsehash/sparse_hash_map>
+#include <parallel_hashmap/phmap.h>
 #include <sdsl/int_vector.hpp>
 
 #include "basic_utils.hpp"
@@ -150,7 +150,7 @@ namespace gum {
       using graph_type = TGraph;
       using lid_type = TLocalID;
       using id_type = typename graph_type::id_type;
-      using map_type = google::sparse_hash_map< lid_type, id_type >;
+      using map_type = phmap::flat_hash_map< lid_type, id_type >;
 
       /* === OPERATORS === */
       inline id_type&

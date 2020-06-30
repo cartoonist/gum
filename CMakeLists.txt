@@ -8,8 +8,8 @@ option(BUILD_TESTING "Build test programs" OFF)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 # Finding dependencies.
 find_package(ZLIB REQUIRED)
-find_package(SparseHash REQUIRED)
 find_package(sdsl REQUIRED)
+find_package(ParallelHashmap)
 find_package(GFAKluge)
 find_package(VGio QUIET)
 find_package(OpenMP)
@@ -32,23 +32,25 @@ target_include_directories(gum
   INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
   SYSTEM INTERFACE $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>
   INTERFACE sdsl::sdsl
-  INTERFACE SparseHash::SparseHash
+  INTERFACE ParallelHashmap::ParallelHashmap
   INTERFACE GFAKluge::GFAKluge
   INTERFACE VGio::VGio)
 target_include_directories(gum_novg
   INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
   SYSTEM INTERFACE $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>
   INTERFACE sdsl::sdsl
-  INTERFACE SparseHash::SparseHash
+  INTERFACE ParallelHashmap::ParallelHashmap
   INTERFACE GFAKluge::GFAKluge)
 # Defining link libraries
 target_link_libraries(gum
   INTERFACE sdsl::sdsl
   INTERFACE VGio::VGio
+  INTERFACE ParallelHashmap::ParallelHashmap
   INTERFACE GFAKluge::GFAKluge
   INTERFACE OpenMP::OpenMP_CXX)
 target_link_libraries(gum_novg
   INTERFACE sdsl::sdsl
+  INTERFACE ParallelHashmap::ParallelHashmap
   INTERFACE GFAKluge::GFAKluge
   INTERFACE OpenMP::OpenMP_CXX)
 # Use C++17

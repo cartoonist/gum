@@ -6,6 +6,6 @@ Name: GUM
 Description: Sequence Graph Library
 URL: https://github.com/cartoonist/gum
 Version: @PROJECT_VERSION@
-Requires: zlib libsparsehash sdsl-lite
-Cflags: -I${includedir} @GFAKluge_PKG_CFLAGS@
+Requires: zlib sdsl-lite
+Cflags: -I${includedir} @GFAKluge_PKG_CFLAGS@ @ParallelHashmap_PKG_CFLAGS@
 Libs: -fopenmp -lpthread -latomic
