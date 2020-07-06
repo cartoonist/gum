@@ -618,7 +618,7 @@ namespace gum {
       inline std::size_t
       operator()( side_type const& side ) const
       {
-        auto hash = std::hash< id_type >{}( side.first );
+        auto hash = std::hash< id_type >{}( base_type::id_of( side ) );
         return side.second ? ~hash : hash;
       }
     };  /* --- end of struct hash_side --- */
@@ -627,9 +627,7 @@ namespace gum {
       inline std::size_t
       operator()( link_type const& sides ) const
       {
-        auto hash1 = hash_side{}( base_type::from_side( sides ) );
-        auto hash2 = hash_side{}( base_type::to_side( sides ) );
-        return hash1 ^ hash2;
+        return std::hash< id_type >{}( base_type::from_id( sides ) ) + base_type::to_id( sides );
       }
     };  /* --- end of struct hash_link --- */
 
@@ -671,7 +669,7 @@ namespace gum {
       inline std::size_t
       operator()( side_type const& side ) const
       {
-        return std::hash< id_type >{}( std::get<0>( side ) );
+        return std::hash< id_type >{}( base_type::id_of( side ) );
       }
     };  /* --- end of struct hash_side --- */
 
@@ -679,9 +677,7 @@ namespace gum {
       inline std::size_t
       operator()( link_type const& sides ) const
       {
-        auto hash1 = hash_side{}( base_type::from_side( sides ) );
-        auto hash2 = hash_side{}( base_type::to_side( sides ) );
-        return hash1 ^ hash2;
+        return std::hash< id_type >{}( base_type::from_id( sides ) ) + base_type::to_id( sides );
       }
     };  /* --- end of struct hash_link --- */
 

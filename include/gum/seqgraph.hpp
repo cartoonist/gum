@@ -645,7 +645,7 @@ namespace gum {
     add_edge_imp( side_type from, side_type to, bool safe=true )
     {
       assert( this->has_node( from ) && this->has_node( to ) );
-      if ( safe && this->has_edge( from, to ) ) return;
+      assert( !safe || !this->has_edge( from, to ) );
       this->adj_out[ from ].push_back( to );
       this->adj_in[ to ].push_back( from );
       ++this->edge_count;
@@ -2683,7 +2683,7 @@ namespace gum {
     inline void
     add_edge( link_type sides, edge_type edge=edge_type() )
     {
-      if ( this->has_edge( sides ) ) return;
+      assert( !this->has_edge( sides ) );
       base_type::add_edge_imp( sides, false );
       this->edge_prop.add_edge( sides, edge );
     }
