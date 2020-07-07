@@ -779,21 +779,6 @@ TEMPLATE_SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[se
         }
       }
     }
-
-    WHEN( "Adding existing edge" )
-    {
-      graph.add_nodes( node_count, [&nodes]( id_type id ) {
-                                     nodes.push_back( id );
-                                   } );
-      update_edges( graph );
-      for ( auto const& edge : edges ) graph.add_edge( edge );
-      THEN( "The method should silently ignore it" )
-      {
-        graph.add_edge( { graph.rank_to_id(1), true, graph.rank_to_id(2), false } );
-        graph.add_edge( { graph.rank_to_id(8), false, graph.rank_to_id(9), false } );
-        REQUIRE( graph.get_edge_count() == edges.size() );
-      }
-    }
   }
 }
 
