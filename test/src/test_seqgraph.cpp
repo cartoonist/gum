@@ -582,6 +582,11 @@ TEMPLATE_SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[se
                                       graph.opposite_side( graph.to_side( edge ) ) ) );
             REQUIRE( !graph.has_edge( graph.opposite_side( graph.from_side( edge ) ),
                                       graph.to_side( edge ) ) );
+            auto type = graph.linktype( edge );
+            REQUIRE( graph.is_from_start( edge ) == !std::get<1>( edge ) );
+            REQUIRE( graph.is_from_start( type ) == !std::get<1>( edge ) );
+            REQUIRE( graph.is_to_end( edge ) == std::get<3>( edge ) );
+            REQUIRE( graph.is_to_end( type ) == std::get<3>( edge ) );
           }
           std::vector< side_type > truth;
           auto side_truth_check =

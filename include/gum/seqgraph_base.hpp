@@ -336,9 +336,23 @@ namespace gum {
     }
 
     constexpr static inline bool
+    is_from_start( linktype_type type )
+    {
+      return DirectedGraphBaseTrait::from_sidetype( type ) ==
+          DirectedGraphBaseTrait::start_sidetype();
+    }
+
+    constexpr static inline bool
     is_to_end( link_type sides )
     {
       return DirectedGraphBaseTrait::to_sidetype( sides ) ==
+          DirectedGraphBaseTrait::end_sidetype();
+    }
+
+    constexpr static inline bool
+    is_to_end( linktype_type type )
+    {
+      return DirectedGraphBaseTrait::to_sidetype( type ) ==
           DirectedGraphBaseTrait::end_sidetype();
     }
 
@@ -560,7 +574,19 @@ namespace gum {
     }
 
     constexpr static inline bool
+    is_from_start( linktype_type type )
+    {
+      return false;
+    }
+
+    constexpr static inline bool
     is_to_end( link_type sides )
+    {
+      return false;
+    }
+
+    constexpr static inline bool
+    is_to_end( linktype_type type )
     {
       return false;
     }
