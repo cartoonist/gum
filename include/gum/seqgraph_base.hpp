@@ -1222,6 +1222,21 @@ namespace gum {
         return this->nodes.size();
       }
 
+      inline void
+      clear( )
+      {
+        this->id = 0;
+        this->name.clear();
+        this->nodes.clear();
+      }
+
+      inline void
+      shrink_to_fit( )
+      {
+        this->name.shrink_to_fit();
+        this->nodes.shrink_to_fit();
+      }
+
     private:
       /* === DATA MEMBERS === */
       id_type id;

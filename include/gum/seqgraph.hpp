@@ -626,6 +626,12 @@ namespace gum {
       this->edge_count = 0;
     }
 
+    inline void
+    shrink_to_fit( )
+    {
+      this->nodes.shrink_to_fit();
+    }
+
   protected:
     /* === ACCESSORS === */
     inline nodes_type&
@@ -1746,6 +1752,12 @@ namespace gum {
       this->names_len_sum = 0;
     }
 
+    inline void
+    shrink_to_fit( )
+    {
+      this->nodes.shrink_to_fit();
+    }
+
   private:
     /* === DATA MEMBERS === */
     container_type nodes;
@@ -2176,6 +2188,13 @@ namespace gum {
       this->path_rank.clear();
       this->max_id = 0;
       this->path_count = 0;
+    }
+
+    inline void
+    shrink_to_fit( )
+    {
+      for ( auto& p : this->paths ) p.shrink_to_fit();
+      this->paths.shrink_to_fit();
     }
 
   protected:
@@ -2824,6 +2843,14 @@ namespace gum {
       this->edge_prop.clear();
       this->graph_prop.clear();
       base_type::clear();
+    }
+
+    inline void
+    shrink_to_fit( )
+    {
+      this->node_prop.shrink_to_fit();
+      this->graph_prop.shrink_to_fit();
+      base_type::shrink_to_fit();
     }
 
   protected:
