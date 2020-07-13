@@ -767,7 +767,7 @@ namespace gum {
     /* copy constructor */
     DirectedGraph( DirectedGraph const& other )
       : np_padding( other.np_padding ),
-        ep_padding( other.epadding ),
+        ep_padding( other.ep_padding ),
         node_count( other.node_count ),
         edge_count( other.edge_count ),
         nodes( other.nodes ),
@@ -780,7 +780,7 @@ namespace gum {
     /* move constructor */
     DirectedGraph( DirectedGraph&& other ) noexcept
       : np_padding( other.np_padding ),
-        ep_padding( other.epadding ),
+        ep_padding( other.ep_padding ),
         node_count( other.node_count ),
         edge_count( other.edge_count ),
         nodes( std::move( other.nodes ) ),
