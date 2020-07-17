@@ -52,6 +52,7 @@ namespace gum {
     using adjs_type = typename trait_type::adjs_type;
     using adj_map_type = typename trait_type::adj_map_type;
     using succinct_type = DirectedGraph< Succinct, dir_type, TWidths... >;
+    using dynamic_type = DirectedGraph;
 
     /* === LIFECYCLE === */
     DirectedGraph( )                                            /* constructor      */
@@ -747,6 +748,7 @@ namespace gum {
     using linktype_type = typename trait_type::linktype_type;
     using adjs_type = typename trait_type::adjs_type;
     using dynamic_type = DirectedGraph< Dynamic, dir_type, TWidths... >;
+    using succinct_type = DirectedGraph;
 
     /* === LIFECYCLE  === */
     DirectedGraph( padding_type npadding = 0, padding_type epadding = 0 )
@@ -1632,6 +1634,8 @@ namespace gum {
         typename trait_type::template name_proxy_container< NodeProperty >;
     using sequenceset_type = sequence_container_type;
     using stringset_type = name_container_type;
+    using succinct_type = NodeProperty< Succinct, TWidths... >;
+    using dynamic_type = NodeProperty;
 
     /* === LIFECYCLE === */
     /* constructor */
@@ -1792,6 +1796,7 @@ namespace gum {
     using const_reference = value_type;
     using const_iterator = RandomAccessConstIterator< container_type >;
     using dynamic_type = NodeProperty< Dynamic, TWidths... >;
+    using succinct_type = NodeProperty;
 
     /* === LIFECYCLE === */
     NodeProperty() = default;                                 /* constructor      */
@@ -2014,6 +2019,8 @@ namespace gum {
     using const_iterator = typename trait_type::const_iterator;
     using size_type = typename trait_type::size_type;
     using rank_map_type = typename trait_type::rank_map_type;
+    using succinct_type = GraphProperty< Succinct, dir_type, TWidths... >;
+    using dynamic_type = GraphProperty;
 
     /* === LIFECYCLE === */
     GraphProperty( )
@@ -2307,6 +2314,7 @@ namespace gum {
     using id_map_type = typename trait_type::id_map_type;
     using path_type = typename trait_type::path_type;
     using dynamic_type = GraphProperty< Dynamic, dir_type, TWidths... >;
+    using succinct_type = GraphProperty;
 
     /* === LIFECYCLE === */
     GraphProperty( )
@@ -2639,6 +2647,7 @@ namespace gum {
     using edge_type = typename edge_prop_type::edge_type;
     using path_type = typename graph_prop_type::path_type;
     using succinct_type = SeqGraph< Succinct, TNodeProp, TEdgeProp, TGraphProp, TWidths... >;
+    using dynamic_type = SeqGraph;
 
     /* === LIFECYCLE === */
     SeqGraph() = default;                                  /* constructor      */
@@ -2917,8 +2926,10 @@ namespace gum {
     using typename base_type::linktype_type;
     using node_type = typename node_prop_type::node_type;
     using sequence_type = typename node_prop_type::sequence_type;
+    using edge_type = void;  // For compatibility with `SeqGraph< Dynamic >`
     using path_type = typename graph_prop_type::path_type;
     using dynamic_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >;
+    using succinct_type = SeqGraph;
 
     constexpr static padding_type NODE_PADDING = 2;
     constexpr static padding_type EDGE_PADDING = 1;
