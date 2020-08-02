@@ -28,9 +28,9 @@
 
 TEMPLATE_SCENARIO( "Generic functionality of DirectedGraph", "[seqgraph][template]",
                    ( gum::DirectedGraph< gum::Dynamic, gum::Directed > ),
-                   ( gum::DirectedGraph< gum::Dynamic, gum::Directed, 32, 32 > ),
-                   ( gum::DirectedGraph< gum::Dynamic, gum::Bidirected, 64, 16 > ),
-                   ( gum::DirectedGraph< gum::Dynamic, gum::Bidirected, 16, 64 > ),
+                   ( gum::DirectedGraph< gum::Dynamic, gum::Directed, void, 32, 32 > ),
+                   ( gum::DirectedGraph< gum::Dynamic, gum::Bidirected, void, 64, 16 > ),
+                   ( gum::DirectedGraph< gum::Dynamic, gum::Bidirected, void, 16, 64 > ),
                    ( gum::SeqGraph< gum::Dynamic > ) )
 {
   GIVEN( "A DirectedGraph with some nodes and edges" )
@@ -206,7 +206,7 @@ TEMPLATE_SCENARIO( "Generic functionality of DirectedGraph", "[seqgraph][templat
 
       AND_WHEN( "A Succinct graph is constructed from Dynamic one" )
       {
-        succinct_type sc_graph( graph );
+        gum::make_succinct_t< graph_type, gum::coordinate::Sparse > sc_graph( graph );
         THEN( "The node coordinate IDs should be sequential" )
         {
           graph.for_each_node(
@@ -251,7 +251,7 @@ TEMPLATE_SCENARIO( "Generic functionality of DirectedGraph", "[seqgraph][templat
 
       AND_WHEN( "A Succinct graph is constructed from Dynamic one" )
       {
-        succinct_type sc_graph( graph );
+        gum::make_succinct_t< graph_type, gum::coordinate::Sparse > sc_graph( graph );
         THEN( "The node coordinate IDs should be sequential" )
         {
           graph.for_each_node(
@@ -267,9 +267,9 @@ TEMPLATE_SCENARIO( "Generic functionality of DirectedGraph", "[seqgraph][templat
 
 TEMPLATE_SCENARIO( "Specialised functionality of DirectedGraph", "[seqgraph][template]",
                    ( gum::DirectedGraph< gum::Dynamic, gum::Directed > ),
-                   ( gum::DirectedGraph< gum::Dynamic, gum::Directed, 64, 16 > ),
-                   ( gum::DirectedGraph< gum::Dynamic, gum::Directed, 16, 64 > ),
-                   ( gum::DirectedGraph< gum::Dynamic, gum::Directed, 32, 32 > ) )
+                   ( gum::DirectedGraph< gum::Dynamic, gum::Directed, void, 64, 16 > ),
+                   ( gum::DirectedGraph< gum::Dynamic, gum::Directed, void, 16, 64 > ),
+                   ( gum::DirectedGraph< gum::Dynamic, gum::Directed, void, 32, 32 > ) )
 {
   GIVEN( "A DirectedGraph with some nodes and edges" )
   {
@@ -503,9 +503,9 @@ TEMPLATE_SCENARIO( "Specialised functionality of DirectedGraph", "[seqgraph][tem
 
 TEMPLATE_SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[seqgraph]",
                    ( gum::DirectedGraph< gum::Dynamic, gum::Bidirected > ),
-                   ( gum::DirectedGraph< gum::Dynamic, gum::Bidirected, 64, 16 > ),
-                   ( gum::DirectedGraph< gum::Dynamic, gum::Bidirected, 16, 64 > ),
-                   ( gum::DirectedGraph< gum::Dynamic, gum::Bidirected, 32, 32 > ),
+                   ( gum::DirectedGraph< gum::Dynamic, gum::Bidirected, void, 64, 16 > ),
+                   ( gum::DirectedGraph< gum::Dynamic, gum::Bidirected, void, 16, 64 > ),
+                   ( gum::DirectedGraph< gum::Dynamic, gum::Bidirected, void, 32, 32 > ),
                    ( gum::SeqGraph< gum::Dynamic > ) )
 {
   GIVEN( "A Bidirected DirectedGraph with some nodes and edges" )
@@ -804,9 +804,9 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
           using nodes_type = std::vector< std::pair< id_type, bool > >;
           using pathset_type = std::unordered_map< std::string, nodes_type >;
 
-          auto rtoi =
-              [&graph]( rank_type rank ) {
-                return graph.rank_to_id( rank );
+          auto ibyc =
+              [&graph]( auto cid ) {
+                return graph.id_by_coordinate( cid );
               };
 
           rank_type path_count = 2;
@@ -815,22 +815,22 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
               { { "x", { { 1, false }, { 2, false }, { 5, false }, { 8, false } } },
                 { "y", { { 4, false }, { 5, true }, { 7, false } } } };
 
-          REQUIRE( graph.node_sequence( rtoi(1) ) == "TGGTCAAC" );
-          REQUIRE( graph.node_sequence( rtoi(2) ) == "T" );
-          REQUIRE( graph.node_sequence( rtoi(3) ) == "GCC" );
-          REQUIRE( graph.node_sequence( rtoi(4) ) == "A" );
-          REQUIRE( graph.node_sequence( rtoi(5) ) == "CTTAAA" );
-          REQUIRE( graph.node_sequence( rtoi(6) ) == "GCG" );
-          REQUIRE( graph.node_sequence( rtoi(7) ) == "CTTTT" );
-          REQUIRE( graph.node_sequence( rtoi(8) ) == "AAAT" );
-          REQUIRE( graph.node_length( rtoi(1) ) == 8 );
-          REQUIRE( graph.node_length( rtoi(2) ) == 1 );
-          REQUIRE( graph.node_length( rtoi(3) ) == 3 );
-          REQUIRE( graph.node_length( rtoi(4) ) == 1 );
-          REQUIRE( graph.node_length( rtoi(5) ) == 6 );
-          REQUIRE( graph.node_length( rtoi(6) ) == 3 );
-          REQUIRE( graph.node_length( rtoi(7) ) == 5 );
-          REQUIRE( graph.node_length( rtoi(8) ) == 4 );
+          REQUIRE( graph.node_sequence( ibyc(1) ) == "TGGTCAAC" );
+          REQUIRE( graph.node_sequence( ibyc(2) ) == "T" );
+          REQUIRE( graph.node_sequence( ibyc(3) ) == "GCC" );
+          REQUIRE( graph.node_sequence( ibyc(4) ) == "A" );
+          REQUIRE( graph.node_sequence( ibyc(5) ) == "CTTAAA" );
+          REQUIRE( graph.node_sequence( ibyc(6) ) == "GCG" );
+          REQUIRE( graph.node_sequence( ibyc(7) ) == "CTTTT" );
+          REQUIRE( graph.node_sequence( ibyc(8) ) == "AAAT" );
+          REQUIRE( graph.node_length( ibyc(1) ) == 8 );
+          REQUIRE( graph.node_length( ibyc(2) ) == 1 );
+          REQUIRE( graph.node_length( ibyc(3) ) == 3 );
+          REQUIRE( graph.node_length( ibyc(4) ) == 1 );
+          REQUIRE( graph.node_length( ibyc(5) ) == 6 );
+          REQUIRE( graph.node_length( ibyc(6) ) == 3 );
+          REQUIRE( graph.node_length( ibyc(7) ) == 5 );
+          REQUIRE( graph.node_length( ibyc(8) ) == 4 );
           REQUIRE( graph.get_node_prop( 1 ).name == "1" );
           REQUIRE( graph.get_node_prop( 2 ).name == "2" );
           REQUIRE( graph.get_node_prop( 3 ).name == "3" );
@@ -839,24 +839,24 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
           REQUIRE( graph.get_node_prop( 6 ).name == "6" );
           REQUIRE( graph.get_node_prop( 7 ).name == "7" );
           REQUIRE( graph.get_node_prop( 8 ).name == "8" );
-          REQUIRE( graph.edge_overlap( link_type( { rtoi(1), true, rtoi(2), false } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { rtoi(1), true, rtoi(3), true } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { rtoi(1), true, rtoi(4), false } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { rtoi(2), true, rtoi(5), false } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { rtoi(3), false, rtoi(5), false } ) ) == 1 );
-          REQUIRE( graph.edge_overlap( link_type( { rtoi(4), true, rtoi(5), true } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { rtoi(5), false, rtoi(6), false } ) ) == 1 );
-          REQUIRE( graph.edge_overlap( link_type( { rtoi(5), false, rtoi(7), false } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { rtoi(5), true, rtoi(8), false } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( rtoi(1), rtoi(2), graph.linktype( link_type( { rtoi(1), true, rtoi(2), false } ) ) ) == 0 );
-          REQUIRE( graph.edge_overlap( rtoi(1), rtoi(3), graph.linktype( link_type( { rtoi(1), true, rtoi(3), true } )  ) ) == 0 );
-          REQUIRE( graph.edge_overlap( rtoi(1), rtoi(4), graph.linktype( link_type( { rtoi(1), true, rtoi(4), false } ) ) ) == 0 );
-          REQUIRE( graph.edge_overlap( rtoi(2), rtoi(5), graph.linktype( link_type( { rtoi(2), true, rtoi(5), false } ) ) ) == 0 );
-          REQUIRE( graph.edge_overlap( rtoi(3), rtoi(5), graph.linktype( link_type( { rtoi(3), false, rtoi(5), false } ) ) ) == 1 );
-          REQUIRE( graph.edge_overlap( rtoi(4), rtoi(5), graph.linktype( link_type( { rtoi(4), true, rtoi(5), true } ) ) ) == 0 );
-          REQUIRE( graph.edge_overlap( rtoi(5), rtoi(6), graph.linktype( link_type( { rtoi(5), false, rtoi(6), false } ) ) ) == 1 );
-          REQUIRE( graph.edge_overlap( rtoi(5), rtoi(7), graph.linktype( link_type( { rtoi(5), false, rtoi(7), false } ) ) ) == 0 );
-          REQUIRE( graph.edge_overlap( rtoi(5), rtoi(8), graph.linktype( link_type( { rtoi(5), true, rtoi(8), false } ) ) ) == 0 );
+          REQUIRE( graph.edge_overlap( link_type( { ibyc(1), true, ibyc(2), false } ) ) == 0 );
+          REQUIRE( graph.edge_overlap( link_type( { ibyc(1), true, ibyc(3), true } ) ) == 0 );
+          REQUIRE( graph.edge_overlap( link_type( { ibyc(1), true, ibyc(4), false } ) ) == 0 );
+          REQUIRE( graph.edge_overlap( link_type( { ibyc(2), true, ibyc(5), false } ) ) == 0 );
+          REQUIRE( graph.edge_overlap( link_type( { ibyc(3), false, ibyc(5), false } ) ) == 1 );
+          REQUIRE( graph.edge_overlap( link_type( { ibyc(4), true, ibyc(5), true } ) ) == 0 );
+          REQUIRE( graph.edge_overlap( link_type( { ibyc(5), false, ibyc(6), false } ) ) == 1 );
+          REQUIRE( graph.edge_overlap( link_type( { ibyc(5), false, ibyc(7), false } ) ) == 0 );
+          REQUIRE( graph.edge_overlap( link_type( { ibyc(5), true, ibyc(8), false } ) ) == 0 );
+          REQUIRE( graph.edge_overlap( ibyc(1), ibyc(2), graph.linktype( link_type( { ibyc(1), true, ibyc(2), false } ) ) ) == 0 );
+          REQUIRE( graph.edge_overlap( ibyc(1), ibyc(3), graph.linktype( link_type( { ibyc(1), true, ibyc(3), true } )  ) ) == 0 );
+          REQUIRE( graph.edge_overlap( ibyc(1), ibyc(4), graph.linktype( link_type( { ibyc(1), true, ibyc(4), false } ) ) ) == 0 );
+          REQUIRE( graph.edge_overlap( ibyc(2), ibyc(5), graph.linktype( link_type( { ibyc(2), true, ibyc(5), false } ) ) ) == 0 );
+          REQUIRE( graph.edge_overlap( ibyc(3), ibyc(5), graph.linktype( link_type( { ibyc(3), false, ibyc(5), false } ) ) ) == 1 );
+          REQUIRE( graph.edge_overlap( ibyc(4), ibyc(5), graph.linktype( link_type( { ibyc(4), true, ibyc(5), true } ) ) ) == 0 );
+          REQUIRE( graph.edge_overlap( ibyc(5), ibyc(6), graph.linktype( link_type( { ibyc(5), false, ibyc(6), false } ) ) ) == 1 );
+          REQUIRE( graph.edge_overlap( ibyc(5), ibyc(7), graph.linktype( link_type( { ibyc(5), false, ibyc(7), false } ) ) ) == 0 );
+          REQUIRE( graph.edge_overlap( ibyc(5), ibyc(8), graph.linktype( link_type( { ibyc(5), true, ibyc(8), false } ) ) ) == 0 );
           REQUIRE( graph.get_path_count() == path_count );
           REQUIRE( !graph.has_path( 0 ) );
           REQUIRE( !graph.has_path( -1 ) );
@@ -875,14 +875,14 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
                 REQUIRE( path.size() == pathset[ name ].size() );
                 rank_type nidx = 0;
                 for ( auto const& node : path ) {
-                  REQUIRE( path.id_of( node ) == pathset[ name ][ nidx ].first );
+                  REQUIRE( path.id_of( node ) == graph.id_by_coordinate( pathset[ name ][ nidx ].first ) );
                   REQUIRE( path.is_reverse( node ) == pathset[ name ][ nidx ].second );
                   ++nidx;
                 }
                 nidx = 0;
                 path.for_each_node(
-                    [&nidx, &name, &pathset]( id_type id, bool is_reverse ) {
-                      REQUIRE( id == pathset[ name ][ nidx ].first );
+                    [&graph, &nidx, &name, &pathset]( id_type id, bool is_reverse ) {
+                      REQUIRE( graph.coordinate_id( id ) == pathset[ name ][ nidx ].first );
                       REQUIRE( is_reverse == pathset[ name ][ nidx ].second );
                       ++nidx;
                       return true;
@@ -890,7 +890,7 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
                 auto nodes = path.get_nodes();
                 nidx = 0;
                 for ( auto const& node : nodes ) {
-                  REQUIRE( path.id_of( node ) == pathset[ name ][ nidx ].first );
+                  REQUIRE( graph.coordinate_id( path.id_of( node ) ) == pathset[ name ][ nidx ].first );
                   REQUIRE( path.is_reverse( node ) == pathset[ name ][ nidx ].second );
                   ++nidx;
                 }

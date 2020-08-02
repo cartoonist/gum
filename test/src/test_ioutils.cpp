@@ -519,14 +519,14 @@ SCENARIO( "Sanity check for deserialising a SeqGraph", "[ioutils]" )
                 REQUIRE( path.size() == pathset[ name ].size() );
                 rank_type nidx = 0;
                 for ( auto const& node : path ) {
-                  REQUIRE( path.id_of( node ) == pathset[ name ][ nidx ].first );
+                  REQUIRE( path.id_of( node ) == graph.id_by_coordinate( pathset[ name ][ nidx ].first ) );
                   REQUIRE( path.is_reverse( node ) == pathset[ name ][ nidx ].second );
                   ++nidx;
                 }
                 nidx = 0;
                 path.for_each_node(
-                    [&nidx, &name, &pathset]( id_type id, bool is_reverse ) {
-                      REQUIRE( id == pathset[ name ][ nidx ].first );
+                    [&graph, &nidx, &name, &pathset]( id_type id, bool is_reverse ) {
+                      REQUIRE( graph.coordinate_id( id ) == pathset[ name ][ nidx ].first );
                       REQUIRE( is_reverse == pathset[ name ][ nidx ].second );
                       ++nidx;
                       return true;
@@ -534,7 +534,7 @@ SCENARIO( "Sanity check for deserialising a SeqGraph", "[ioutils]" )
                 auto nodes = path.get_nodes();
                 nidx = 0;
                 for ( auto const& node : nodes ) {
-                  REQUIRE( path.id_of( node ) == pathset[ name ][ nidx ].first );
+                  REQUIRE( graph.coordinate_id( path.id_of( node ) ) == pathset[ name ][ nidx ].first );
                   REQUIRE( path.is_reverse( node ) == pathset[ name ][ nidx ].second );
                   ++nidx;
                 }

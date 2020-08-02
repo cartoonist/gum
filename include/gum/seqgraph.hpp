@@ -31,8 +31,8 @@ namespace gum {
    *  the connectivity can be modified after it is constructed in contrast with
    *  `succinct` specialization which is immutable.
    */
-  template< typename TDir, uint8_t ...TWidths >
-  class DirectedGraph< Dynamic, TDir, TWidths... > {
+  template< typename TDir, typename TCoordSpec, uint8_t ...TWidths >
+  class DirectedGraph< Dynamic, TDir, TCoordSpec, TWidths... > {
   public:
     /* === TYPEDEFS === */
     using spec_type = Dynamic;
@@ -51,8 +51,18 @@ namespace gum {
     using linktype_type = typename trait_type::linktype_type;
     using adjs_type = typename trait_type::adjs_type;
     using adj_map_type = typename trait_type::adj_map_type;
-    using succinct_type = DirectedGraph< Succinct, dir_type, TWidths... >;
-    using dynamic_type = DirectedGraph;
+    using coordspec_type = std::conditional_t< std::is_same< TCoordSpec, void >::value,
+                                               coordinate::Identity, TCoordSpec >;
+    using coordinate_type = CoordinateType< DirectedGraph, coordspec_type >;
+
+    template< typename TCSpec = void >
+    using succinct_template = DirectedGraph< Succinct, dir_type, TCSpec, TWidths... >;
+
+    template< typename TCSpec = coordspec_type >
+    using dynamic_template = DirectedGraph< Dynamic, dir_type, TCSpec, TWidths... >;
+
+    using succinct_type = succinct_template<>;
+    using dynamic_type = dynamic_template<>;
 
     /* === LIFECYCLE === */
     DirectedGraph( )                                            /* constructor      */
@@ -84,6 +94,12 @@ namespace gum {
     get_edge_count( ) const
     {
       return this->edge_count;
+    }
+
+    inline coordinate_type const&
+    get_coordinate( ) const
+    {
+      return this->coordinate;
     }
 
     /* === OPERATORS === */
@@ -141,6 +157,22 @@ namespace gum {
     coordinate_id( id_type id ) const
     {
       return id;
+    }
+
+    /**
+     *  @brief  Return the internal ID of a node by its external coordinate ID.
+     *
+     *  `Dynamic` graphs only hold one coordinate system. So, this is, by
+     *  default, an identity function to maintain the same interface for both
+     *  `Dynamic` and `Succinct` graphs.
+     *
+     *  @param  ext_id node ID in the coordinate system.
+     *  @return The corresponding node ID in the graph.
+     */
+    inline id_type
+    id_by_coordinate( typename coordinate_type::lid_type const& ext_id ) const
+    {
+      return this->coordinate( ext_id );
     }
 
     /**
@@ -641,6 +673,12 @@ namespace gum {
       return this->nodes;
     }
 
+    inline coordinate_type&
+    get_coordinate( )
+    {
+      return this->coordinate;
+    }
+
     /* === METHODS === */
     inline id_type
     add_node_imp( id_type ext_id=0 )
@@ -684,6 +722,7 @@ namespace gum {
     adj_map_type adj_in;
     rank_type node_count;
     rank_type edge_count;
+    coordinate_type coordinate;
 
     /* === METHODS === */
     inline void
@@ -725,8 +764,8 @@ namespace gum {
    *  NOTE: In contrast with xg graphs, the IDs in these graphs are handles. So,
    *  they can be used for efficient traversal directly.
    */
-  template< typename TDir, uint8_t ...TWidths >
-  class DirectedGraph< Succinct, TDir, TWidths... > {
+  template< typename TDir, typename TCoordSpec, uint8_t ...TWidths >
+  class DirectedGraph< Succinct, TDir, TCoordSpec, TWidths... > {
   public:
     /* === TYPEDEFS  === */
     using spec_type = Succinct;
@@ -747,8 +786,18 @@ namespace gum {
     using link_type = typename trait_type::link_type;
     using linktype_type = typename trait_type::linktype_type;
     using adjs_type = typename trait_type::adjs_type;
-    using dynamic_type = DirectedGraph< Dynamic, dir_type, TWidths... >;
-    using succinct_type = DirectedGraph;
+    using coordspec_type = std::conditional_t< std::is_same< TCoordSpec, void >::value,
+                                               coordinate::Dense, TCoordSpec >;
+    using coordinate_type = CoordinateType< DirectedGraph, coordspec_type >;
+
+    template< typename TCSpec = void >
+    using dynamic_template = DirectedGraph< Dynamic, dir_type, TCSpec, TWidths... >;
+
+    template< typename TCSpec = coordspec_type >
+    using succinct_template = DirectedGraph< Succinct, dir_type, TCSpec, TWidths... >;
+
+    using dynamic_type = dynamic_template<>;
+    using succinct_type = succinct_template<>;
 
     /* === LIFECYCLE  === */
     DirectedGraph( padding_type npadding = 0, padding_type epadding = 0 )
@@ -763,9 +812,10 @@ namespace gum {
       sdsl::util::init_support( this->node_id, &this->ids_bv );
     }
 
-    DirectedGraph( dynamic_type const& d_graph,
+    template< typename TCSpec >
+    DirectedGraph( dynamic_template< TCSpec > const& d_graph,
                    padding_type npadding = 0,
-                   padding_type epadding = 0)
+                   padding_type epadding = 0 )
       : np_padding( npadding ),
         ep_padding( epadding )
     {
@@ -820,6 +870,12 @@ namespace gum {
       return this->edge_count;
     }
 
+    inline coordinate_type const&
+    get_coordinate( ) const
+    {
+      return this->coordinate;
+    }
+
     /* === OPERATORS === */
     /* copy assignment operator */
     DirectedGraph&
@@ -851,8 +907,9 @@ namespace gum {
       sdsl::util::clear( other.node_id );
     }
 
+    template< typename TCSpec >
     DirectedGraph&
-    operator=( dynamic_type const& d_graph )
+    operator=( dynamic_template< TCSpec > const& d_graph )
     {
       this->construct( d_graph );
       return *this;
@@ -908,6 +965,18 @@ namespace gum {
     {
       assert( this->has_node( id ) );
       return this->nodes[ id ];
+    }
+
+    /**
+     *  @brief  Return the internal ID of a node by its external coordinate ID.
+     *
+     *  @param  ext_id node ID in the coordinate system.
+     *  @return The corresponding node ID in the graph.
+     */
+    inline id_type
+    id_by_coordinate( typename coordinate_type::lid_type const& ext_id ) const
+    {
+      return this->coordinate( ext_id );
     }
 
     /**
@@ -1367,6 +1436,13 @@ namespace gum {
     }
 
   protected:
+    /* === ACCESSORS === */
+    inline coordinate_type&
+    get_coordinate( )
+    {
+      return this->coordinate;
+    }
+
     /* === METHODS === */
     inline size_type
     header_core_len( ) const
@@ -1502,6 +1578,7 @@ namespace gum {
     bv_type ids_bv;
     rank_map_type node_rank;
     id_map_type node_id;
+    coordinate_type coordinate;
 
     /* === METHODS === */
     /**
@@ -1517,8 +1594,9 @@ namespace gum {
     *  NOTE: This function assumes that the node and edge paddings has been
     *  initialiased.
     */
+    template< typename TCSpec >
     inline void
-    construct( dynamic_type const& d_graph )
+    construct( dynamic_template< TCSpec > const& d_graph )
     {
       this->node_count = d_graph.get_node_count();
       this->edge_count = d_graph.get_edge_count();
@@ -1530,11 +1608,12 @@ namespace gum {
         // Set the bit at index `pos - 1` denoting the start of a node record.
         this->ids_bv[ pos - 1 ] = 1;
         // Embed the coordinate system of `Dynamic` graph.
+        id_type id = static_cast< id_type >( pos );
         this->nodes[ pos ] = d_id;
+        this->coordinate( d_id, id );
         this->set_outdegree( pos, d_graph.outdegree( d_id ) );
         this->set_indegree( pos, d_graph.indegree( d_id ));
         // Add EDGES_OUT and EDGES_IN entries
-        id_type id = static_cast< id_type >( pos );
         this->fill_edges_entries( d_graph, d_id, id );
         // Get the next node entry position.
         pos += this->node_entry_len( id );
@@ -1545,8 +1624,9 @@ namespace gum {
       this->identificate( );
     }
 
+    template< typename TCSpec >
     inline void
-    fill_edges_entries( dynamic_type const& d_graph,
+    fill_edges_entries( dynamic_template< TCSpec > const& d_graph,
                         id_type d_id,
                         id_type new_id )
     {
@@ -2326,9 +2406,10 @@ namespace gum {
       sdsl::util::init_support( this->path_id, &this->ids_bv );
     }
 
-    GraphProperty( dynamic_type const& other )
+    template < typename TCoordinate = coordinate::IdentityBase< id_type > >
+    GraphProperty( dynamic_type const& other, TCoordinate&& coord={} )
     {
-      this->construct( other );
+      this->construct( other, coord );
     }
 
     /* copy constructor */
@@ -2395,6 +2476,29 @@ namespace gum {
     }
 
     /* === METHODS === */
+    /**
+     *  @brief  Apply the given coordinate system.
+     *
+     *  Replace each node `id` in all paths with `coord( id )`.
+     *
+     *  @param  coord Given coordinate system.
+     */
+    template< typename TCoordinate >
+    inline void
+    apply_coordinate( TCoordinate&& coord )
+    {
+      this->for_each_path(
+          [&]( auto rank, auto id ) {
+            auto pos = this->nodes_pos( id );
+            auto path = this->path( id );
+            for ( auto const& node : path ) {
+              this->paths[ pos++ ] = path.encode( coord( path.id_of( node ) ),
+                                                  path.is_reverse( node ) );
+            }
+            return true;
+          });
+    }
+
     /**
      *  @brief  Return the rank of a path by its ID.
      *
@@ -2583,8 +2687,9 @@ namespace gum {
       return nof_nodes;
     }
 
+    template< typename TCoordinate = coordinate::IdentityBase< id_type > >
     inline void
-    construct( dynamic_type const& other )
+    construct( dynamic_type const& other, TCoordinate&& coord={} )
     {
       this->path_count = other.get_path_count();
       auto len = this->int_vector_len( this->total_nof_nodes( other ) );
@@ -2606,7 +2711,8 @@ namespace gum {
         this->set_name_length( id, this->names.size() - old_size );
         pos = this->nodes_pos( id );
         for ( auto const& node : path ) {
-          this->paths[ pos++ ] = node;
+          this->paths[ pos++ ] = path.encode( coord( path.id_of( node ) ),
+                                              path.is_reverse( node ) );
         }
       }
       sdsl::util::init_support( this->path_rank, &this->ids_bv );
@@ -2619,17 +2725,18 @@ namespace gum {
    *
    *  Represent a sequence graph (node-labeled bidirected graph).
    */
-  template< template< class, uint8_t ... > class TNodeProp,
+  template< typename TCoordSpec,
+            template< class, uint8_t ... > class TNodeProp,
             template< class, class, uint8_t ... > class TEdgeProp,
             template< class, class, uint8_t ... > class TGraphProp,
             uint8_t ...TWidths >
-  class SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >
-    : public DirectedGraph< Dynamic, Bidirected, TWidths... > {
+  class SeqGraph< Dynamic, TCoordSpec, TNodeProp, TEdgeProp, TGraphProp, TWidths... >
+    : public DirectedGraph< Dynamic, Bidirected, TCoordSpec, TWidths... > {
   public:
     /* === TYPEDEFS === */
     using spec_type = Dynamic;
     using dir_type = Bidirected;
-    using base_type = DirectedGraph< spec_type, dir_type, TWidths... >;
+    using base_type = DirectedGraph< spec_type, dir_type, TCoordSpec, TWidths... >;
     using node_prop_type = TNodeProp< spec_type, TWidths... >;
     using edge_prop_type = TEdgeProp< spec_type, dir_type, TWidths... >;
     using graph_prop_type = TGraphProp< spec_type, dir_type, TWidths... >;
@@ -2642,12 +2749,21 @@ namespace gum {
     using typename base_type::link_type;
     using typename base_type::linktype_type;
     using typename base_type::string_type;
+    using typename base_type::coordspec_type;
+    using typename base_type::coordinate_type;
     using node_type = typename node_prop_type::node_type;
     using sequence_type = typename node_prop_type::sequence_type;
     using edge_type = typename edge_prop_type::edge_type;
     using path_type = typename graph_prop_type::path_type;
-    using succinct_type = SeqGraph< Succinct, TNodeProp, TEdgeProp, TGraphProp, TWidths... >;
-    using dynamic_type = SeqGraph;
+
+    template< typename TCSpec = void >
+    using succinct_template = SeqGraph< Succinct, TCSpec, TNodeProp, TEdgeProp, TGraphProp, TWidths... >;
+
+    template< typename TCSpec = coordspec_type >
+    using dynamic_template = SeqGraph< Dynamic, TCSpec, TNodeProp, TEdgeProp, TGraphProp, TWidths... >;
+
+    using succinct_type = succinct_template<>;
+    using dynamic_type = dynamic_template<>;
 
     /* === LIFECYCLE === */
     SeqGraph() = default;                                  /* constructor      */
@@ -2899,18 +3015,31 @@ namespace gum {
    *  @brief  Bidirected sequence graph representation (succinct).
    *
    *  Represent a sequence graph (node-labeled bidirected graph).
+   *
+   *  NOTE: In contrast with xg graphs, the IDs in these graphs are handles. So,
+   *  they can be used for efficient traversal directly.
+   *
+   *  NOTE: The default embedded coordinate system, which maps original (i.e.
+   *  external) node IDs to local node IDs in the graph, is of type
+   *  `gum::coordinate::Dense`. This coordinate class is most efficient when
+   *  external node IDs are sequential. If it is not the case, consider using
+   *  `gum::coordinate::Sparse` alternatively; i.e. use
+   *  `SeqGraph< Succinct, gum::coordinate::Sparse >`.
+   *  You can also drop this data structure completely by passing template
+   *  parameter `gum::coordinate::Identity` instead saving some memory.
    */
-  template< template< class, uint8_t ... > class TNodeProp,
+  template< typename TCoordSpec,
+            template< class, uint8_t ... > class TNodeProp,
             template< class, class, uint8_t ... > class TEdgeProp,
             template< class, class, uint8_t ... > class TGraphProp,
             uint8_t ...TWidths >
-  class SeqGraph< Succinct, TNodeProp, TEdgeProp, TGraphProp, TWidths... >
-    : public DirectedGraph< Succinct, Bidirected, TWidths... > {
+  class SeqGraph< Succinct, TCoordSpec, TNodeProp, TEdgeProp, TGraphProp, TWidths... >
+    : public DirectedGraph< Succinct, Bidirected, TCoordSpec, TWidths... > {
   public:
     /* === TYPEDEFS === */
     using spec_type = Succinct;
     using dir_type = Bidirected;
-    using base_type = DirectedGraph< spec_type, dir_type, TWidths... >;
+    using base_type = DirectedGraph< spec_type, dir_type, TCoordSpec, TWidths... >;
     using node_prop_type = TNodeProp< spec_type, TWidths... >;
     using edge_prop_type = void;
     using graph_prop_type = TGraphProp< spec_type, dir_type, TWidths... >;
@@ -2924,12 +3053,21 @@ namespace gum {
     using typename base_type::side_type;
     using typename base_type::link_type;
     using typename base_type::linktype_type;
+    using typename base_type::coordspec_type;
+    using typename base_type::coordinate_type;
     using node_type = typename node_prop_type::node_type;
     using sequence_type = typename node_prop_type::sequence_type;
     using edge_type = void;  // For compatibility with `SeqGraph< Dynamic >`
     using path_type = typename graph_prop_type::path_type;
-    using dynamic_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >;
-    using succinct_type = SeqGraph;
+
+    template< typename TCSpec = void >
+    using dynamic_template = SeqGraph< Dynamic, TCSpec, TNodeProp, TEdgeProp, TGraphProp, TWidths... >;
+
+    template< typename TCSpec = coordspec_type >
+    using succinct_template = SeqGraph< Succinct, TCSpec, TNodeProp, TEdgeProp, TGraphProp, TWidths... >;
+
+    using dynamic_type = dynamic_template<>;
+    using succinct_type = succinct_template<>;
 
     constexpr static padding_type NODE_PADDING = 2;
     constexpr static padding_type EDGE_PADDING = 1;
@@ -2945,10 +3083,11 @@ namespace gum {
       : base_type( SeqGraph::NODE_PADDING, SeqGraph::EDGE_PADDING )
     { }
 
-    SeqGraph( dynamic_type const& d_graph )
+    template< typename TCSpec >
+    SeqGraph( dynamic_template< TCSpec > const& d_graph )
       : base_type( d_graph, SeqGraph::NODE_PADDING, SeqGraph::EDGE_PADDING ),
         node_prop( d_graph.get_node_prop( ) ),
-        graph_prop( d_graph.get_graph_prop( ) )
+        graph_prop( d_graph.get_graph_prop( ), this->get_coordinate() )
     {
       this->fill_properties( d_graph );
     }
@@ -2986,13 +3125,15 @@ namespace gum {
     SeqGraph& operator=( SeqGraph const& other ) = default;      /* copy assignment operator */
     SeqGraph& operator=( SeqGraph&& other ) noexcept = default;  /* move assignment operator */
 
+    template< typename TCSpec >
     SeqGraph&
-    operator=( dynamic_type const& d_graph )
+    operator=( dynamic_template< TCSpec > const& d_graph )
     {
       base_type::operator=( d_graph );
       this->node_prop = d_graph.get_node_prop( );
       this->fill_properties( d_graph );
       this->graph_prop = d_graph.get_graph_prop( );
+      this->graph_prop.apply_coordinate( this->get_coordinate() );
       return *this;
     }
 
@@ -3177,8 +3318,9 @@ namespace gum {
     graph_prop_type graph_prop;
 
     /* === METHODS === */
+    template< typename TCSpec >
     inline void
-    fill_properties( dynamic_type const& d_graph )
+    fill_properties( dynamic_template< TCSpec > const& d_graph )
     {
       this->for_each_node(
           [this, &d_graph]( rank_type rank, id_type id ) {
@@ -3221,9 +3363,10 @@ namespace gum {
    *
    *  Represent a directed sequence graph (node-labeled directed graph).
    */
-  template< uint8_t ...TWidths >
-  class DiSeqGraph< Dynamic, TWidths... >
-    : public DirectedGraph< Dynamic, Directed, TWidths... > {
+  template< typename TCoordSpec,
+            uint8_t ...TWidths >
+  class DiSeqGraph< Dynamic, TCoordSpec, TWidths... >
+    : public DirectedGraph< Dynamic, Directed, TCoordSpec, TWidths... > {
   };
 
   /**
@@ -3231,9 +3374,10 @@ namespace gum {
    *
    *  Represent a directed sequence graph (node-labeled directed graph).
    */
-  template< uint8_t ...TWidths >
-  class DiSeqGraph< Succinct, TWidths... >
-    : public DirectedGraph< Succinct, Directed, TWidths... > {
+  template< typename TCoordSpec,
+            uint8_t ...TWidths >
+  class DiSeqGraph< Succinct, TCoordSpec, TWidths... >
+    : public DirectedGraph< Succinct, Directed, TCoordSpec, TWidths... > {
   };
 }  /* --- end of namespace gum --- */
 

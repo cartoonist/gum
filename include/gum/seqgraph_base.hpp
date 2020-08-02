@@ -27,6 +27,7 @@
 #include <sdsl/int_vector.hpp>
 #include <sdsl/bit_vectors.hpp>
 
+#include "coordinate.hpp"
 #include "stringset.hpp"
 #include "basic_types.hpp"
 
@@ -879,7 +880,10 @@ namespace gum {
     }
   };  /* --- end of template class DirectedGraphTrait --- */
 
-  template< typename TSpec, typename TDir = Bidirected, uint8_t ...TWidths >
+  template< typename TSpec,
+            typename TDir = Bidirected,
+            typename TCoordSpec = void,
+            uint8_t ...TWidths >
   class DirectedGraph;
 
   template< typename TSequence, typename TString >
@@ -1001,7 +1005,7 @@ namespace gum {
     using id_type = typename trait_type::id_type;
     using offset_type = typename trait_type::offset_type;
     using rank_type = typename trait_type::rank_type;
-    using alphabet_type = gum::DNA5;
+    using alphabet_type = DNA5;
     using sequenceset_type = StringSet< alphabet_type >;
     using stringset_type = StringSet< Char >;
     using sequence_type = typename sequenceset_type::value_type;
@@ -1448,14 +1452,33 @@ namespace gum {
   using DefaultGraphProperty = GraphProperty< TSpec, TDir, TWidths... >;
 
   template< typename TSpec,
+            typename TCoordSpec = void,
             template< class, uint8_t ... > class TNodeProp = DefaultNodeProperty,
             template< class, class, uint8_t ... > class TEdgeProp = DefaultEdgeProperty,
             template< class, class, uint8_t ... > class TGraphProp = DefaultGraphProperty,
             uint8_t ...TWidths >
   class SeqGraph;
 
-  template< typename TSpec, uint8_t ...TWidths >
+  template< typename TSpec,
+            typename TCoordSpec = void,
+            uint8_t ...TWidths >
   class DiSeqGraph;
+
+  template< typename TObject, typename ...TArgs >
+  struct make_dynamic {
+    using type = typename TObject::dynamic_template< TArgs... >;
+  };  /* --- end of template struct make_dynamic --- */
+
+  template< typename TObject, typename ...TArgs >
+  using make_dynamic_t = typename make_dynamic< TObject, TArgs... >::type;
+
+  template< typename TObject, typename ...TArgs >
+  struct make_succinct {
+    using type = typename TObject::succinct_template< TArgs... >;
+  };  /* --- end of template struct make_succinct --- */
+
+  template< typename TObject, typename ...TArgs >
+  using make_succinct_t = typename make_succinct< TObject, TArgs... >::type;
 }  /* --- end of namespace gum --- */
 
 #endif  /* --- #ifndef GUM_SEQGRAPH_BASE_HPP__ --- */
