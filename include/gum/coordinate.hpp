@@ -57,6 +57,17 @@ namespace gum {
      *  It can be a no-op function if the IDs are already known.
      */
 
+    /* None specialization tag. */
+    struct None {};
+    /* Identity specialization tag. */
+    struct Identity {};
+    /* Stoid specialization tag. */
+    struct Stoid {};
+    /* Sparse specialization tag. */
+    struct Sparse {};
+    /* Dense specialization tag. */
+    struct Dense {};
+
     /**
      *  @brief  None coordinate system class.
      *
@@ -64,13 +75,12 @@ namespace gum {
      *  coordinate system; i.e. always returns zero on queries and do nothing on
      *  insertions.
      */
-    template< typename TGraph, typename TLocalID=typename TGraph::id_type >
-    class None {
+    template< typename TID, typename TLocalID=TID >
+    class NoneBase {
     public:
       /* === TYPEDEFS === */
-      using graph_type = TGraph;
       using lid_type = TLocalID;
-      using id_type = typename graph_type::id_type;
+      using id_type = TID;
 
       /* === OPERATORS === */
       constexpr inline id_type
@@ -82,7 +92,7 @@ namespace gum {
       constexpr inline void
       operator()( lid_type const&, id_type const& )
       { /* noop */ }
-    };  /* --- end of template class None --- */
+    };  /* --- end of template class NoneBase --- */
 
     /**
      *  @brief  Identity coordinate system class.
@@ -90,14 +100,12 @@ namespace gum {
      *  Represent a special coordinate system in which the IDs are identical to
      *  those in graph local coordinate system.
      */
-    template< typename TGraph, typename TLocalID=typename TGraph::id_type,
-              typename = std::enable_if_t< std::is_integral< TLocalID >::value > >
-    class Identity {
+    template< typename TID, typename TLocalID=TID >
+    class IdentityBase {
     public:
       /* === TYPEDEFS === */
-      using graph_type = TGraph;
       using lid_type = TLocalID;
-      using id_type = typename graph_type::id_type;
+      using id_type = TID;
 
       /* === OPERATORS === */
       constexpr inline id_type
@@ -109,7 +117,7 @@ namespace gum {
       constexpr inline void
       operator()( lid_type const&, id_type const& )
       { /* noop */ }
-    };  /* --- end of template class Identity --- */
+    };  /* --- end of template class IdentityBase --- */
 
     /**
      *  @brief  Stoid coordinate system class.
@@ -117,15 +125,14 @@ namespace gum {
      *  Represent an external coordinate system in a sequence graph whose IDs
      *  are string representation of the graph local coordinate system IDs.
      */
-    template< typename TGraph, typename TLocalID=std::string >
-    class Stoid {
+    template< typename TID, typename TLocalID=std::string >
+    class StoidBase {
     public:
       static_assert( std::is_integral< TID >::value,
                      "id type should be of integral type" );
       /* === TYPEDEFS === */
-      using graph_type = TGraph;
       using lid_type = TLocalID;
-      using id_type = typename graph_type::id_type;
+      using id_type = TID;
 
       /* === OPERATORS === */
       inline id_type
@@ -137,7 +144,7 @@ namespace gum {
       constexpr inline void
       operator()( lid_type const&, id_type const& )
       { /* noop */ }
-    };  /* --- end of template class Stoid --- */
+    };  /* --- end of template class StoidBase --- */
 
     /**
      *  @brief  Sparse coordinate system class.
@@ -145,13 +152,12 @@ namespace gum {
      *  Represent an external coordinate system in a sequence graph by storing
      *  hash map of its IDs to IDs in graph local coordinate system.
      */
-    template< typename TGraph, typename TLocalID=typename TGraph::id_type >
-    class Sparse {
+    template< typename TID, typename TLocalID=TID >
+    class SparseBase {
     public:
       /* === TYPEDEFS === */
-      using graph_type = TGraph;
       using lid_type = TLocalID;
-      using id_type = typename graph_type::id_type;
+      using id_type = TID;
       using map_type = phmap::flat_hash_map< lid_type, id_type >;
 
       /* === OPERATORS === */
@@ -173,7 +179,7 @@ namespace gum {
       private:
       /* === DATA MEMBERS === */
       map_type ids;
-    };  /* --- end of template class Sparse --- */
+    };  /* --- end of template class SparseBase --- */
 
     /**
      *  @brief  Dense coordinate system class.
@@ -186,25 +192,23 @@ namespace gum {
      *  This coordinate system is a succinct data structure if IDs in the
      *  external coordinate system is sequential.
      */
-    template< typename TGraph, typename TLocalID=typename TGraph::id_type,
-              typename = std::enable_if_t< std::is_integral< TLocalID >::value > >
-    class Dense {
+    template< typename TID, typename TLocalID=TID >
+    class DenseBase {
     public:
       static_assert( std::is_integral< TID >::value,
                      "id type should be of integral type" );
       static_assert( std::is_integral< TLocalID >::value,
                      "local id type should be of integral type" );
       /* === TYPEDEFS === */
-      using graph_type = TGraph;
       using lid_type = TLocalID;
-      using id_type = typename graph_type::id_type;
+      using id_type = TID;
       using container_type = sdsl::int_vector<>;
       using size_type = typename container_type::size_type;
 
       static constexpr const size_type INIT_SIZE = 16;
 
       /* === LIFECYCLE === */
-      Dense( lid_type min=0, lid_type max=0 )
+      DenseBase( lid_type min=0, lid_type max=0 )
         : id_min( min ), id_max( max )
       {
         assert( this->id_max >= this->id_min );
@@ -291,8 +295,39 @@ namespace gum {
       container_type ids;
       lid_type id_min;
       lid_type id_max;
-    };  /* --- end of template class Dense --- */
+    };  /* --- end of template class DenseBase --- */
   }  /* --- end of namespace coordinate --- */
+
+  template< typename TGraph, typename TSpec, typename ...TArgs >
+  struct Coordinate;
+
+  template< typename TGraph, typename ...TArgs >
+  struct Coordinate< TGraph, coordinate::None, TArgs... > {
+    using type = coordinate::NoneBase< typename TGraph::id_type, TArgs... >;
+  };
+
+  template< typename TGraph, typename ...TArgs >
+  struct Coordinate< TGraph, coordinate::Identity, TArgs... > {
+    using type = coordinate::IdentityBase< typename TGraph::id_type, TArgs... >;
+  };
+
+  template< typename TGraph, typename ...TArgs >
+  struct Coordinate< TGraph, coordinate::Stoid, TArgs... > {
+    using type = coordinate::StoidBase< typename TGraph::id_type, TArgs... >;
+  };
+
+  template< typename TGraph, typename ...TArgs >
+  struct Coordinate< TGraph, coordinate::Sparse, TArgs... > {
+    using type = coordinate::SparseBase< typename TGraph::id_type, TArgs... >;
+  };
+
+  template< typename TGraph, typename ...TArgs >
+  struct Coordinate< TGraph, coordinate::Dense, TArgs... > {
+    using type = coordinate::DenseBase< typename TGraph::id_type, TArgs... >;
+  };
+
+  template< typename ...TArgs >
+  using CoordinateType = typename Coordinate< TArgs... >::type;
 }  /* --- end of namespace gum --- */
 
 #endif  /* --- #ifndef GUM_COORDINATE_HPP__ --- */
