@@ -40,24 +40,16 @@ namespace gum {
        *  integer conversion.
        */
       template< typename TGraph >
-      using DefaultCoord = gum::coordinate::Stoid< TGraph >;
+      using DefaultCoord = gum::CoordinateType< TGraph, gum::coordinate::Stoid >;
     };
 
-    template< template< class, uint8_t ... > class TNodeProp,
-              template< class, class, uint8_t ... > class TEdgeProp,
-              template< class, class, uint8_t ... > class TGraphProp,
-              uint8_t ...TWidths,
-              typename TCoordinate=GFAFormat::DefaultCoord< SeqGraph< Dynamic,
-                                                                      TNodeProp,
-                                                                      TEdgeProp,
-                                                                      TGraphProp,
-                                                                      TWidths... > > >
+    template< typename TGraph,
+              typename TCoordinate=GFAFormat::DefaultCoord< TGraph >,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
     inline void
-    update( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-            gfak::sequence_elem const& elem,
-            TCoordinate&& coord={} )
+    update( TGraph& graph, gfak::sequence_elem const& elem, TCoordinate&& coord={} )
     {
-      using graph_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >;
+      using graph_type = TGraph;
       using id_type = typename graph_type::id_type;
       using node_type = typename graph_type::node_type;
 
@@ -69,22 +61,14 @@ namespace gum {
       }
     }
 
-    template< template< class, uint8_t ... > class TNodeProp,
-              template< class, class, uint8_t ... > class TEdgeProp,
-              template< class, class, uint8_t ... > class TGraphProp,
-              uint8_t ...TWidths,
-              typename TCoordinate=GFAFormat::DefaultCoord< SeqGraph< Dynamic,
-                                                                      TNodeProp,
-                                                                      TEdgeProp,
-                                                                      TGraphProp,
-                                                                      TWidths... > > >
-    inline typename SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >::id_type
-    add( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-         gfak::sequence_elem const& elem,
-         TCoordinate&& coord={},
+    template< typename TGraph,
+              typename TCoordinate=GFAFormat::DefaultCoord< TGraph >,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
+    inline typename TGraph::id_type
+    add( TGraph& graph, gfak::sequence_elem const& elem, TCoordinate&& coord={},
          bool force=false )
     {
-      using graph_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >;
+      using graph_type = TGraph;
       using id_type = typename graph_type::id_type;
       using node_type = typename graph_type::node_type;
 
@@ -100,22 +84,14 @@ namespace gum {
       return id;
     }
 
-    template< template< class, uint8_t ... > class TNodeProp,
-              template< class, class, uint8_t ... > class TEdgeProp,
-              template< class, class, uint8_t ... > class TGraphProp,
-              uint8_t ...TWidths,
-              typename TCoordinate=GFAFormat::DefaultCoord< SeqGraph< Dynamic,
-                                                                      TNodeProp,
-                                                                      TEdgeProp,
-                                                                      TGraphProp,
-                                                                      TWidths... > > >
+    template< typename TGraph,
+              typename TCoordinate=GFAFormat::DefaultCoord< TGraph >,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
     inline void
-    add( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-         gfak::edge_elem const& elem,
-         TCoordinate&& coord={},
+    add( TGraph& graph, gfak::edge_elem const& elem, TCoordinate&& coord={},
          bool force=false )
     {
-      using graph_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >;
+      using graph_type = TGraph;
       using id_type = typename graph_type::id_type;
       using link_type = typename graph_type::link_type;
       using edge_type = typename graph_type::edge_type;
@@ -144,23 +120,14 @@ namespace gum {
                       edge_type( elem.sink_end ) );
     }
 
-    template< template< class, uint8_t ... > class TNodeProp,
-              template< class, class, uint8_t ... > class TEdgeProp,
-              template< class, class, uint8_t ... > class TGraphProp,
-              uint8_t ...TWidths,
-              typename TCoordinate=GFAFormat::DefaultCoord< SeqGraph< Dynamic,
-                                                                      TNodeProp,
-                                                                      TEdgeProp,
-                                                                      TGraphProp,
-                                                                      TWidths... > > >
+    template< typename TGraph,
+              typename TCoordinate=GFAFormat::DefaultCoord< TGraph >,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
     inline void
-    extend( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-            typename SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >::id_type pid,
-            gfak::path_elem const& elem,
-            TCoordinate&& coord={},
-            bool force=false )
+    extend( TGraph& graph, typename TGraph::id_type pid, gfak::path_elem const& elem,
+            TCoordinate&& coord={}, bool force=false )
     {
-      using graph_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >;
+      using graph_type = TGraph;
       using id_type = typename graph_type::id_type;
       using elem_segments_type = std::decay_t< decltype( elem.segment_names ) >;
       using elem_orients_type = std::decay_t< decltype( elem.orientations ) >;
@@ -190,23 +157,14 @@ namespace gum {
                          orients.begin(), orients.end() );
     }
 
-    template< template< class, uint8_t ... > class TNodeProp,
-              template< class, class, uint8_t ... > class TEdgeProp,
-              template< class, class, uint8_t ... > class TGraphProp,
-              uint8_t ...TWidths,
-              typename TCoordinate=GFAFormat::DefaultCoord< SeqGraph< Dynamic,
-                                                                      TNodeProp,
-                                                                      TEdgeProp,
-                                                                      TGraphProp,
-                                                                      TWidths... > > >
-    inline typename SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >::id_type
-    add( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-         gfak::path_elem const& elem,
-         TCoordinate&& coord={},
-         bool force=false,
-         bool force_node=false )
+    template< typename TGraph,
+              typename TCoordinate=GFAFormat::DefaultCoord< TGraph >,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
+    inline typename TGraph::id_type
+    add( TGraph& graph, gfak::path_elem const& elem, TCoordinate&& coord={},
+         bool force=false, bool force_node=false )
     {
-      using graph_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >;
+      using graph_type = TGraph;
       using id_type = typename graph_type::id_type;
       using rank_type = typename graph_type::rank_type;
 
@@ -227,19 +185,11 @@ namespace gum {
       return path_id;
     }
 
-    template< template< class, uint8_t ... > class TNodeProp,
-              template< class, class, uint8_t ... > class TEdgeProp,
-              template< class, class, uint8_t ... > class TGraphProp,
-              uint8_t ...TWidths,
-              typename TCoordinate=GFAFormat::DefaultCoord< SeqGraph< Dynamic,
-                                                                      TNodeProp,
-                                                                      TEdgeProp,
-                                                                      TGraphProp,
-                                                                      TWidths... > > >
+    template< typename TGraph,
+              typename TCoordinate=GFAFormat::DefaultCoord< TGraph >,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
     inline void
-    extend( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-            gfak::GFAKluge& other,
-            TCoordinate&& coord={} )
+    extend( TGraph& graph, gfak::GFAKluge& other, TCoordinate&& coord={} )
     {
       for ( auto const& rec : other.get_name_to_seq() ) {
         add( graph, rec.second, coord, true );
@@ -254,101 +204,56 @@ namespace gum {
       }
     }
 
-    template< template< class, uint8_t ... > class TNodeProp,
-              template< class, class, uint8_t ... > class TEdgeProp,
-              template< class, class, uint8_t ... > class TGraphProp,
-              uint8_t ...TWidths,
-              typename ...TArgs >
+    template< typename TGraph, typename ...TArgs >
     inline void
-    extend_gfa( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-                std::istream& in,
-                TArgs&&... args )
+    extend_gfa( TGraph& graph, std::istream& in, TArgs&&... args )
     {
       gfak::GFAKluge gg;
       gg.parse_gfa_file( in );
       extend( graph, gg, std::forward< TArgs >( args )... );
     }
 
-    template< template< class, uint8_t ... > class TNodeProp,
-              template< class, class, uint8_t ... > class TEdgeProp,
-              template< class, class, uint8_t ... > class TGraphProp,
-              uint8_t ...TWidths,
-              typename ...TArgs >
+    template< typename TGraph, typename ...TArgs >
     inline void
-    extend_gfa( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-                std::string fname,
-                TArgs&&... args )
+    extend_gfa( TGraph& graph, std::string fname, TArgs&&... args )
     {
       gfak::GFAKluge gg;
       gg.parse_gfa_file( fname );
       extend( graph, gg, std::forward< TArgs >( args )... );
     }
 
-    template< template< class, uint8_t ... > class TNodeProp,
-              template< class, class, uint8_t ... > class TEdgeProp,
-              template< class, class, uint8_t ... > class TGraphProp,
-              uint8_t ...TWidths,
-              typename ...TArgs >
+    template< typename TGraph, typename ...TArgs >
     inline void
-    extend( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-            std::istream& in,
-            GFAFormat,
-            TArgs&&... args )
+    extend( TGraph& graph, std::istream& in, GFAFormat, TArgs&&... args )
     {
       extend_gfa( graph, in, std::forward< TArgs >( args )... );
     }
 
-    template< template< class, uint8_t ... > class TNodeProp,
-              template< class, class, uint8_t ... > class TEdgeProp,
-              template< class, class, uint8_t ... > class TGraphProp,
-              uint8_t ...TWidths,
-              typename ...TArgs >
+    template< typename TGraph, typename ...TArgs >
     inline void
-    extend( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-            std::string fname,
-            GFAFormat,
-            TArgs&&... args )
+    extend( TGraph& graph, std::string fname, GFAFormat, TArgs&&... args )
     {
       extend_gfa( graph, std::move( fname ), std::forward< TArgs >( args )... );
     }
 
-    template< template< class, uint8_t ... > class TNodeProp,
-              template< class, class, uint8_t ... > class TEdgeProp,
-              template< class, class, uint8_t ... > class TGraphProp,
-              uint8_t ...TWidths,
-              typename ...TArgs >
+    template< typename TGraph, typename ...TArgs >
     inline void
-    load_gfa( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-              TArgs&&... args )
+    load_gfa( TGraph& graph, TArgs&&... args )
     {
       graph.clear();
       extend_gfa( graph, std::forward< TArgs >( args )... );
     }
 
-    template< template< class, uint8_t ... > class TNodeProp,
-              template< class, class, uint8_t ... > class TEdgeProp,
-              template< class, class, uint8_t ... > class TGraphProp,
-              uint8_t ...TWidths,
-              typename ...TArgs >
+    template< typename TGraph, typename ...TArgs >
     inline void
-    load( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-          std::istream& in,
-          GFAFormat,
-          TArgs&&... args )
+    load( TGraph& graph, std::istream& in, GFAFormat, TArgs&&... args )
     {
       load_gfa( graph, in, std::forward< TArgs >( args )... );
     }
 
-    template< template< class, uint8_t ... > class TNodeProp,
-              template< class, class, uint8_t ... > class TEdgeProp,
-              template< class, class, uint8_t ... > class TGraphProp,
-              uint8_t ...TWidths,
-              typename ...TArgs >
+    template< typename TGraph, typename ...TArgs >
     inline void
-    load( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-          std::string fname,
-          GFAFormat,
-          TArgs&&... args )
+    load( TGraph& graph, std::string fname, GFAFormat, TArgs&&... args )
     {
       load_gfa( graph, std::move( fname ), std::forward< TArgs >( args )... );
     }

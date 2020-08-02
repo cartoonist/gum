@@ -26,7 +26,7 @@
 namespace gum {
   namespace util {
     /**
-     *  @brief  Extend a Dynamic SeqGraph from a file.
+     *  @brief  Extend a Dynamic graph from a file.
      *
      *  It extends the given `Dynamic` graph by the graph defined in the input
      *  file. The file format of the input file will be determined by the file
@@ -37,15 +37,11 @@ namespace gum {
      *  @param  args The parameters forwarded to lower-level functions (see
      *               `gum::util::extend_gfa` or `gum::util::extend_vg`).
      */
-    template< template< class, uint8_t ... > class TNodeProp,
-              template< class, class, uint8_t ... > class TEdgeProp,
-              template< class, class, uint8_t ... > class TGraphProp,
-              typename ...TArgs,
-              uint8_t ...TWidths >
+    template< typename TGraph,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value >,
+              typename ...TArgs >
     inline void
-    extend( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-            std::string fname,
-            TArgs&&... args )
+    extend( TGraph& graph, std::string fname, TArgs&&... args )
     {
       if ( util::ends_with( fname, VGFormat::FILE_EXTENSION ) ) {
         extend_vg( graph, fname, std::forward< TArgs >( args )... );
@@ -57,7 +53,7 @@ namespace gum {
     }
 
     /**
-     *  @brief  Load a Dynamic SeqGraph from a file.
+     *  @brief  Load a Dynamic graph from a file.
      *
      *  It constructs the given `Dynamic` graph from the input file. The file
      *  format of the input file will be determined by the file extension.
@@ -67,15 +63,9 @@ namespace gum {
      *  @param  args The parameters forwarded to lower-level functions (see
      *               `gum::util::load_gfa` or `gum::util::load_vg`).
      */
-    template< template< class, uint8_t ... > class TNodeProp,
-              template< class, class, uint8_t ... > class TEdgeProp,
-              template< class, class, uint8_t ... > class TGraphProp,
-              typename ...TArgs,
-              uint8_t ...TWidths >
+    template< typename TGraph, typename ...TArgs >
     inline void
-    load( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-          std::string fname,
-          TArgs&&... args )
+    _load( TGraph& graph, std::string fname, Dynamic, TArgs&&... args )
     {
       if ( util::ends_with( fname, VGFormat::FILE_EXTENSION ) ) {
         load_vg( graph, fname, std::forward< TArgs >( args )... );
@@ -100,20 +90,20 @@ namespace gum {
      *  @param  args The parameters forwarded to lower-level functions (see
      *               `gum::util::load_gfa` or `gum::util::load_vg`).
      */
-    template< template< class, uint8_t ... > class TNodeProp,
-              template< class, class, uint8_t ... > class TEdgeProp,
-              template< class, class, uint8_t ... > class TGraphProp,
-              typename ...TArgs,
-              uint8_t ...TWidths >
+    template< typename TGraph, typename ...TArgs >
     inline void
-    load( SeqGraph< Succinct, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-          std::string fname,
-          TArgs&&... args )
+    _load( TGraph& graph, std::string fname, Succinct, TArgs&&... args )
     {
-      using graph_type = std::decay_t< decltype( graph ) >;
-      typename graph_type::dynamic_type dyn_graph;
+      typename TGraph::dynamic_type dyn_graph;
       extend( dyn_graph, fname, std::forward< TArgs >( args )... );
       graph = dyn_graph;
+    }
+
+    template< typename TGraph, typename ...TArgs >
+    inline void
+    load( TGraph& graph, std::string fname, TArgs&&... args )
+    {
+      _load( graph, fname, typename TGraph::spec_type(), std::forward< TArgs >( args )... );
     }
   }  /* --- end of namespace util --- */
 }  /* --- end of namespace gum --- */

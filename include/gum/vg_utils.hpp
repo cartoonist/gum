@@ -40,24 +40,17 @@ namespace gum {
        *  defined in vg graphs.
        */
       template< typename TGraph >
-      using DefaultCoord = gum::coordinate::Identity< TGraph, decltype( vg::Node().id() ) >;
+      using DefaultCoord = gum::CoordinateType< TGraph, gum::coordinate::Identity,
+                                                decltype( vg::Node().id() ) >;
     };
 
-    template< template< class, uint8_t ... > class TNodeProp,
-              template< class, class, uint8_t ... > class TEdgeProp,
-              template< class, class, uint8_t ... > class TGraphProp,
-              uint8_t ...TWidths,
-              typename TCoordinate=VGFormat::DefaultCoord< SeqGraph< Dynamic,
-                                                                     TNodeProp,
-                                                                     TEdgeProp,
-                                                                     TGraphProp,
-                                                                     TWidths... > > >
+    template< typename TGraph,
+              typename TCoordinate=VGFormat::DefaultCoord< TGraph >,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
     inline void
-    update( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-            vg::Node const& node,
-            TCoordinate&& coord={} )
+    update( TGraph& graph, vg::Node const& node, TCoordinate&& coord={} )
     {
-      using graph_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >;
+      using graph_type = TGraph;
       using id_type = typename graph_type::id_type;
       using node_type = typename graph_type::node_type;
 
@@ -69,22 +62,13 @@ namespace gum {
       }
     }
 
-    template< template< class, uint8_t ... > class TNodeProp,
-              template< class, class, uint8_t ... > class TEdgeProp,
-              template< class, class, uint8_t ... > class TGraphProp,
-              uint8_t ...TWidths,
-              typename TCoordinate=VGFormat::DefaultCoord< SeqGraph< Dynamic,
-                                                                     TNodeProp,
-                                                                     TEdgeProp,
-                                                                     TGraphProp,
-                                                                     TWidths... > > >
-    inline typename SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >::id_type
-    add( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-         vg::Node const& node,
-         TCoordinate&& coord={},
-         bool force=false )
+    template< typename TGraph,
+              typename TCoordinate=VGFormat::DefaultCoord< TGraph >,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
+    inline typename TGraph::id_type
+    add( TGraph& graph, vg::Node const& node, TCoordinate&& coord={}, bool force=false )
     {
-      using graph_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >;
+      using graph_type = TGraph;
       using id_type = typename graph_type::id_type;
       using node_type = typename graph_type::node_type;
 
@@ -100,22 +84,13 @@ namespace gum {
       return id;
     }
 
-    template< template< class, uint8_t ... > class TNodeProp,
-              template< class, class, uint8_t ... > class TEdgeProp,
-              template< class, class, uint8_t ... > class TGraphProp,
-              uint8_t ...TWidths,
-              typename TCoordinate=VGFormat::DefaultCoord< SeqGraph< Dynamic,
-                                                                     TNodeProp,
-                                                                     TEdgeProp,
-                                                                     TGraphProp,
-                                                                     TWidths... > > >
+    template< typename TGraph,
+              typename TCoordinate=VGFormat::DefaultCoord< TGraph >,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
     inline void
-    add( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-         vg::Edge const& edge,
-         TCoordinate&& coord={},
-         bool force=false )
+    add( TGraph& graph, vg::Edge const& edge, TCoordinate&& coord={}, bool force=false )
     {
-      using graph_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >;
+      using graph_type = TGraph;
       using id_type = typename graph_type::id_type;
       using link_type = typename graph_type::link_type;
       using edge_type = typename graph_type::edge_type;
@@ -138,23 +113,14 @@ namespace gum {
           edge_type( edge.overlap() ) );
     }
 
-    template< template< class, uint8_t ... > class TNodeProp,
-              template< class, class, uint8_t ... > class TEdgeProp,
-              template< class, class, uint8_t ... > class TGraphProp,
-              uint8_t ...TWidths,
-              typename TCoordinate=VGFormat::DefaultCoord< SeqGraph< Dynamic,
-                                                                     TNodeProp,
-                                                                     TEdgeProp,
-                                                                     TGraphProp,
-                                                                     TWidths... > > >
+    template< typename TGraph,
+              typename TCoordinate=VGFormat::DefaultCoord< TGraph >,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
     inline void
-    extend( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-            typename SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >::id_type pid,
-            vg::Path const& path,
-            TCoordinate&& coord={},
-            bool force=false )
+    extend( TGraph& graph, typename TGraph::id_type pid, vg::Path const& path,
+            TCoordinate&& coord={}, bool force=false )
     {
-      using graph_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >;
+      using graph_type = TGraph;
       using id_type = typename graph_type::id_type;
       using mappings_type = std::decay_t< decltype( vg::Path().mapping() ) >;
       using mapping_rank_type = std::decay_t< decltype( vg::Path().mapping()[0].rank() ) >;
@@ -195,23 +161,14 @@ namespace gum {
                          orients.begin(), orients.end() );
     }
 
-    template< template< class, uint8_t ... > class TNodeProp,
-              template< class, class, uint8_t ... > class TEdgeProp,
-              template< class, class, uint8_t ... > class TGraphProp,
-              uint8_t ...TWidths,
-              typename TCoordinate=VGFormat::DefaultCoord< SeqGraph< Dynamic,
-                                                                     TNodeProp,
-                                                                     TEdgeProp,
-                                                                     TGraphProp,
-                                                                     TWidths... > > >
-    inline typename SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >::id_type
-    add( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-         vg::Path const& path,
-         TCoordinate&& coord={},
-         bool force=false,
+    template< typename TGraph,
+              typename TCoordinate=VGFormat::DefaultCoord< TGraph >,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
+    inline typename TGraph::id_type
+    add( TGraph& graph, vg::Path const& path, TCoordinate&& coord={}, bool force=false,
          bool force_node=false )
     {
-      using graph_type = SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >;
+      using graph_type = TGraph;
       using id_type = typename graph_type::id_type;
       using rank_type = typename graph_type::rank_type;
 
@@ -232,19 +189,11 @@ namespace gum {
       return path_id;
     }
 
-    template< template< class, uint8_t ... > class TNodeProp,
-              template< class, class, uint8_t ... > class TEdgeProp,
-              template< class, class, uint8_t ... > class TGraphProp,
-              uint8_t ...TWidths,
-              typename TCoordinate=VGFormat::DefaultCoord< SeqGraph< Dynamic,
-                                                                     TNodeProp,
-                                                                     TEdgeProp,
-                                                                     TGraphProp,
-                                                                     TWidths... > > >
+    template< typename TGraph,
+              typename TCoordinate=VGFormat::DefaultCoord< TGraph >,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
     inline void
-    extend( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-            vg::Graph& other,
-            TCoordinate&& coord={} )
+    extend( TGraph& graph, vg::Graph& other, TCoordinate&& coord={} )
     {
       for ( auto const& node : other.node() ) {
         add( graph, node, coord, true );
@@ -257,15 +206,9 @@ namespace gum {
       }
     }
 
-    template< template< class, uint8_t ... > class TNodeProp,
-              template< class, class, uint8_t ... > class TEdgeProp,
-              template< class, class, uint8_t ... > class TGraphProp,
-              uint8_t ...TWidths,
-              typename ...TArgs >
+    template< typename TGraph, typename ...TArgs >
     inline void
-    extend_vg( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-               std::istream& in,
-               TArgs&&... args )
+    extend_vg( TGraph& graph, std::istream& in, TArgs&&... args )
     {
       std::function< void( vg::Graph& ) > handle_chunks =
           [&]( vg::Graph& other ) {
@@ -274,15 +217,9 @@ namespace gum {
       vg::io::for_each( in, handle_chunks );
     }
 
-    template< template< class, uint8_t ... > class TNodeProp,
-              template< class, class, uint8_t ... > class TEdgeProp,
-              template< class, class, uint8_t ... > class TGraphProp,
-              uint8_t ...TWidths,
-              typename ...TArgs >
+    template< typename TGraph, typename ...TArgs >
     inline void
-    extend_vg( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-               std::string fname,
-               TArgs&&... args )
+    extend_vg( TGraph& graph, std::string fname, TArgs&&... args )
     {
       std::ifstream ifs( fname, std::ifstream::in | std::ifstream::binary );
       if( !ifs ) {
@@ -291,71 +228,38 @@ namespace gum {
       extend_vg( graph, ifs, std::forward< TArgs >( args )... );
     }
 
-    template< template< class, uint8_t ... > class TNodeProp,
-              template< class, class, uint8_t ... > class TEdgeProp,
-              template< class, class, uint8_t ... > class TGraphProp,
-              uint8_t ...TWidths,
-              typename ...TArgs >
+    template< typename TGraph, typename ...TArgs >
     inline void
-    extend( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-            std::istream& in,
-            VGFormat,
-            TArgs&&... args )
+    extend( TGraph& graph, std::istream& in, VGFormat, TArgs&&... args )
     {
       extend_vg( graph, in, std::forward< TArgs >( args )... );
     }
 
-    template< template< class, uint8_t ... > class TNodeProp,
-              template< class, class, uint8_t ... > class TEdgeProp,
-              template< class, class, uint8_t ... > class TGraphProp,
-              uint8_t ...TWidths,
-              typename ...TArgs >
+    template< typename TGraph, typename ...TArgs >
     inline void
-    extend( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-            std::string fname,
-            VGFormat,
-            TArgs&&... args )
+    extend( TGraph& graph, std::string fname, VGFormat, TArgs&&... args )
     {
       extend_vg( graph, std::move( fname ), std::forward< TArgs >( args )... );
     }
 
-    template< template< class, uint8_t ... > class TNodeProp,
-              template< class, class, uint8_t ... > class TEdgeProp,
-              template< class, class, uint8_t ... > class TGraphProp,
-              uint8_t ...TWidths,
-              typename ...TArgs >
+    template< typename TGraph, typename ...TArgs >
     inline void
-    load_vg( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-             TArgs&&... args )
+    load_vg( TGraph& graph, TArgs&&... args )
     {
       graph.clear();
       extend_vg( graph, std::forward< TArgs >( args )... );
     }
 
-    template< template< class, uint8_t ... > class TNodeProp,
-              template< class, class, uint8_t ... > class TEdgeProp,
-              template< class, class, uint8_t ... > class TGraphProp,
-              typename ...TArgs,
-              uint8_t ...TWidths >
+    template< typename TGraph, typename ...TArgs >
     inline void
-    load( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-          std::istream& in,
-          VGFormat,
-          TArgs&&... args )
+    load( TGraph& graph, std::istream& in, VGFormat, TArgs&&... args )
     {
       load_vg( graph, in, std::forward< TArgs >( args )... );
     }
 
-    template< template< class, uint8_t ... > class TNodeProp,
-              template< class, class, uint8_t ... > class TEdgeProp,
-              template< class, class, uint8_t ... > class TGraphProp,
-              typename ...TArgs,
-              uint8_t ...TWidths >
+    template< typename TGraph, typename ...TArgs >
     inline void
-    load( SeqGraph< Dynamic, TNodeProp, TEdgeProp, TGraphProp, TWidths... >& graph,
-          std::string fname,
-          VGFormat,
-          TArgs&&... args )
+    load( TGraph& graph, std::string fname, VGFormat, TArgs&&... args )
     {
       load_vg( graph, std::move( fname ), std::forward< TArgs >( args )... );
     }
