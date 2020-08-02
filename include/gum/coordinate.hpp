@@ -82,7 +82,20 @@ namespace gum {
       using lid_type = TLocalID;
       using id_type = TID;
 
+      /* === LIFECYCLE === */
+      NoneBase() = default;
+      NoneBase( NoneBase const& other ) = default;
+      NoneBase( NoneBase&& other ) noexcept = default;
+      ~NoneBase() noexcept = default;
+
+      template< typename TCoordinate >
+      NoneBase( TCoordinate const& other )
+      { /* noop */ }
+
       /* === OPERATORS === */
+      NoneBase& operator=( NoneBase const& other ) = default;
+      NoneBase& operator=( NoneBase&& other ) noexcept = default;
+
       constexpr inline id_type
       operator()( lid_type const& ) const
       {
@@ -107,7 +120,20 @@ namespace gum {
       using lid_type = TLocalID;
       using id_type = TID;
 
+      /* === LIFECYCLE === */
+      IdentityBase() = default;
+      IdentityBase( IdentityBase const& other ) = default;
+      IdentityBase( IdentityBase&& other ) noexcept = default;
+      ~IdentityBase() noexcept = default;
+
+      template< typename TCoordinate >
+      IdentityBase( TCoordinate const& other )
+      { /* noop */ }
+
       /* === OPERATORS === */
+      IdentityBase& operator=( IdentityBase const& other ) = default;
+      IdentityBase& operator=( IdentityBase&& other ) noexcept = default;
+
       constexpr inline id_type
       operator()( lid_type const& lid ) const
       {
@@ -134,7 +160,20 @@ namespace gum {
       using lid_type = TLocalID;
       using id_type = TID;
 
+      /* === LIFECYCLE === */
+      StoidBase() = default;
+      StoidBase( StoidBase const& other ) = default;
+      StoidBase( StoidBase&& other ) noexcept = default;
+      ~StoidBase() noexcept = default;
+
+      template< typename TCoordinate >
+      StoidBase( TCoordinate const& other )
+      { /* noop */ }
+
       /* === OPERATORS === */
+      StoidBase& operator=( StoidBase const& other ) = default;
+      StoidBase& operator=( StoidBase&& other ) noexcept = default;
+
       inline id_type
       operator()( lid_type const& lid ) const
       {
@@ -159,8 +198,27 @@ namespace gum {
       using lid_type = TLocalID;
       using id_type = TID;
       using map_type = phmap::flat_hash_map< lid_type, id_type >;
+      using size_type = typename map_type::size_type;
+
+      /* === LIFECYCLE === */
+      SparseBase() = default;
+      SparseBase( SparseBase const& other ) = default;
+      SparseBase( SparseBase&& other ) noexcept = default;
+      ~SparseBase() noexcept = default;
+
+      template< typename TCoordinate >
+      SparseBase( TCoordinate const& other )
+      {
+        other.for_each_element(
+            [this]( lid_type lid, id_type id ) {
+              this->operator()( lid, id );
+              return true;
+            });
+      }
 
       /* === OPERATORS === */
+      SparseBase& operator=( SparseBase const& other ) = default;
+      SparseBase& operator=( SparseBase&& other ) noexcept = default;
 
       inline id_type
       operator()( lid_type const& lid ) const
@@ -174,6 +232,28 @@ namespace gum {
       operator()( lid_type const& lid, id_type const& id )
       {
         this->ids[ lid ] = id;
+      }
+
+      /* === METHODS === */
+      inline bool
+      for_each_element( std::function< bool( lid_type, id_type ) > callback ) const
+      {
+        for ( auto const& elem : this->ids ) {
+          if ( !callback( elem.first, elem.second ) ) return false;
+        }
+        return true;
+      }
+
+      inline size_type
+      size( ) const
+      {
+        return this->ids.size();
+      }
+
+      inline bool
+      empty( ) const
+      {
+        return this->size() == 0;
       }
 
       private:
@@ -216,7 +296,36 @@ namespace gum {
         this->ids = container_type( ( size > INIT_SIZE ? size : INIT_SIZE ), 0 );
       }
 
+      DenseBase( DenseBase const& other ) = default;
+      DenseBase( DenseBase&& other ) noexcept = default;
+      ~DenseBase() noexcept = default;
+
+      template< typename TCoordinate >
+      DenseBase( TCoordinate const& other )
+        : ids( other.size(), 0 ), id_min( 0 ), id_max( 0 )
+      {
+        other.for_each_element(
+            [this]( lid_type lid, id_type id ) {
+              if ( this->id_min == 0 || this->id_min > lid ) {
+                this->id_min = lid;
+              }
+              if ( this->id_max < lid ) {
+                this->id_max = lid;
+              }
+              return true;
+            });
+
+        other.for_each_element(
+            [this]( lid_type lid, id_type id ) {
+              this->operator()( lid, id );
+              return true;
+            });
+      }
+
       /* === OPERATORS === */
+      DenseBase& operator=( DenseBase const& other ) = default;
+      DenseBase& operator=( DenseBase&& other ) noexcept = default;
+
       inline id_type
       operator()( lid_type lid ) const
       {
@@ -243,6 +352,16 @@ namespace gum {
       }
 
       /* === METHODS === */
+      inline bool
+      for_each_element( std::function< bool( lid_type, id_type ) > callback )
+      {
+        size_type rank = 0;
+        for ( auto lid = this->id_min; lid <= this->id_max; ++lid ) {
+          if ( !callback( lid, this->ids[ rank++ ] ) ) return false;
+        }
+        return true;
+      }
+
       inline size_type
       size( ) const
       {
