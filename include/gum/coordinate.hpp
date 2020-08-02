@@ -74,14 +74,14 @@ namespace gum {
 
       /* === OPERATORS === */
       constexpr inline id_type
-      operator()( lid_type const& lid ) const
+      operator()( lid_type const& ) const
       {
-        return 0;
+        return id_type();
       }
 
       constexpr inline void
-      operator()( lid_type const& lid, id_type id )
-      { }
+      operator()( lid_type const&, id_type const& )
+      { /* noop */ }
     };  /* --- end of template class None --- */
 
     /**
@@ -101,14 +101,14 @@ namespace gum {
 
       /* === OPERATORS === */
       constexpr inline id_type
-      operator()( lid_type lid ) const
+      operator()( lid_type const& lid ) const
       {
         return lid;
       }
 
       constexpr inline void
-      operator()( lid_type lid, id_type id )
-      { }
+      operator()( lid_type const&, id_type const& )
+      { /* noop */ }
     };  /* --- end of template class Identity --- */
 
     /**
@@ -120,6 +120,8 @@ namespace gum {
     template< typename TGraph, typename TLocalID=std::string >
     class Stoid {
     public:
+      static_assert( std::is_integral< TID >::value,
+                     "id type should be of integral type" );
       /* === TYPEDEFS === */
       using graph_type = TGraph;
       using lid_type = TLocalID;
@@ -133,8 +135,8 @@ namespace gum {
       }
 
       constexpr inline void
-      operator()( lid_type const& lid, id_type id )
-      { }
+      operator()( lid_type const&, id_type const& )
+      { /* noop */ }
     };  /* --- end of template class Stoid --- */
 
     /**
@@ -153,20 +155,17 @@ namespace gum {
       using map_type = phmap::flat_hash_map< lid_type, id_type >;
 
       /* === OPERATORS === */
-      inline id_type&
-      operator()( lid_type const& lid )
-      {
-        return this->ids[ lid ];
-      }
 
-      inline id_type const&
+      inline id_type
       operator()( lid_type const& lid ) const
       {
-        return this->ids[ lid ];
+        auto found = this->ids.find( lid );
+        if ( found == this->ids.end() ) return 0;
+        return found->second;
       }
 
       inline void
-      operator()( lid_type const& lid, id_type id )
+      operator()( lid_type const& lid, id_type const& id )
       {
         this->ids[ lid ] = id;
       }
@@ -191,6 +190,10 @@ namespace gum {
               typename = std::enable_if_t< std::is_integral< TLocalID >::value > >
     class Dense {
     public:
+      static_assert( std::is_integral< TID >::value,
+                     "id type should be of integral type" );
+      static_assert( std::is_integral< TLocalID >::value,
+                     "local id type should be of integral type" );
       /* === TYPEDEFS === */
       using graph_type = TGraph;
       using lid_type = TLocalID;
@@ -202,12 +205,24 @@ namespace gum {
 
       /* === LIFECYCLE === */
       Dense( lid_type min=0, lid_type max=0 )
-        : ids( ( min != max ? max - min : INIT_SIZE ), 0 ), id_min( min ), id_max( max )
-      { }
+        : id_min( min ), id_max( max )
+      {
+        assert( this->id_max >= this->id_min );
+        size_type size = this->id_max - this->id_min + 1;
+        this->ids = container_type( ( size > INIT_SIZE ? size : INIT_SIZE ), 0 );
+      }
 
       /* === OPERATORS === */
-      inline id_type&
-      operator()( lid_type lid )
+      inline id_type
+      operator()( lid_type lid ) const
+      {
+        if ( lid < this->id_min || this->id_max < lid ) return 0;
+        size_type rank = lid - this->id_min;
+        return this->ids[ rank ];
+      }
+
+      inline void
+      operator()( lid_type lid, id_type id )
       {
         if ( this->id_min == 0 ) this->id_min = lid;
 
@@ -220,21 +235,7 @@ namespace gum {
         }
         size_type rank = lid - this->id_min;
         if ( rank >= this->capacity() ) this->reserve( rank + 1 );
-        return this->ids[ rank ];
-      }
-
-      inline id_type const&
-      operator()( lid_type lid ) const
-      {
-        assert( this->id_min <= lid && lid <= this->id_max );
-        size_type rank = lid - this->id_min;
-        return this->ids[ rank ];
-      }
-
-      inline void
-      operator()( lid_type lid, id_type id )
-      {
-        this->operator()( lid ) = id;
+        this->ids[ rank ] = id;
       }
 
       /* === METHODS === */
