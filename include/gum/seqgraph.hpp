@@ -2455,6 +2455,7 @@ namespace gum {
       this->ids_bv = other.ids_bv;
       sdsl::util::init_support( this->path_rank, &this->ids_bv );
       sdsl::util::init_support( this->path_id, &this->ids_bv );
+      return *this;
     }
 
     /* move assignment operator */
@@ -2466,6 +2467,7 @@ namespace gum {
       this->ids_bv = std::move( other.ids_bv );
       sdsl::util::init_support( this->path_rank, &this->ids_bv );
       sdsl::util::init_support( this->path_id, &this->ids_bv );
+      return *this;
     }
 
     GraphProperty&
