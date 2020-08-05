@@ -1466,7 +1466,7 @@ namespace gum {
 
   template< typename TObject, typename ...TArgs >
   struct make_dynamic {
-    using type = typename TObject::dynamic_template< TArgs... >;
+    using type = typename TObject::template dynamic_template< TArgs... >;
   };  /* --- end of template struct make_dynamic --- */
 
   template< typename TObject, typename ...TArgs >
@@ -1474,7 +1474,7 @@ namespace gum {
 
   template< typename TObject, typename ...TArgs >
   struct make_succinct {
-    using type = typename TObject::succinct_template< TArgs... >;
+    using type = typename TObject::template succinct_template< TArgs... >;
   };  /* --- end of template struct make_succinct --- */
 
   template< typename TObject, typename ...TArgs >
