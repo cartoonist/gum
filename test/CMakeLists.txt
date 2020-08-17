@@ -16,15 +16,6 @@ configure_file(src/test_config.hpp.in ${PROJECT_BINARY_DIR}/test/src/test_config
 file(GLOB TEST_SOURCES "src/*.cpp")
 add_executable(gum-tests ${TEST_SOURCES})
 
-# If external libraries are added, the target depends on them assuring build
-# order in parallel builds.
-if(TARGET parallelhashmap_git)
-  add_dependencies(gum-tests parallelhashmap_git)
-endif()
-if(TARGET gfakluge_git)
-  add_dependencies(gum-tests gfakluge_git)
-endif()
-
 target_compile_options(gum-tests PRIVATE -g -Wall -Wpedantic -Werror)
 target_include_directories(gum-tests
   PRIVATE ${PROJECT_BINARY_DIR}/test/src

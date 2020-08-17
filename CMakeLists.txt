@@ -24,6 +24,19 @@ file(GLOB HEADER_FILES "${PROJECT_SOURCE_DIR}/include/gum/*.hpp")
 # Creating an INTERFACE library
 add_library(gum INTERFACE)
 add_library(gum_novg INTERFACE)
+
+# If external libraries are added, the target depends on them assuring build
+# order in parallel builds.
+if(TARGET parallelhashmap_git)
+  add_dependencies(gum parallelhashmap_git)
+  add_dependencies(gum_novg parallelhashmap_git)
+endif()
+
+if(TARGET gfakluge_git)
+  add_dependencies(gum gfakluge_git)
+  add_dependencies(gum_novg gfakluge_git)
+endif()
+
 # Defining target sources
 target_sources(gum INTERFACE "$<BUILD_INTERFACE:${HEADER_FILES}>")
 target_sources(gum_novg INTERFACE "$<BUILD_INTERFACE:${HEADER_FILES}>")
