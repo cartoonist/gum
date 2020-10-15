@@ -226,6 +226,13 @@ namespace gum {
     }
 
     inline size_type
+    idx( size_type pos ) const
+    {
+      if ( pos == 0 ) return 0;
+      return this->rank( pos );
+    }
+
+    inline size_type
     start_position( size_type i ) const
     {
       if ( i == 0 ) return 0;

@@ -45,6 +45,56 @@ namespace gum {
             return true;
           } );
     }
+
+    template< typename TGraph >
+    inline typename TGraph::id_type
+    _position_to_id( TGraph const& graph, typename TGraph::offset_type pos, Succinct )
+    {
+      auto rank = graph.get_node_prop().sequences().idx( pos ) + 1;
+      return graph.rank_to_id( rank );
+    }
+
+    template< typename TGraph, typename ...TArgs >
+    inline typename TGraph::id_type
+    position_to_id( TGraph const& graph, typename TGraph::offset_type pos,
+                    TArgs&&... args )
+    {
+      return _position_to_id( graph, pos, typename TGraph::spec_type(),
+                              std::forward< TArgs >( args )... );
+    }
+
+    template< typename TGraph >
+    inline typename TGraph::offset_type
+    _position_to_offset( TGraph const& graph, typename TGraph::offset_type pos, Succinct )
+    {
+      auto idx = graph.get_node_prop().sequences().idx( pos );
+      return pos - graph.get_node_prop().sequences().start_position( idx );
+    }
+
+    template< typename TGraph, typename ...TArgs >
+    inline typename TGraph::offset_type
+    position_to_offset( TGraph const& graph, typename TGraph::offset_type pos,
+                        TArgs&&... args )
+    {
+      return _position_to_offset( graph, pos, typename TGraph::spec_type(),
+                                  std::forward< TArgs >( args )... );
+    }
+
+    template< typename TGraph >
+    inline typename TGraph::offset_type
+    _id_to_position( TGraph const& graph, typename TGraph::id_type id, Succinct )
+    {
+      auto rank = graph.id_to_rank( id );
+      return graph.get_node_prop().sequences().start_position( rank - 1 );
+    }
+
+    template< typename TGraph, typename ...TArgs >
+    inline typename TGraph::offset_type
+    id_to_position( TGraph const& graph, typename TGraph::id_type id, TArgs&&... args )
+    {
+      return _id_to_position( graph, id, typename TGraph::spec_type(),
+                              std::forward< TArgs >( args )... );
+    }
   }  /* --- end of namespace util --- */
 }  /* --- end of namespace gum --- */
 
