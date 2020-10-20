@@ -916,6 +916,56 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
           REQUIRE( !path_count );
         };
 
+    auto succinct_test =
+        []( succinct_type const& graph ) {
+          auto ibyc =
+              [&graph]( auto cid ) {
+                return graph.id_by_coordinate( cid );
+              };
+
+          REQUIRE( gum::util::position_to_id( graph, 0 ) == ibyc( 1 ) );
+          REQUIRE( gum::util::position_to_id( graph, 7 ) == ibyc( 1 ) );
+          REQUIRE( gum::util::position_to_id( graph, 8 ) == ibyc( 1 ) );
+          REQUIRE( gum::util::position_to_id( graph, 9 ) == ibyc( 2 ) );
+          REQUIRE( gum::util::position_to_id( graph, 10 ) == ibyc( 2 ) );
+          REQUIRE( gum::util::position_to_id( graph, 11 ) == ibyc( 3 ) );
+          REQUIRE( gum::util::position_to_id( graph, 14 ) == ibyc( 3 ) );
+          REQUIRE( gum::util::position_to_id( graph, 15 ) == ibyc( 4 ) );
+          REQUIRE( gum::util::position_to_id( graph, 16 ) == ibyc( 4 ) );
+          REQUIRE( gum::util::position_to_id( graph, 17 ) == ibyc( 5 ) );
+          REQUIRE( gum::util::position_to_id( graph, 23 ) == ibyc( 5 ) );
+          REQUIRE( gum::util::position_to_id( graph, 24 ) == ibyc( 6 ) );
+          REQUIRE( gum::util::position_to_id( graph, 27 ) == ibyc( 6 ) );
+          REQUIRE( gum::util::position_to_id( graph, 28 ) == ibyc( 7 ) );
+          REQUIRE( gum::util::position_to_id( graph, 33 ) == ibyc( 7 ) );
+          REQUIRE( gum::util::position_to_id( graph, 34 ) == ibyc( 8 ) );
+          REQUIRE( gum::util::position_to_id( graph, 38 ) == ibyc( 8 ) );
+          REQUIRE( gum::util::position_to_offset( graph, 0 ) == 0 );
+          REQUIRE( gum::util::position_to_offset( graph, 7 ) == 7 );
+          REQUIRE( gum::util::position_to_offset( graph, 9 ) == 0 );
+          REQUIRE( gum::util::position_to_offset( graph, 10 ) == 1 );
+          REQUIRE( gum::util::position_to_offset( graph, 11 ) == 0 );
+          REQUIRE( gum::util::position_to_offset( graph, 14 ) == 3 );
+          REQUIRE( gum::util::position_to_offset( graph, 15 ) == 0 );
+          REQUIRE( gum::util::position_to_offset( graph, 16 ) == 1 );
+          REQUIRE( gum::util::position_to_offset( graph, 17 ) == 0 );
+          REQUIRE( gum::util::position_to_offset( graph, 23 ) == 6 );
+          REQUIRE( gum::util::position_to_offset( graph, 24 ) == 0 );
+          REQUIRE( gum::util::position_to_offset( graph, 27 ) == 3 );
+          REQUIRE( gum::util::position_to_offset( graph, 28 ) == 0 );
+          REQUIRE( gum::util::position_to_offset( graph, 33 ) == 5 );
+          REQUIRE( gum::util::position_to_offset( graph, 34 ) == 0 );
+          REQUIRE( gum::util::position_to_offset( graph, 38 ) == 4 );
+          REQUIRE( gum::util::id_to_position( graph, ibyc( 1 ) ) == 0 );
+          REQUIRE( gum::util::id_to_position( graph, ibyc( 2 ) ) == 9 );
+          REQUIRE( gum::util::id_to_position( graph, ibyc( 3 ) ) == 11 );
+          REQUIRE( gum::util::id_to_position( graph, ibyc( 4 ) ) == 15 );
+          REQUIRE( gum::util::id_to_position( graph, ibyc( 5 ) ) == 17 );
+          REQUIRE( gum::util::id_to_position( graph, ibyc( 6 ) ) == 24 );
+          REQUIRE( gum::util::id_to_position( graph, ibyc( 7 ) ) == 28 );
+          REQUIRE( gum::util::id_to_position( graph, ibyc( 8 ) ) == 34 );
+        };
+
     auto empty_graph_test =
         []( auto const& graph ) {
           using graph_type = std::decay_t< decltype( graph ) >;
@@ -964,6 +1014,7 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
         THEN( "The resulting graph should pass integrity tests" )
         {
           integrity_test( sc_graph );
+          succinct_test( sc_graph );
         }
 
         AND_WHEN( "It is cleared" )
@@ -984,6 +1035,7 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
       THEN( "The resulting graph should pass integrity tests" )
       {
         integrity_test( sc_graph );
+        succinct_test( sc_graph );
       }
 
       AND_WHEN( "It is cleared" )
@@ -1019,6 +1071,7 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
         THEN( "The resulting graph should pass integrity tests" )
         {
           integrity_test( sc_graph );
+          succinct_test( sc_graph );
         }
 
         AND_WHEN( "It is cleared" )
@@ -1039,6 +1092,7 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
       THEN( "The resulting graph should pass integrity tests" )
       {
         integrity_test( sc_graph );
+        succinct_test( sc_graph );
       }
 
       AND_WHEN( "It is cleared" )

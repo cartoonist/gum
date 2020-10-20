@@ -101,10 +101,16 @@ TEMPLATE_SCENARIO( "StringSet basic functionalities", "[stringset]",
           REQUIRE( str == *begin_stdstrset );
           ++begin_stdstrset;
         }
+        size_type cursor = 0;
         for ( size_type i = 0; i < strset.size(); ++i ) {
           REQUIRE( strset[ i ] == stdstrset[ i ] );
           REQUIRE( strset.length( i ) == stdstrset[ i ].size() );
           REQUIRE( strset.at( i ) == stdstrset.at( i ) );
+          REQUIRE( strset.start_position( i ) == cursor );
+          cursor += strset.length( i );
+          REQUIRE( strset.end_position( i ) == cursor );
+          REQUIRE( strset.idx( cursor ) == i );
+          ++cursor;  /* sentinel */
         }
         REQUIRE_THROWS( strset.at( strset.size() ) );
         REQUIRE_THROWS( strset.at( strset.size() + 1 ) );
