@@ -20,7 +20,7 @@
 #include <algorithm>
 #include <random>
 
-#include <gum/seqgraph.hpp>
+#include <gum/graph.hpp>
 #include <gum/io_utils.hpp>
 
 #include "test_base.hpp"
@@ -808,6 +808,22 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
               [&graph]( auto cid ) {
                 return graph.id_by_coordinate( cid );
               };
+
+          gum::util::for_each_start_node(
+              graph,
+              [ibyc]( rank_type rank, id_type id ) {
+                REQUIRE( rank == 1 );
+                REQUIRE( id == ibyc( 1 ) );
+                return true;
+              } );
+
+          id_type end_id = 6;
+          gum::util::for_each_end_node(
+              graph,
+              [ibyc, &end_id]( rank_type, id_type id ) {
+                REQUIRE( id == ibyc( end_id++ ) );
+                return true;
+              } );
 
           rank_type path_count = 2;
           std::string names[2] = { "x", "y" };
