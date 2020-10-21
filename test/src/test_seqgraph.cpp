@@ -964,6 +964,14 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
           REQUIRE( gum::util::id_to_position( graph, ibyc( 6 ) ) == 24 );
           REQUIRE( gum::util::id_to_position( graph, ibyc( 7 ) ) == 28 );
           REQUIRE( gum::util::id_to_position( graph, ibyc( 8 ) ) == 34 );
+          REQUIRE( gum::util::id_to_charorder( graph, ibyc( 1 ) ) == 0 );
+          REQUIRE( gum::util::id_to_charorder( graph, ibyc( 2 ) ) == 8 );
+          REQUIRE( gum::util::id_to_charorder( graph, ibyc( 3 ) ) == 9 );
+          REQUIRE( gum::util::id_to_charorder( graph, ibyc( 4 ) ) == 12 );
+          REQUIRE( gum::util::id_to_charorder( graph, ibyc( 5 ) ) == 13 );
+          REQUIRE( gum::util::id_to_charorder( graph, ibyc( 6 ) ) == 19 );
+          REQUIRE( gum::util::id_to_charorder( graph, ibyc( 7 ) ) == 22 );
+          REQUIRE( gum::util::id_to_charorder( graph, ibyc( 8 ) ) == 27 );
         };
 
     auto empty_graph_test =

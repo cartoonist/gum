@@ -95,6 +95,22 @@ namespace gum {
       return _id_to_position( graph, id, typename TGraph::spec_type(),
                               std::forward< TArgs >( args )... );
     }
+
+    template< typename TGraph >
+    inline typename TGraph::offset_type
+    _id_to_charorder( TGraph const& graph, typename TGraph::id_type id, Succinct )
+    {
+      auto idx = graph.id_to_rank( id ) - 1;
+      return graph.get_node_prop().sequences().start_position( idx ) - idx;
+    }
+
+    template< typename TGraph, typename ...TArgs >
+    inline typename TGraph::offset_type
+    id_to_charorder( TGraph const& graph, typename TGraph::id_type id, TArgs&&... args )
+    {
+      return _id_to_charorder( graph, id, typename TGraph::spec_type(),
+                               std::forward< TArgs >( args )... );
+    }
   }  /* --- end of namespace util --- */
 }  /* --- end of namespace gum --- */
 
