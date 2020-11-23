@@ -254,6 +254,82 @@ namespace gum {
     container_type const* ptr;
     function_type f;
   };  /* --- end of template class RandomAccessProxyContainer --- */
+
+  template< typename TContainer, typename TValue >
+  class RandomAccessNonConstProxyContainer {
+  public:
+    /* === TYPEDEFS === */
+    using container_type = TContainer;
+    using value_type = TValue;
+    using size_type = typename container_type::size_type;
+    using difference_type = typename container_type::difference_type;
+    using proxy_type = typename container_type::value_type;
+    using function_type = std::function< value_type( proxy_type const& ) >;
+    using const_reference = value_type const;
+    using const_iterator = RandomAccessConstIterator< RandomAccessNonConstProxyContainer >;
+
+    /* === LIFECYCLE === */
+    RandomAccessNonConstProxyContainer( )
+      : ptr( nullptr ), f( []( proxy_type const& x ) -> value_type { return x; } ) { }
+    RandomAccessNonConstProxyContainer( container_type* _ptr, function_type _f )
+      : ptr( _ptr ), f( _f ) { }
+
+    /* === OPERATORS === */
+    inline value_type
+    operator[]( size_type i ) const
+    {
+      return this->f( ( *this->ptr )[ i ] );
+    }
+
+    /* === METHODS === */
+    inline value_type
+    at( size_type i ) const
+    {
+      if ( i < 0 || i >= this->size() ) throw std::runtime_error( "index out of range" );
+      return ( *this )[ i ];
+    }
+
+    inline size_type
+    size( ) const
+    {
+      return this->ptr->size();
+    }
+
+    inline bool
+    empty( ) const
+    {
+      return this->size() == 0;
+    }
+
+    inline const_iterator
+    begin( ) const
+    {
+      return const_iterator( this, 0 );
+    }
+
+    inline const_iterator
+    end( ) const
+    {
+      return const_iterator( this, this->size() );
+    }
+
+    inline const_reference
+    back( ) const
+    {
+      return *this->begin();
+    }
+
+    inline const_reference
+    front( ) const
+    {
+      return *( this->end() - 1 );
+    }
+
+  private:
+    /* === DATA MEMBERS === */
+    container_type* ptr;
+    function_type f;
+  };  /* --- end of template class RandomAccessNonConstProxyContainer --- */
 }  /* --- end of namespace gum --- */
 
 #endif  /* --- #ifndef GUM_ITERATOR_HPP__ --- */
