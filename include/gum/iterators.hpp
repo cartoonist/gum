@@ -219,6 +219,12 @@ namespace gum {
       return this->ptr->size();
     }
 
+    inline bool
+    empty( ) const
+    {
+      return this->size() == 0;
+    }
+
     inline const_iterator
     begin( ) const
     {
