@@ -19,6 +19,7 @@
 #define  GUM_BASIC_UTILS_HPP__
 
 #include <iterator>
+#include <numeric>
 
 
 namespace gum {
@@ -164,6 +165,90 @@ namespace gum {
       x |= x >> 32;
       ++x;
       return x;
+    }
+
+    // Sort zipped containers: https://stackoverflow.com/a/17074810/357257
+    template< typename TContainer, typename TCompare >
+    inline std::vector< std::size_t >
+    sort_permutation( TContainer const& container, TCompare compare )
+    {
+      std::vector< std::size_t > perm( container.size() );
+      std::iota( perm.begin(), perm.end(), 0 );
+      std::sort( perm.begin(), perm.end(),
+                 [&compare, &container]( std::size_t i, std::size_t j )
+                 {
+                   return compare( container[ i ], container[ j ] );
+                 } );
+      return perm;
+    }
+
+    template< typename TContainer >
+    inline std::vector< std::size_t >
+    sort_permutation( TContainer const& container )
+    {
+      auto compare =
+          []( typename TContainer::value_type const& a,
+              typename TContainer::value_type const& b )
+          { return a < b; };
+      return sort_permutation( container, compare );
+    }
+
+    template< typename TContainer >
+    inline TContainer
+    permutated( std::vector< std::size_t > const& perm, TContainer& container )
+    {
+      assert( container.size() == perm.size() );
+
+      TContainer applied;
+      applied.resize( container.size() );
+      std::transform( perm.begin(), perm.end(), applied.begin(),
+                      [&container]( std::size_t i ) { return container[ i ]; } );
+      return applied;
+    }
+
+    template< typename TContainer >
+    inline void
+    permute( std::vector< std::size_t > const& perm, TContainer& container )
+    {
+      assert( container.size() == perm.size() );
+
+      std::vector< bool > done( container.size(), false );
+      for ( std::size_t i = 0; i < container.size(); ++i ) {
+        if ( done[ i ] ) continue;
+        done[ i ] = true;
+        auto prev_j = i;
+        auto j = perm[ i ];
+        while ( j != i ) {
+          std::swap( container[ prev_j ], container[ j ] );
+          done[ j ] = true;
+          prev_j = j;
+          j = perm[ j ];
+        }
+      }
+    }
+
+    template< typename TFirst, typename ...TContainers >
+    inline void
+    permute( std::vector< std::size_t > const& perm, TFirst& first, TContainers&&... rest )
+    {
+      permute( perm, first );
+      permute( perm, std::forward< TContainers >( rest )... );
+    }
+
+    template< typename TCompare, typename TFirst, typename ...TContainers >
+    inline void
+    sort_zip_c( TCompare compare, TFirst& first, TContainers&&... rest )
+    {
+      auto perm = sort_permutation( first, compare );
+      permute( perm, first, std::forward< TContainers >( rest )... );
+    }
+
+    template< typename TFirst, typename ...TContainers >
+    inline void
+    sort_zip( TFirst& first, TContainers&&... rest )
+    {
+      sort_zip_c( []( auto const& a, auto const& b ) { return a < b; }, first,
+                  std::forward< TContainers >( rest )... );
     }
   }  /* --- end of namespace util --- */
 }  /* --- end of namespace gum --- */

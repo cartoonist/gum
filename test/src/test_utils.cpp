@@ -374,3 +374,80 @@ SCENARIO( "Word-wise range operations for bit-vectors", "[utils]" )
     }
   }
 }
+
+SCENARIO( "Get and apply sorting permutation", "[utils]" )
+{
+  GIVEN( "An unsorted array of integers" )
+  {
+    std::uniform_int_distribution< int > distribution( -3000 , 3000 );
+    std::mt19937 engine;
+    auto generator = std::bind( distribution, engine );
+    std::size_t n = 10000;
+
+    std::vector< int > array( n );
+    std::generate_n( array.begin(), n, generator );
+    std::vector< int > sorted( array.size() );
+    std::partial_sort_copy( array.begin(), array.end(), sorted.begin(), sorted.end() );
+
+    WHEN( "Getting the permutation induced by sorting" )
+    {
+      auto perm = util::sort_permutation( array );
+
+      THEN( "Permutation should map positions in sorted array to ones in original array" )
+      {
+        for ( std::size_t i = 0; i < sorted.size(); ++i ) {
+          REQUIRE( sorted[ i ] == array[ perm[ i ] ] );
+        }
+      }
+
+      AND_WHEN( "Applying the permutation to the array" )
+      {
+        auto applied = util::permutated( perm, array );
+
+        THEN( "The resulting array should be equal to the sorted one" )
+        {
+          REQUIRE( std::equal( applied.begin(), applied.end(), sorted.begin() ) );
+        }
+      }
+
+      AND_WHEN( "Applying the permutation to the array in place" )
+      {
+        util::permute( perm, array );
+
+        THEN( "It should sort the array itself" )
+        {
+          REQUIRE( std::equal( array.begin(), array.end(), sorted.begin() ) );
+        }
+      }
+
+      AND_WHEN( "Sorting multiple arrays by the permutation" )
+      {
+        std::vector< int > new_array( array.size() );
+        std::iota( new_array.begin(), new_array.end(), 0 );
+
+        util::permute( perm, array, new_array );
+
+        THEN( "It should sort the array itself" )
+        {
+          REQUIRE( std::equal( array.begin(), array.end(), sorted.begin() ) );
+          REQUIRE( std::equal( new_array.begin(), new_array.end(), perm.begin() ) );
+        }
+      }
+    }
+
+    WHEN( "Sorting zipped containers" )
+    {
+      auto perm = util::sort_permutation( array );
+      std::vector< int > new_array( array.size() );
+      std::iota( new_array.begin(), new_array.end(), 0 );
+
+      util::sort_zip( array, new_array );
+
+      THEN( "The arrays should be sorted" )
+      {
+        REQUIRE( std::equal( array.begin(), array.end(), sorted.begin() ) );
+        REQUIRE( std::equal( new_array.begin(), new_array.end(), perm.begin() ) );
+      }
+    }
+  }
+}
