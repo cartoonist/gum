@@ -1116,7 +1116,7 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
 
     WHEN( "Loaded a Dynamic SeqGraph from a file in GFA 2.0 format" )
     {
-      gum::util::extend( graph, test_data_dir + "/graph_simple_v2.gfa" );
+      gum::util::extend( graph, test_data_dir + "/graph_simple_v2.gfa", true );
       THEN( "The resulting graph should pass integrity tests" )
       {
         integrity_test( graph );
@@ -1154,7 +1154,7 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
     WHEN( "Loaded a Succinct SeqGraph from a file in GFA 2.0 format" )
     {
       succinct_type sc_graph;
-      gum::util::load( sc_graph, test_data_dir + "/graph_simple_v2.gfa" );
+      gum::util::load( sc_graph, test_data_dir + "/graph_simple_v2.gfa", true );
       THEN( "The resulting graph should pass integrity tests" )
       {
         integrity_test( sc_graph );
@@ -1173,7 +1173,7 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
 
     WHEN( "Loaded a Dynamic SeqGraph from a file in vg format" )
     {
-      gum::util::extend( graph, test_data_dir + "/graph_simple.vg" );
+      gum::util::extend( graph, test_data_dir + "/graph_simple.vg", true );
       THEN( "The resulting graph should pass integrity tests" )
       {
         integrity_test( graph );
@@ -1211,7 +1211,7 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
     WHEN( "Loaded a Succinct SeqGraph from a file in vg format" )
     {
       succinct_type sc_graph;
-      gum::util::load( sc_graph, test_data_dir + "/graph_simple.vg" );
+      gum::util::load( sc_graph, test_data_dir + "/graph_simple.vg", true );
       THEN( "The resulting graph should pass integrity tests" )
       {
         integrity_test( sc_graph );
