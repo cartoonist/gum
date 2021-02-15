@@ -44,9 +44,15 @@ namespace gum {
     inline void
     extend( TGraph& graph, std::string fname, TArgs&&... args )
     {
+#ifndef GUM_IO_PROTOBUF_VG
+      if ( util::ends_with( fname, HGFormat::FILE_EXTENSION ) ) {
+        extend_hg( graph, fname, std::forward< TArgs >( args )... );
+      }
+#else
       if ( util::ends_with( fname, VGFormat::FILE_EXTENSION ) ) {
         extend_vg( graph, fname, std::forward< TArgs >( args )... );
       }
+#endif
       else if ( util::ends_with( fname, GFAFormat::FILE_EXTENSION ) ) {
         extend_gfa( graph, fname, std::forward< TArgs >( args )... );
       }
@@ -68,9 +74,15 @@ namespace gum {
     inline void
     _load( TGraph& graph, std::string fname, Dynamic, TArgs&&... args )
     {
+#ifndef GUM_IO_PROTOBUF_VG
+      if ( util::ends_with( fname, HGFormat::FILE_EXTENSION ) ) {
+        load_hg( graph, fname, std::forward< TArgs >( args )... );
+      }
+#else
       if ( util::ends_with( fname, VGFormat::FILE_EXTENSION ) ) {
         load_vg( graph, fname, std::forward< TArgs >( args )... );
       }
+#endif
       else if ( util::ends_with( fname, GFAFormat::FILE_EXTENSION ) ) {
         load_gfa( graph, fname, std::forward< TArgs >( args )... );
       }

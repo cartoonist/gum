@@ -576,7 +576,7 @@ SCENARIO( "Sanity check for deserialising a SeqGraph", "[ioutils]" )
 
     WHEN( "Loaded a Dynamic SeqGraph from a file in vg/Protobuf format" )
     {
-      gum::util::load( graph, test_data_dir + "/tiny.pb.vg", true );
+      gum::util::load( graph, test_data_dir + "/tiny.pb.vg", gum::util::VGFormat(), true );
       THEN( "The resulting graph should pass integrity tests" )
       {
         integrity_test( graph, false, false );
@@ -595,7 +595,7 @@ SCENARIO( "Sanity check for deserialising a SeqGraph", "[ioutils]" )
     WHEN( "Loaded a Succinct SeqGraph from a file in vg/Protobuf format" )
     {
       succinct_type sc_graph;
-      gum::util::load( sc_graph, test_data_dir + "/tiny.pb.vg", true );
+      gum::util::load( sc_graph, test_data_dir + "/tiny.pb.vg", gum::util::VGFormat(), true );
       THEN( "The resulting graph should pass integrity tests" )
       {
         integrity_test( sc_graph, false, false );
@@ -614,8 +614,8 @@ SCENARIO( "Sanity check for deserialising a SeqGraph", "[ioutils]" )
 
     WHEN( "Extend a Dynamic SeqGraph by another graph in vg/Protobuf format" )
     {
-      gum::util::load( graph, test_data_dir + "/tiny_p1.pb.vg", true );
-      gum::util::extend( graph, test_data_dir + "/tiny_p2.pb.vg", true );
+      gum::util::load( graph, test_data_dir + "/tiny_p1.pb.vg", gum::util::VGFormat(), true );
+      gum::util::extend( graph, test_data_dir + "/tiny_p2.pb.vg", gum::util::VGFormat(), true );
       THEN( "The resulting graph should pass integrity tests" )
       {
         integrity_test( graph, false, false );
