@@ -18,10 +18,12 @@
 #include <vector>
 #include <utility>
 #include <algorithm>
+#include <numeric>
 #include <random>
 
 #include <gum/graph.hpp>
 #include <gum/io_utils.hpp>
+#include <gum/utils.hpp>
 
 #include "test_base.hpp"
 
@@ -127,6 +129,39 @@ TEMPLATE_SCENARIO( "Generic functionality of DirectedGraph", "[seqgraph][templat
       THEN( "The resulting graph should pass integrity tests" )
       {
         integrity_test( graph );
+      }
+    }
+
+    WHEN( "Nodes are added in an unordered way" )
+    {
+      std::vector< float > shuffle( node_count );
+      std::uniform_real_distribution< float > distribution( 0, 1 );
+      std::mt19937 engine;
+      auto generator = std::bind( distribution, engine );
+      std::generate_n( shuffle.begin(), node_count, generator );
+
+      std::vector< id_type > unordered_nodes( node_count );
+      std::iota( unordered_nodes.begin(), unordered_nodes.end(), 1 );
+      gum::util::sort_zip( shuffle, unordered_nodes );
+
+      for ( id_type n : unordered_nodes ) {
+        graph.add_node( n );
+        nodes.push_back( n );
+      }
+
+      THEN( "The resulting graph should pass integrity tests" )
+      {
+        integrity_test( graph );
+      }
+
+      AND_WHEN( "Nodes are sorted" )
+      {
+        graph.sort_nodes();
+
+        THEN( "The resulting graph should pass integrity tests" )
+        {
+          integrity_test( graph );
+        }
       }
     }
 
@@ -471,6 +506,44 @@ TEMPLATE_SCENARIO( "Specialised functionality of DirectedGraph", "[seqgraph][tem
       }
     }
 
+    WHEN( "Nodes are added in an unordered way" )
+    {
+      std::vector< float > shuffle( node_count );
+      std::uniform_real_distribution< float > distribution( 0, 1 );
+      std::mt19937 engine;
+      auto generator = std::bind( distribution, engine );
+      std::generate_n( shuffle.begin(), node_count, generator );
+
+      std::vector< id_type > unordered_nodes( node_count );
+      std::iota( unordered_nodes.begin(), unordered_nodes.end(), 1 );
+      gum::util::sort_zip( shuffle, unordered_nodes );
+
+      for ( id_type n : unordered_nodes ) {
+        graph.add_node( n );
+        nodes.push_back( n );
+      }
+
+      THEN( "The resulting graph should pass integrity tests" )
+      {
+        update_edges( graph );
+        for ( auto const& edge : edges ) graph.add_edge( edge.first, edge.second );
+
+        integrity_test( graph );
+      }
+
+      AND_WHEN( "Nodes are sorted" )
+      {
+        graph.sort_nodes();
+        update_edges( graph );
+        for ( auto const& edge : edges ) graph.add_edge( edge.first, edge.second );
+
+        THEN( "The resulting graph should pass integrity tests" )
+        {
+          integrity_test( graph );
+        }
+      }
+    }
+
     WHEN( "A Succinct graph is constructed from Dynamic one" )
     {
       graph.add_nodes( node_count );
@@ -753,6 +826,48 @@ TEMPLATE_SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[se
         THEN( "The graph should be empty" )
         {
           empty_graph_test( graph );
+        }
+      }
+    }
+
+    WHEN( "Nodes are added in an unordered way" )
+    {
+      std::vector< float > shuffle( node_count );
+      std::uniform_real_distribution< float > distribution( 0, 1 );
+      std::mt19937 engine;
+      auto generator = std::bind( distribution, engine );
+      std::generate_n( shuffle.begin(), node_count, generator );
+
+      std::vector< id_type > unordered_nodes( node_count );
+      std::iota( unordered_nodes.begin(), unordered_nodes.end(), 1 );
+      gum::util::sort_zip( shuffle, unordered_nodes );
+
+      for ( id_type n : unordered_nodes ) {
+        graph.add_node( n );
+        nodes.push_back( n );
+      }
+
+      THEN( "The resulting graph should pass integrity tests" )
+      {
+        update_edges( graph );
+        for ( auto const& edge : edges ) {
+          graph.add_edge( graph.from_side( edge ), graph.to_side( edge ) );
+        }
+
+        integrity_test( graph );
+      }
+
+      AND_WHEN( "Nodes are sorted" )
+      {
+        graph.sort_nodes();
+        update_edges( graph );
+        for ( auto const& edge : edges ) {
+          graph.add_edge( graph.from_side( edge ), graph.to_side( edge ) );
+        }
+
+        THEN( "The resulting graph should pass integrity tests" )
+        {
+          integrity_test( graph );
         }
       }
     }

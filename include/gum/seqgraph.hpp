@@ -648,6 +648,15 @@ namespace gum {
       return this->indegree( side ) > 1;
     }
 
+    inline auto
+    sort_nodes( )
+    {
+      auto perm = util::sort_permutation( this->nodes );
+      util::permute( perm, this->nodes );
+      this->reset_ranks();
+      return perm;
+    }
+
     inline void
     clear( )
     {
@@ -725,6 +734,13 @@ namespace gum {
     coordinate_type coordinate;
 
     /* === METHODS === */
+    inline void
+    reset_ranks()
+    {
+      rank_type rank = 0;
+      for ( auto const& n : this->nodes ) this->node_rank[ n ] = ++rank;
+    }
+
     inline void
     set_rank( typename nodes_type::const_iterator begin,
               typename nodes_type::const_iterator end )
@@ -1816,6 +1832,13 @@ namespace gum {
       old = std::move( node );
     }
 
+    template< typename TContainer >
+    inline void
+    sort_nodes( TContainer const& perm )
+    {
+      util::permute( perm, this->nodes );
+    }
+
     inline sequenceset_type
     sequences( ) const
     {
@@ -2848,6 +2871,13 @@ namespace gum {
     {
       rank_type rank = base_type::id_to_rank( id );
       this->node_prop.update_node( rank, std::move( node ) );
+    }
+
+    inline void
+    sort_nodes()
+    {
+      auto perm = base_type::sort_nodes();
+      this->node_prop.sort_nodes( perm );
     }
 
     inline void
