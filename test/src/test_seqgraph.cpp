@@ -1231,5 +1231,62 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
         }
       }
     }
+
+    WHEN( "Loaded a Dynamic SeqGraph from a file in vg/HashGraph format" )
+    {
+      gum::util::extend( graph, test_data_dir + "/graph_simple.hg.vg", true );
+      THEN( "The resulting graph should pass integrity tests" )
+      {
+        integrity_test( graph, false, false );
+      }
+
+      AND_WHEN( "It is cleared" )
+      {
+        graph.clear();
+        THEN( "The graph should be empty" )
+        {
+          empty_graph_test( graph );
+        }
+      }
+
+      WHEN( "A Succinct graph is constructed from Dynamic one" )
+      {
+        succinct_type sc_graph( graph );
+        THEN( "The resulting graph should pass integrity tests" )
+        {
+          integrity_test( sc_graph, false, false );
+          succinct_test( sc_graph );
+        }
+
+        AND_WHEN( "It is cleared" )
+        {
+          sc_graph.clear();
+          THEN( "The graph should be empty" )
+          {
+            empty_graph_test( sc_graph );
+          }
+        }
+      }
+    }
+
+    WHEN( "Loaded a Succinct SeqGraph from a file in vg/HashGraph format" )
+    {
+      succinct_type sc_graph;
+      gum::util::load( sc_graph, test_data_dir + "/graph_simple.hg.vg", true );
+      THEN( "The resulting graph should pass integrity tests" )
+      {
+        integrity_test( sc_graph, false, false );
+        succinct_test( sc_graph );
+      }
+
+      AND_WHEN( "It is cleared" )
+      {
+        sc_graph.clear();
+        THEN( "The graph should be empty" )
+        {
+          empty_graph_test( sc_graph );
+        }
+      }
+    }
   }
 }
