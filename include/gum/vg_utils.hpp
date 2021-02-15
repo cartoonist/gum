@@ -25,9 +25,8 @@
 #include <vg/vg.pb.h>
 #include <vg/io/stream.hpp>
 
-#include "seqgraph.hpp"
 #include "coordinate.hpp"
-#include "basic_utils.hpp"
+#include "iterators.hpp"
 
 
 namespace gum {
@@ -193,11 +192,12 @@ namespace gum {
               typename TCoordinate=VGFormat::DefaultCoord< TGraph >,
               typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
     inline void
-    extend( TGraph& graph, vg::Graph& other, TCoordinate&& coord={} )
+    extend( TGraph& graph, vg::Graph& other, bool sort=false, TCoordinate&& coord={} )
     {
       for ( auto const& node : other.node() ) {
         add( graph, node, coord, true );
       }
+      if ( sort ) graph.sort_nodes();
       for ( auto const& edge : other.edge() ) {
         add( graph, edge, coord, true );
       }

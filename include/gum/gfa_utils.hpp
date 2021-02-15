@@ -24,9 +24,8 @@
 
 #include <gfakluge.hpp>
 
-#include "seqgraph.hpp"
 #include "coordinate.hpp"
-#include "basic_utils.hpp"
+#include "iterators.hpp"
 
 
 namespace gum {
@@ -189,11 +188,12 @@ namespace gum {
               typename TCoordinate=GFAFormat::DefaultCoord< TGraph >,
               typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
     inline void
-    extend( TGraph& graph, gfak::GFAKluge& other, TCoordinate&& coord={} )
+    extend( TGraph& graph, gfak::GFAKluge& other, bool sort=false, TCoordinate&& coord={} )
     {
       for ( auto const& rec : other.get_name_to_seq() ) {
         add( graph, rec.second, coord, true );
       }
+      if ( sort ) graph.sort_nodes();
       for ( auto const& rec : other.get_seq_to_edges() ) {
         for ( auto const& elem : rec.second ) {
           add( graph, elem, coord, true );
