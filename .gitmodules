@@ -7,3 +7,6 @@
 [submodule "ext/parallel-hashmap"]
 	path = ext/parallel-hashmap
 	url = https://github.com/greg7mdp/parallel-hashmap.git
+[submodule "ext/libbdsg"]
+	path = ext/libbdsg
+	url = https://github.com/vgteam/libbdsg.git
