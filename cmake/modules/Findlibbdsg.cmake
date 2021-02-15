@@ -17,7 +17,7 @@ else()
   #pkg_check_modules(libbdsg QUIET libbdsg>=0.3)
   # If libbdsg_INCLUDE_DIRS is not set, this searches for the header/library file.
   find_path(libbdsg_INCLUDE_DIRS bdsg/hash_graph.hpp)
-  find_library(libbdsg_LIBRARIES libbdsg.so)
+  find_library(libbdsg_LIBRARIES libbdsg.a)
 endif(libbdsg_INCLUDE_DIRS)
 
 ## handle the QUIETLY and REQUIRED arguments and set libbdsg_FOUND to TRUE if
