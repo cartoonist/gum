@@ -11,6 +11,7 @@ find_package(ZLIB REQUIRED)
 find_package(sdsl REQUIRED)
 find_package(ParallelHashmap)
 find_package(GFAKluge)
+find_package(libbdsg)
 find_package(VGio QUIET)
 find_package(OpenMP)
 # Include external dependencies
@@ -47,6 +48,7 @@ target_include_directories(gum
   INTERFACE sdsl::sdsl
   INTERFACE ParallelHashmap::ParallelHashmap
   INTERFACE GFAKluge::GFAKluge
+  INTERFACE libbdsg::libbdsg
   INTERFACE VGio::VGio)
 target_include_directories(gum_novg
   INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
@@ -57,6 +59,7 @@ target_include_directories(gum_novg
 # Defining link libraries
 target_link_libraries(gum
   INTERFACE sdsl::sdsl
+  INTERFACE libbdsg::libbdsg
   INTERFACE VGio::VGio
   INTERFACE ParallelHashmap::ParallelHashmap
   INTERFACE GFAKluge::GFAKluge
