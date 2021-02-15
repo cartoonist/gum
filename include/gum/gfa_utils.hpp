@@ -238,10 +238,26 @@ namespace gum {
 
     template< typename TGraph, typename ...TArgs >
     inline void
-    load_gfa( TGraph& graph, TArgs&&... args )
+    _load_gfa( TGraph& graph, Dynamic, TArgs&&... args )
     {
       graph.clear();
       extend_gfa( graph, std::forward< TArgs >( args )... );
+    }
+
+    template< typename TGraph, typename ...TArgs >
+    inline void
+    _load_gfa( TGraph& graph, Succinct, TArgs&&... args )
+    {
+      typename TGraph::dynamic_type dyn_graph;
+      extend_gfa( dyn_graph, std::forward< TArgs >( args )... );
+      graph = dyn_graph;
+    }
+
+    template< typename TGraph, typename ...TArgs >
+    inline void
+    load_gfa( TGraph& graph, TArgs&&... args )
+    {
+      _load_gfa( graph, typename TGraph::spec_type(), std::forward< TArgs >( args )... );
     }
 
     template< typename TGraph, typename ...TArgs >
