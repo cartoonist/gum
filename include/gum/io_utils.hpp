@@ -19,8 +19,9 @@
 #ifndef  GUM_IO_UTILS_HPP__
 #define  GUM_IO_UTILS_HPP__
 
-#include "vg_utils.hpp"
 #include "gfa_utils.hpp"
+#include "hg_utils.hpp"
+#include "vg_utils.hpp"
 
 
 namespace gum {
