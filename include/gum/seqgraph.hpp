@@ -2228,6 +2228,12 @@ namespace gum {
       return new_id;
     }
 
+    inline void
+    extend_path( id_type pid, id_type nid, bool reversed=false )
+    {
+      this->path( pid ).add_node( nid, reversed );
+    }
+
     template< typename TIter >
     inline void
     extend_path( id_type id, TIter n_begin, TIter n_end )
@@ -2919,6 +2925,13 @@ namespace gum {
       assert( std::all_of( nbegin, nend, [this]( id_type nid )
                                          { return this->has_node( nid ); } ) );
       return this->graph_prop.add_path( nbegin, nend, std::forward< TArgs >( args )... );
+    }
+
+    inline void
+    extend_path( id_type pid, id_type nid, bool reversed=false )
+    {
+      assert( this->has_node( nid ) );
+      this->graph_prop.extend_path( pid, nid, reversed );
     }
 
     template< typename TIter, typename ...TArgs >
