@@ -111,6 +111,25 @@ namespace gum {
       return _id_to_charorder( graph, id, typename TGraph::spec_type(),
                                std::forward< TArgs >( args )... );
     }
+
+    template< typename TGraph >
+    inline bool
+    ids_in_topological_order( TGraph& graph )
+    {
+      bool sorted = true;
+      graph.for_each_node(
+          [&]( auto, auto from ) {
+            graph.for_each_edges_out(
+                from,
+                [&]( auto to, auto ) {
+                  if ( from < to ) return true;
+                  sorted = false;
+                  return false;
+                } );
+            return sorted;
+          } );
+      return sorted;
+    }
   }  /* --- end of namespace util --- */
 }  /* --- end of namespace gum --- */
 

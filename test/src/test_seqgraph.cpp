@@ -1091,6 +1091,7 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
           REQUIRE( gum::util::id_to_charorder( graph, ibyc( 6 ) ) == 19 );
           REQUIRE( gum::util::id_to_charorder( graph, ibyc( 7 ) ) == 22 );
           REQUIRE( gum::util::id_to_charorder( graph, ibyc( 8 ) ) == 27 );
+          REQUIRE( gum::util::ids_in_topological_order( graph ) );
         };
 
     auto empty_graph_test =
