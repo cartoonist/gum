@@ -33,7 +33,7 @@ SCENARIO( "Sanity check for deserialising a SeqGraph", "[ioutils]" )
 
     graph_type graph;
     auto integrity_test =
-        []( auto const& graph, bool from_gfa ) {
+        []( auto const& graph, bool check_name=true, bool check_overlap=true ) {
           using graph_type = std::decay_t< decltype( graph ) >;
           using id_type = typename graph_type::id_type;
           using rank_type = typename graph_type::rank_type;
@@ -443,7 +443,7 @@ SCENARIO( "Sanity check for deserialising a SeqGraph", "[ioutils]" )
           REQUIRE( graph.node_length( rtoi(13) ) == 1 );
           REQUIRE( graph.node_length( rtoi(14) ) == 1 );
           REQUIRE( graph.node_length( rtoi(15) ) == 11 );
-          if ( from_gfa ) {
+          if ( check_name ) {
             REQUIRE( graph.get_node_prop( 1 ).name == "1" );
             REQUIRE( graph.get_node_prop( 2 ).name == "2" );
             REQUIRE( graph.get_node_prop( 3 ).name == "3" );
@@ -460,47 +460,49 @@ SCENARIO( "Sanity check for deserialising a SeqGraph", "[ioutils]" )
             REQUIRE( graph.get_node_prop( 14 ).name == "14" );
             REQUIRE( graph.get_node_prop( 15 ).name == "15" );
           }
-          REQUIRE( graph.edge_overlap( link_type( { rtoi(1), true, rtoi(2), false } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { rtoi(1), true, rtoi(3), false } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { rtoi(2), true, rtoi(4), false } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { rtoi(2), true, rtoi(5), false } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { rtoi(3), true, rtoi(4), false } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { rtoi(3), true, rtoi(5), false } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { rtoi(4), true, rtoi(6), false } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { rtoi(5), true, rtoi(6), false } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { rtoi(6), true, rtoi(7), false } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { rtoi(6), true, rtoi(8), false } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { rtoi(7), true, rtoi(9), false } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { rtoi(8), true, rtoi(9), false } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { rtoi(9), true, rtoi(10), false } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { rtoi(9), true, rtoi(11), false } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { rtoi(10), true, rtoi(12), false } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { rtoi(11), true, rtoi(12), false } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { rtoi(12), true, rtoi(13), false } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { rtoi(12), true, rtoi(14), false } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { rtoi(13), true, rtoi(15), false } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { rtoi(14), true, rtoi(15), false } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( rtoi(1), rtoi(2), graph.linktype( link_type( { rtoi(1), true, rtoi(2), false } ) ) ) == 0 );
-          REQUIRE( graph.edge_overlap( rtoi(1), rtoi(3), graph.linktype( link_type( { rtoi(1), true, rtoi(3), false } ) ) ) == 0 );
-          REQUIRE( graph.edge_overlap( rtoi(2), rtoi(4), graph.linktype( link_type( { rtoi(2), true, rtoi(4), false } ) ) ) == 0 );
-          REQUIRE( graph.edge_overlap( rtoi(2), rtoi(5), graph.linktype( link_type( { rtoi(2), true, rtoi(5), false } ) ) ) == 0 );
-          REQUIRE( graph.edge_overlap( rtoi(3), rtoi(4), graph.linktype( link_type( { rtoi(3), true, rtoi(4), false } ) ) ) == 0 );
-          REQUIRE( graph.edge_overlap( rtoi(3), rtoi(5), graph.linktype( link_type( { rtoi(3), true, rtoi(5), false } ) ) ) == 0 );
-          REQUIRE( graph.edge_overlap( rtoi(4), rtoi(6), graph.linktype( link_type( { rtoi(4), true, rtoi(6), false } ) ) ) == 0 );
-          REQUIRE( graph.edge_overlap( rtoi(5), rtoi(6), graph.linktype( link_type( { rtoi(5), true, rtoi(6), false } ) ) ) == 0 );
-          REQUIRE( graph.edge_overlap( rtoi(6), rtoi(7), graph.linktype( link_type( { rtoi(6), true, rtoi(7), false } ) ) ) == 0 );
-          REQUIRE( graph.edge_overlap( rtoi(6), rtoi(8), graph.linktype( link_type( { rtoi(6), true, rtoi(8), false } ) ) ) == 0 );
-          REQUIRE( graph.edge_overlap( rtoi(7), rtoi(9), graph.linktype( link_type( { rtoi(7), true, rtoi(9), false } ) ) ) == 0 );
-          REQUIRE( graph.edge_overlap( rtoi(8), rtoi(9), graph.linktype( link_type( { rtoi(8), true, rtoi(9), false } ) ) ) == 0 );
-          REQUIRE( graph.edge_overlap( rtoi(8), rtoi(9), graph.linktype( link_type( { rtoi(8), true, rtoi(9), false } ) ) ) == 0 );
-          REQUIRE( graph.edge_overlap( rtoi(9), rtoi(10), graph.linktype( link_type( { rtoi(9), true, rtoi(10), false } ) ) ) == 0 );
-          REQUIRE( graph.edge_overlap( rtoi(9), rtoi(11), graph.linktype( link_type( { rtoi(9), true, rtoi(11), false } ) ) ) == 0 );
-          REQUIRE( graph.edge_overlap( rtoi(10), rtoi(12), graph.linktype( link_type( { rtoi(10), true, rtoi(12), false } ) ) ) == 0 );
-          REQUIRE( graph.edge_overlap( rtoi(11), rtoi(12), graph.linktype( link_type( { rtoi(11), true, rtoi(12), false } ) ) ) == 0 );
-          REQUIRE( graph.edge_overlap( rtoi(12), rtoi(13), graph.linktype( link_type( { rtoi(12), true, rtoi(13), false } ) ) ) == 0 );
-          REQUIRE( graph.edge_overlap( rtoi(12), rtoi(14), graph.linktype( link_type( { rtoi(12), true, rtoi(14), false } ) ) ) == 0 );
-          REQUIRE( graph.edge_overlap( rtoi(13), rtoi(15), graph.linktype( link_type( { rtoi(13), true, rtoi(15), false } ) ) ) == 0 );
-          REQUIRE( graph.edge_overlap( rtoi(14), rtoi(15), graph.linktype( link_type( { rtoi(14), true, rtoi(15), false } ) ) ) == 0 );
+          if ( check_overlap ) {
+            REQUIRE( graph.edge_overlap( link_type( { rtoi(1), true, rtoi(2), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { rtoi(1), true, rtoi(3), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { rtoi(2), true, rtoi(4), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { rtoi(2), true, rtoi(5), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { rtoi(3), true, rtoi(4), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { rtoi(3), true, rtoi(5), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { rtoi(4), true, rtoi(6), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { rtoi(5), true, rtoi(6), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { rtoi(6), true, rtoi(7), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { rtoi(6), true, rtoi(8), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { rtoi(7), true, rtoi(9), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { rtoi(8), true, rtoi(9), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { rtoi(9), true, rtoi(10), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { rtoi(9), true, rtoi(11), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { rtoi(10), true, rtoi(12), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { rtoi(11), true, rtoi(12), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { rtoi(12), true, rtoi(13), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { rtoi(12), true, rtoi(14), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { rtoi(13), true, rtoi(15), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { rtoi(14), true, rtoi(15), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( rtoi(1), rtoi(2), graph.linktype( link_type( { rtoi(1), true, rtoi(2), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( rtoi(1), rtoi(3), graph.linktype( link_type( { rtoi(1), true, rtoi(3), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( rtoi(2), rtoi(4), graph.linktype( link_type( { rtoi(2), true, rtoi(4), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( rtoi(2), rtoi(5), graph.linktype( link_type( { rtoi(2), true, rtoi(5), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( rtoi(3), rtoi(4), graph.linktype( link_type( { rtoi(3), true, rtoi(4), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( rtoi(3), rtoi(5), graph.linktype( link_type( { rtoi(3), true, rtoi(5), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( rtoi(4), rtoi(6), graph.linktype( link_type( { rtoi(4), true, rtoi(6), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( rtoi(5), rtoi(6), graph.linktype( link_type( { rtoi(5), true, rtoi(6), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( rtoi(6), rtoi(7), graph.linktype( link_type( { rtoi(6), true, rtoi(7), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( rtoi(6), rtoi(8), graph.linktype( link_type( { rtoi(6), true, rtoi(8), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( rtoi(7), rtoi(9), graph.linktype( link_type( { rtoi(7), true, rtoi(9), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( rtoi(8), rtoi(9), graph.linktype( link_type( { rtoi(8), true, rtoi(9), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( rtoi(8), rtoi(9), graph.linktype( link_type( { rtoi(8), true, rtoi(9), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( rtoi(9), rtoi(10), graph.linktype( link_type( { rtoi(9), true, rtoi(10), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( rtoi(9), rtoi(11), graph.linktype( link_type( { rtoi(9), true, rtoi(11), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( rtoi(10), rtoi(12), graph.linktype( link_type( { rtoi(10), true, rtoi(12), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( rtoi(11), rtoi(12), graph.linktype( link_type( { rtoi(11), true, rtoi(12), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( rtoi(12), rtoi(13), graph.linktype( link_type( { rtoi(12), true, rtoi(13), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( rtoi(12), rtoi(14), graph.linktype( link_type( { rtoi(12), true, rtoi(14), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( rtoi(13), rtoi(15), graph.linktype( link_type( { rtoi(13), true, rtoi(15), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( rtoi(14), rtoi(15), graph.linktype( link_type( { rtoi(14), true, rtoi(15), false } ) ) ) == 0 );
+          }
           REQUIRE( graph.get_path_count() == path_count );
           REQUIRE( !graph.has_path( 0 ) );
           REQUIRE( !graph.has_path( -1 ) );
@@ -549,7 +551,7 @@ SCENARIO( "Sanity check for deserialising a SeqGraph", "[ioutils]" )
       gum::util::load( graph, test_data_dir + "/tiny.gfa", true );
       THEN( "The resulting graph should pass integrity tests" )
       {
-        integrity_test( graph, true );
+        integrity_test( graph );
       }
 
       WHEN( "A Succinct graph is constructed from Dynamic one" )
@@ -557,7 +559,7 @@ SCENARIO( "Sanity check for deserialising a SeqGraph", "[ioutils]" )
         succinct_type sc_graph( graph );
         THEN( "The resulting graph should pass integrity tests" )
         {
-          integrity_test( sc_graph, true );
+          integrity_test( sc_graph );
         }
       }
     }
@@ -568,7 +570,7 @@ SCENARIO( "Sanity check for deserialising a SeqGraph", "[ioutils]" )
       gum::util::load( sc_graph, test_data_dir + "/tiny.gfa", true );
       THEN( "The resulting graph should pass integrity tests" )
       {
-        integrity_test( sc_graph, true );
+        integrity_test( sc_graph );
       }
     }
 
@@ -577,7 +579,7 @@ SCENARIO( "Sanity check for deserialising a SeqGraph", "[ioutils]" )
       gum::util::load( graph, test_data_dir + "/tiny.pb.vg", true );
       THEN( "The resulting graph should pass integrity tests" )
       {
-        integrity_test( graph, false );
+        integrity_test( graph, false, false );
       }
 
       WHEN( "A Succinct graph is constructed from Dynamic one" )
@@ -585,7 +587,7 @@ SCENARIO( "Sanity check for deserialising a SeqGraph", "[ioutils]" )
         succinct_type sc_graph( graph );
         THEN( "The resulting graph should pass integrity tests" )
         {
-          integrity_test( sc_graph, false );
+          integrity_test( sc_graph, false, false );
         }
       }
     }
@@ -596,7 +598,7 @@ SCENARIO( "Sanity check for deserialising a SeqGraph", "[ioutils]" )
       gum::util::load( sc_graph, test_data_dir + "/tiny.pb.vg", true );
       THEN( "The resulting graph should pass integrity tests" )
       {
-        integrity_test( sc_graph, false );
+        integrity_test( sc_graph, false, false );
       }
     }
 
@@ -606,7 +608,7 @@ SCENARIO( "Sanity check for deserialising a SeqGraph", "[ioutils]" )
       gum::util::extend( graph, test_data_dir + "/tiny_p2.gfa", true );
       THEN( "The resulting graph should pass integrity tests" )
       {
-        integrity_test( graph, true );
+        integrity_test( graph );
       }
     }
 
@@ -616,7 +618,7 @@ SCENARIO( "Sanity check for deserialising a SeqGraph", "[ioutils]" )
       gum::util::extend( graph, test_data_dir + "/tiny_p2.pb.vg", true );
       THEN( "The resulting graph should pass integrity tests" )
       {
-        integrity_test( graph, false );
+        integrity_test( graph, false, false );
       }
     }
   }

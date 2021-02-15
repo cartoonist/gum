@@ -911,7 +911,7 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
 
     graph_type graph;
     auto integrity_test =
-        []( auto const& graph ) {
+        []( auto const& graph, bool check_name=true, bool check_overlap=true ) {
           using graph_type = std::decay_t< decltype( graph ) >;
           using id_type = typename graph_type::id_type;
           using rank_type = typename graph_type::rank_type;
@@ -962,32 +962,36 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
           REQUIRE( graph.node_length( ibyc(6) ) == 3 );
           REQUIRE( graph.node_length( ibyc(7) ) == 5 );
           REQUIRE( graph.node_length( ibyc(8) ) == 4 );
-          REQUIRE( graph.get_node_prop( 1 ).name == "1" );
-          REQUIRE( graph.get_node_prop( 2 ).name == "2" );
-          REQUIRE( graph.get_node_prop( 3 ).name == "3" );
-          REQUIRE( graph.get_node_prop( 4 ).name == "4" );
-          REQUIRE( graph.get_node_prop( 5 ).name == "5" );
-          REQUIRE( graph.get_node_prop( 6 ).name == "6" );
-          REQUIRE( graph.get_node_prop( 7 ).name == "7" );
-          REQUIRE( graph.get_node_prop( 8 ).name == "8" );
-          REQUIRE( graph.edge_overlap( link_type( { ibyc(1), true, ibyc(2), false } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { ibyc(1), true, ibyc(3), true } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { ibyc(1), true, ibyc(4), false } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { ibyc(2), true, ibyc(5), false } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { ibyc(3), false, ibyc(5), false } ) ) == 1 );
-          REQUIRE( graph.edge_overlap( link_type( { ibyc(4), true, ibyc(5), true } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { ibyc(5), false, ibyc(6), false } ) ) == 1 );
-          REQUIRE( graph.edge_overlap( link_type( { ibyc(5), false, ibyc(7), false } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( link_type( { ibyc(5), true, ibyc(8), false } ) ) == 0 );
-          REQUIRE( graph.edge_overlap( ibyc(1), ibyc(2), graph.linktype( link_type( { ibyc(1), true, ibyc(2), false } ) ) ) == 0 );
-          REQUIRE( graph.edge_overlap( ibyc(1), ibyc(3), graph.linktype( link_type( { ibyc(1), true, ibyc(3), true } )  ) ) == 0 );
-          REQUIRE( graph.edge_overlap( ibyc(1), ibyc(4), graph.linktype( link_type( { ibyc(1), true, ibyc(4), false } ) ) ) == 0 );
-          REQUIRE( graph.edge_overlap( ibyc(2), ibyc(5), graph.linktype( link_type( { ibyc(2), true, ibyc(5), false } ) ) ) == 0 );
-          REQUIRE( graph.edge_overlap( ibyc(3), ibyc(5), graph.linktype( link_type( { ibyc(3), false, ibyc(5), false } ) ) ) == 1 );
-          REQUIRE( graph.edge_overlap( ibyc(4), ibyc(5), graph.linktype( link_type( { ibyc(4), true, ibyc(5), true } ) ) ) == 0 );
-          REQUIRE( graph.edge_overlap( ibyc(5), ibyc(6), graph.linktype( link_type( { ibyc(5), false, ibyc(6), false } ) ) ) == 1 );
-          REQUIRE( graph.edge_overlap( ibyc(5), ibyc(7), graph.linktype( link_type( { ibyc(5), false, ibyc(7), false } ) ) ) == 0 );
-          REQUIRE( graph.edge_overlap( ibyc(5), ibyc(8), graph.linktype( link_type( { ibyc(5), true, ibyc(8), false } ) ) ) == 0 );
+          if ( check_name ) {
+            REQUIRE( graph.get_node_prop( 1 ).name == "1" );
+            REQUIRE( graph.get_node_prop( 2 ).name == "2" );
+            REQUIRE( graph.get_node_prop( 3 ).name == "3" );
+            REQUIRE( graph.get_node_prop( 4 ).name == "4" );
+            REQUIRE( graph.get_node_prop( 5 ).name == "5" );
+            REQUIRE( graph.get_node_prop( 6 ).name == "6" );
+            REQUIRE( graph.get_node_prop( 7 ).name == "7" );
+            REQUIRE( graph.get_node_prop( 8 ).name == "8" );
+          }
+          if ( check_overlap ) {
+            REQUIRE( graph.edge_overlap( link_type( { ibyc(1), true, ibyc(2), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { ibyc(1), true, ibyc(3), true } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { ibyc(1), true, ibyc(4), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { ibyc(2), true, ibyc(5), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { ibyc(3), false, ibyc(5), false } ) ) == 1 );
+            REQUIRE( graph.edge_overlap( link_type( { ibyc(4), true, ibyc(5), true } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { ibyc(5), false, ibyc(6), false } ) ) == 1 );
+            REQUIRE( graph.edge_overlap( link_type( { ibyc(5), false, ibyc(7), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { ibyc(5), true, ibyc(8), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( ibyc(1), ibyc(2), graph.linktype( link_type( { ibyc(1), true, ibyc(2), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( ibyc(1), ibyc(3), graph.linktype( link_type( { ibyc(1), true, ibyc(3), true } )  ) ) == 0 );
+            REQUIRE( graph.edge_overlap( ibyc(1), ibyc(4), graph.linktype( link_type( { ibyc(1), true, ibyc(4), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( ibyc(2), ibyc(5), graph.linktype( link_type( { ibyc(2), true, ibyc(5), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( ibyc(3), ibyc(5), graph.linktype( link_type( { ibyc(3), false, ibyc(5), false } ) ) ) == 1 );
+            REQUIRE( graph.edge_overlap( ibyc(4), ibyc(5), graph.linktype( link_type( { ibyc(4), true, ibyc(5), true } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( ibyc(5), ibyc(6), graph.linktype( link_type( { ibyc(5), false, ibyc(6), false } ) ) ) == 1 );
+            REQUIRE( graph.edge_overlap( ibyc(5), ibyc(7), graph.linktype( link_type( { ibyc(5), false, ibyc(7), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( ibyc(5), ibyc(8), graph.linktype( link_type( { ibyc(5), true, ibyc(8), false } ) ) ) == 0 );
+          }
           REQUIRE( graph.get_path_count() == path_count );
           REQUIRE( !graph.has_path( 0 ) );
           REQUIRE( !graph.has_path( -1 ) );
@@ -1176,7 +1180,7 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
       gum::util::extend( graph, test_data_dir + "/graph_simple.pb.vg", true );
       THEN( "The resulting graph should pass integrity tests" )
       {
-        integrity_test( graph );
+        integrity_test( graph, false, false );
       }
 
       AND_WHEN( "It is cleared" )
@@ -1193,7 +1197,7 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
         succinct_type sc_graph( graph );
         THEN( "The resulting graph should pass integrity tests" )
         {
-          integrity_test( sc_graph );
+          integrity_test( sc_graph, false, false );
           succinct_test( sc_graph );
         }
 
@@ -1214,7 +1218,7 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
       gum::util::load( sc_graph, test_data_dir + "/graph_simple.pb.vg", true );
       THEN( "The resulting graph should pass integrity tests" )
       {
-        integrity_test( sc_graph );
+        integrity_test( sc_graph, false, false );
         succinct_test( sc_graph );
       }
 
