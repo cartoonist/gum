@@ -1291,3 +1291,35 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
     }
   }
 }
+
+TEMPLATE_SCENARIO( "Get graph statistics", "[seqgraph][template]",
+                   ( gum::SeqGraph< gum::Dynamic > ),
+                   ( gum::SeqGraph< gum::Succinct > ) )
+{
+  typedef TestType graph_type;
+
+  GIVEN( "A tiny variation graph" )
+  {
+    std::string filepath = test_data_dir + "/tiny.gfa";
+    graph_type graph;
+    gum::util::load( graph, filepath, true );
+
+    WHEN( "Total number of loci in the graph is counted" )
+    {
+      auto nof_loci = gum::util::total_nof_loci( graph );
+      THEN( "It should be equal to the sum of node label lengths" )
+      {
+        REQUIRE( nof_loci == 55 );
+      }
+    }
+
+    WHEN( "Total number of loci in a subgraph is counted" )
+    {
+      auto nof_loci = gum::util::total_nof_loci( graph, 5, 10 );
+      THEN( "It should be equal to the sum of node label lengths of the subgraph" )
+      {
+        REQUIRE( nof_loci == 25 );
+      }
+    }
+  }
+}
