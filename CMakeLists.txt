@@ -4,17 +4,20 @@ project(gum VERSION 0.0.1 LANGUAGES CXX)
 # Options
 option(BUILD_TESTING "Build test programs" OFF)
 option(BUILD_AUX_TOOLS "Build auxiliary tools" OFF)
+option(USE_BUNDLED_PARALLEL_HASHMAP "Use bundled Parallel Hashmap" OFF)
+option(USE_BUNDLED_GFAKLUGE "Use bundled GFAKluge" OFF)
 
 # Adding CMake module path.
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 # Finding dependencies.
 find_package(ZLIB REQUIRED)
 find_package(sdsl REQUIRED)
+find_package(OpenMP)
+# Bundled dependencies
 find_package(ParallelHashmap)
 find_package(GFAKluge)
 find_package(libbdsg)
 find_package(VGio QUIET)
-find_package(OpenMP)
 # Include external dependencies
 include(${PROJECT_SOURCE_DIR}/ext/external.cmake)
 
@@ -27,14 +30,14 @@ file(GLOB HEADER_FILES "${PROJECT_SOURCE_DIR}/include/gum/*.hpp")
 add_library(gum INTERFACE)
 add_library(gum_novg INTERFACE)
 
-# If external libraries are added, the target depends on them assuring build
-# order in parallel builds.
-if(TARGET parallelhashmap_git)
+# If bundled libraries are used, the target should depend on them assuring build order
+# in parallel builds.
+if(USE_BUNDLED_PARALLEL_HASHMAP AND TARGET parallelhashmap_git)
   add_dependencies(gum parallelhashmap_git)
   add_dependencies(gum_novg parallelhashmap_git)
 endif()
 
-if(TARGET gfakluge_git)
+if(USE_BUNDLED_GFAKLUGE AND TARGET gfakluge_git)
   add_dependencies(gum gfakluge_git)
   add_dependencies(gum_novg gfakluge_git)
 endif()

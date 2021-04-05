@@ -5,6 +5,12 @@ if(ParallelHashmap_FOUND)
 endif(ParallelHashmap_FOUND)
 
 if(NOT TARGET ParallelHashmap::ParallelHashmap)
+  if(NOT USE_BUNDLED_PARALLEL_HASHMAP)
+    message(FATAL_ERROR "Parallel Hashmap library not found. "
+      "Pass in `-DUSE_BUNDLED_PARALLEL_HASHMAP=on` when running cmake to use bundled version. "
+      "It will be installed alongside the library.")
+  endif()
+  message(STATUS "Using bundled Parallel Hashmap library")
   set(ParallelHashmap_SOURCE_DIR ${PROJECT_SOURCE_DIR}/ext/parallel-hashmap)
   ExternalProject_Add(parallelhashmap_git
     DOWNLOAD_COMMAND git -C ${PROJECT_SOURCE_DIR} submodule update --init --recursive -- ${ParallelHashmap_SOURCE_DIR}
@@ -22,6 +28,12 @@ if(GFAKluge_FOUND)
 endif(GFAKluge_FOUND)
 
 if(NOT TARGET GFAKluge::GFAKluge)
+  if(NOT USE_BUNDLED_GFAKLUGE)
+    message(FATAL_ERROR "GFAKluge library not found. "
+      "Pass in `-DUSE_BUNDLED_GFAKLUGE=on` when running cmake to use bundled version. "
+      "It will be installed alongside the library.")
+  endif()
+  message(STATUS "Using bundled GFAKluge library")
   set(GFAKluge_SOURCE_DIR ${PROJECT_SOURCE_DIR}/ext/gfakluge)
   ExternalProject_Add(gfakluge_git
     DOWNLOAD_COMMAND git -C ${PROJECT_SOURCE_DIR} submodule update --init --recursive -- ${GFAKluge_SOURCE_DIR}
