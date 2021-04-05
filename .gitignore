@@ -1,6 +1,10 @@
 # Log files
 *.log
 
+# Generated files
+include/gum/config.hpp
+gum.pc
+
 # Performance reports
 **/callgrind.out.*
 **/perf.data

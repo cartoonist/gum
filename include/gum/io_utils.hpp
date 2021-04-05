@@ -19,9 +19,16 @@
 #ifndef  GUM_IO_UTILS_HPP__
 #define  GUM_IO_UTILS_HPP__
 
+#include "config.hpp"
 #include "gfa_utils.hpp"
+
+#ifdef GUM_WITH_BDSG
 #include "hg_utils.hpp"
+#endif
+
+#ifdef GUM_WITH_VG
 #include "vg_utils.hpp"
+#endif
 
 
 namespace gum {
@@ -44,18 +51,22 @@ namespace gum {
     inline void
     extend( TGraph& graph, std::string fname, TArgs&&... args )
     {
+      if ( util::ends_with( fname, GFAFormat::FILE_EXTENSION ) ) {
+        extend_gfa( graph, fname, std::forward< TArgs >( args )... );
+      }
 #ifndef GUM_IO_PROTOBUF_VG
-      if ( util::ends_with( fname, HGFormat::FILE_EXTENSION ) ) {
+#ifdef GUM_WITH_BDSG
+      else if ( util::ends_with( fname, HGFormat::FILE_EXTENSION ) ) {
         extend_hg( graph, fname, std::forward< TArgs >( args )... );
       }
+#endif
 #else
-      if ( util::ends_with( fname, VGFormat::FILE_EXTENSION ) ) {
+#ifdef GUM_WITH_VG
+      else if ( util::ends_with( fname, VGFormat::FILE_EXTENSION ) ) {
         extend_vg( graph, fname, std::forward< TArgs >( args )... );
       }
 #endif
-      else if ( util::ends_with( fname, GFAFormat::FILE_EXTENSION ) ) {
-        extend_gfa( graph, fname, std::forward< TArgs >( args )... );
-      }
+#endif
       else throw std::runtime_error( "unsupported input file format" );
     }
 
@@ -74,18 +85,22 @@ namespace gum {
     inline void
     _load( TGraph& graph, std::string fname, Dynamic, TArgs&&... args )
     {
+      if ( util::ends_with( fname, GFAFormat::FILE_EXTENSION ) ) {
+        load_gfa( graph, fname, std::forward< TArgs >( args )... );
+      }
 #ifndef GUM_IO_PROTOBUF_VG
-      if ( util::ends_with( fname, HGFormat::FILE_EXTENSION ) ) {
+#ifdef GUM_WITH_BDSG
+      else if ( util::ends_with( fname, HGFormat::FILE_EXTENSION ) ) {
         load_hg( graph, fname, std::forward< TArgs >( args )... );
       }
+#endif
 #else
-      if ( util::ends_with( fname, VGFormat::FILE_EXTENSION ) ) {
+#ifdef GUM_WITH_VG
+      else if ( util::ends_with( fname, VGFormat::FILE_EXTENSION ) ) {
         load_vg( graph, fname, std::forward< TArgs >( args )... );
       }
 #endif
-      else if ( util::ends_with( fname, GFAFormat::FILE_EXTENSION ) ) {
-        load_gfa( graph, fname, std::forward< TArgs >( args )... );
-      }
+#endif
       else throw std::runtime_error( "unsupported input file format" );
     }
 
