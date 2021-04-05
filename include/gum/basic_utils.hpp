@@ -18,12 +18,30 @@
 #ifndef  GUM_BASIC_UTILS_HPP__
 #define  GUM_BASIC_UTILS_HPP__
 
+#include <fstream>
+#include <string>
 #include <iterator>
 #include <numeric>
 
 
 namespace gum {
   namespace util {
+    /**
+     *  @brief  Check if the given file exists and is readable.
+     *
+     *  @param  file_name The name of the file to be checked.
+     *  @return `true` if exists and is readable; otherwise `false`.
+     *
+     *  Use `std::ifstream` to check for readability of the given file because of
+     *  portability.
+     */
+    inline bool
+    readable( const std::string& file_name )
+    {
+      std::ifstream ifs( file_name );
+      return ifs.good();
+    }
+
     /**
      *  @brief  Check whether a string ends with another string.
      *
