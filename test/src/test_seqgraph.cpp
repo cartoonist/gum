@@ -1235,7 +1235,7 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
 
     WHEN( "Loaded a Dynamic SeqGraph from a file in vg/HashGraph format" )
     {
-      gum::util::extend( graph, test_data_dir + "/graph_simple.hg.vg", true );
+      gum::util::extend( graph, test_data_dir + "/graph_simple.hg.vg", gum::util::HGFormat(), true );
       THEN( "The resulting graph should pass integrity tests" )
       {
         integrity_test( graph, false, false );
@@ -1273,7 +1273,7 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
     WHEN( "Loaded a Succinct SeqGraph from a file in vg/HashGraph format" )
     {
       succinct_type sc_graph;
-      gum::util::load( sc_graph, test_data_dir + "/graph_simple.hg.vg", true );
+      gum::util::load( sc_graph, test_data_dir + "/graph_simple.hg.vg", gum::util::HGFormat(), true );
       THEN( "The resulting graph should pass integrity tests" )
       {
         integrity_test( sc_graph, false, false );

@@ -8,6 +8,7 @@ option(BUILD_WITH_VG "Build with VG support" ON)
 option(BUILD_WITH_BDSG "Build with BDSG support" OFF)
 option(USE_BUNDLED_PARALLEL_HASHMAP "Use bundled Parallel Hashmap" OFF)
 option(USE_BUNDLED_GFAKLUGE "Use bundled GFAKluge" OFF)
+option(PROTOBUF_AS_DEFAULT_VG "Consider Protobuf vg as the default format for 'vg' files" ON)
 
 if(BUILD_TESTING AND NOT (BUILD_WITH_VG AND BUILD_WITH_BDSG))
   message(FATAL_ERROR "Building tests requires `libvgio` and `libbdsg`. "
@@ -85,6 +86,7 @@ endif(BUILD_WITH_BDSG)
 # Use C++17
 target_compile_features(gum INTERFACE cxx_std_17)
 # Generating configure header file
+set(GUM_IO_PROTOBUF_VG "${PROTOBUF_AS_DEFAULT_VG}")
 set(GUM_WITH_VG "${BUILD_WITH_VG}")
 set(GUM_WITH_BDSG "${BUILD_WITH_BDSG}")
 configure_file(include/gum/config.hpp.in ${PROJECT_SOURCE_DIR}/include/gum/config.hpp @ONLY)

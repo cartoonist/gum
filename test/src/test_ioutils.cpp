@@ -604,7 +604,7 @@ SCENARIO( "Sanity check for deserialising a SeqGraph", "[ioutils]" )
 
     WHEN( "Loaded a Dynamic SeqGraph from a file in vg/HashGraph format" )
     {
-      gum::util::load( graph, test_data_dir + "/tiny.hg.vg", true );
+      gum::util::load( graph, test_data_dir + "/tiny.hg.vg", gum::util::HGFormat(), true );
       THEN( "The resulting graph should pass integrity tests" )
       {
         integrity_test( graph, false, false );
@@ -623,7 +623,7 @@ SCENARIO( "Sanity check for deserialising a SeqGraph", "[ioutils]" )
     WHEN( "Loaded a Succinct SeqGraph from a file in vg/HashGraph format" )
     {
       succinct_type sc_graph;
-      gum::util::load( sc_graph, test_data_dir + "/tiny.hg.vg", true );
+      gum::util::load( sc_graph, test_data_dir + "/tiny.hg.vg", gum::util::HGFormat(), true );
       THEN( "The resulting graph should pass integrity tests" )
       {
         integrity_test( sc_graph, false, false );
@@ -652,11 +652,34 @@ SCENARIO( "Sanity check for deserialising a SeqGraph", "[ioutils]" )
 
     WHEN( "Extend a Dynamic SeqGraph by another graph in vg/HashGraph format" )
     {
-      gum::util::load( graph, test_data_dir + "/tiny_p1.hg.vg", true );
-      gum::util::extend( graph, test_data_dir + "/tiny_p2.hg.vg", true );
+      gum::util::load( graph, test_data_dir + "/tiny_p1.hg.vg", gum::util::HGFormat(), true );
+      gum::util::extend( graph, test_data_dir + "/tiny_p2.hg.vg", gum::util::HGFormat(), true );
       THEN( "The resulting graph should pass integrity tests" )
       {
         integrity_test( graph, false, false );
+      }
+    }
+
+    WHEN( "Load a Dynamic SeqGraph from a vg file without passing the format tag" )
+    {
+#ifdef GUM_IO_PROTOBUF_VG
+      gum::util::load( graph, test_data_dir + "/tiny.pb.vg", true );
+#else
+      gum::util::load( graph, test_data_dir + "/tiny.hg.vg", true );
+#endif
+
+      THEN( "The resulting graph should pass integrity tests" )
+      {
+        integrity_test( graph, false, false );
+      }
+
+      WHEN( "A Succinct graph is constructed from Dynamic one" )
+      {
+        succinct_type sc_graph( graph );
+        THEN( "The resulting graph should pass integrity tests" )
+        {
+          integrity_test( sc_graph, false, false );
+        }
       }
     }
   }
