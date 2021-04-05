@@ -21,11 +21,6 @@ find_package(VGio QUIET)
 # Include external dependencies
 include(${PROJECT_SOURCE_DIR}/ext/external.cmake)
 
-# Force CMake to use `-I` instead of `-isystem`
-set(CMAKE_NO_SYSTEM_FROM_IMPORTED TRUE)
-
-# Setting header files
-file(GLOB HEADER_FILES "${PROJECT_SOURCE_DIR}/include/gum/*.hpp")
 # Creating an INTERFACE library
 add_library(gum INTERFACE)
 add_library(gum_novg INTERFACE)
@@ -42,9 +37,6 @@ if(USE_BUNDLED_GFAKLUGE AND TARGET gfakluge_git)
   add_dependencies(gum_novg gfakluge_git)
 endif()
 
-# Defining target sources
-target_sources(gum INTERFACE "$<BUILD_INTERFACE:${HEADER_FILES}>")
-target_sources(gum_novg INTERFACE "$<BUILD_INTERFACE:${HEADER_FILES}>")
 # Defining include directories
 target_include_directories(gum
   INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
@@ -76,13 +68,22 @@ target_link_libraries(gum_novg
 # Use C++17
 target_compile_features(gum INTERFACE cxx_std_17)
 target_compile_features(gum_novg INTERFACE cxx_std_17)
+# Generating pkgconfig file
+configure_file(gum.pc.in ${PROJECT_SOURCE_DIR}/gum.pc @ONLY)
+# Setting header files
+file(GLOB HEADER_FILES RELATIVE "${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/include/gum/*.hpp")
+list(TRANSFORM HEADER_FILES PREPEND "${PROJECT_SOURCE_DIR}/include/" OUTPUT_VARIABLE BUILD_HEADER_FILES)
+list(TRANSFORM HEADER_FILES PREPEND "${CMAKE_INSTALL_PREFIX}/include/" OUTPUT_VARIABLE INSTALL_HEADER_FILES)
+# Defining target sources
+target_sources(gum
+  INTERFACE "$<BUILD_INTERFACE:${BUILD_HEADER_FILES}>;$<INSTALL_INTERFACE:${INSTALL_HEADER_FILES}>")
+target_sources(gum_novg
+  INTERFACE "$<BUILD_INTERFACE:${BUILD_HEADER_FILES}>;$<INSTALL_INTERFACE:${INSTALL_HEADER_FILES}>")
 # Defining `gum::gum` and `gum::gum_novg` aliases
 add_library(gum::gum ALIAS gum)
 add_library(gum::gum_novg ALIAS gum_novg)
-# Generating pkgconfig file
-configure_file(gum.pc.in ${PROJECT_SOURCE_DIR}/gum.pc @ONLY)
 # Install targets
-install(FILES ${HEADER_FILES} DESTINATION include/gum)
+install(FILES ${BUILD_HEADER_FILES} DESTINATION include/gum)
 install(FILES gum.pc DESTINATION lib/pkgconfig)
 
 # Adding test submodule.
