@@ -30,7 +30,7 @@ C++17 compliant compiler first. It has been tested for these compilers:
 | GCC      | 8.3, 9.2, 10.2.0 |
 
 GUM is a header-only library. However, it depends on a few external libraries to
-work. Note that there are three group of dependencies: required, bundled, and optional:
+work. Note that there are three groups of dependencies: required, bundled, and optional:
 
 #### Required dependencies
 
@@ -128,16 +128,15 @@ To install GUM (recommended):
 $ git clone https://github.com/cartoonist/gum.git
 $ mkdir gum/build
 $ cd gum/build
-$ cmake -DUSE_BUNDLED_PARALLEL_HASHMAP=on -DUSE_BUNDLED_GFAKLUGE=on ..
+$ cmake -DCMAKE_BUILD_TYPE=Release -DUSE_BUNDLED_PARALLEL_HASHMAP=on -DUSE_BUNDLED_GFAKLUGE=on ..
 $ make
 $ sudo make install
 ```
 
-If the dependencies are installed in a custom path you give a hint to the build script
-to find them when calling `cmake` by passing
+If the dependencies are installed in a custom path, you can give a hint to the build
+script to find them when calling `cmake` by passing
 `-DCMAKE_PREFIX_PATH=/path/to/custom/prefix`. You can also install GUM in a custom path
-(rather than `/usr` or `/usr/local`) by passing
-`-DCMAKE_INSTALL_PREFIX=/path/to/install/prefix`.
+(rather than `/usr/local`) by passing `-DCMAKE_INSTALL_PREFIX=/path/to/install/prefix`.
 
 Use GUM
 -------
@@ -168,5 +167,5 @@ In order to build the tests or auxiliary tools, just turn on `BUILD_TESTING` or
 `BUILD_AUX_TOOLS` options when running `cmake`:
 
 ```bash
-$ cmake -DBUILD_TESTING=on -DBUILD_AUX_TOOLS=on ..
+$ cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=on -DBUILD_AUX_TOOLS=on ..
 ```
