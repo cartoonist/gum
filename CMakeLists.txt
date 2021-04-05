@@ -3,6 +3,7 @@ project(gum VERSION 0.0.1 LANGUAGES CXX)
 
 # Options
 option(BUILD_TESTING "Build test programs" OFF)
+option(BUILD_AUX_TOOLS "Build auxiliary tools" OFF)
 
 # Adding CMake module path.
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
@@ -85,6 +86,11 @@ install(FILES gum.pc DESTINATION lib/pkgconfig)
 if(BUILD_TESTING)
   add_subdirectory(test)
 endif(BUILD_TESTING)
+
+# Adding auxiliary tools submodule.
+if(BUILD_AUX_TOOLS)
+  add_subdirectory(tools)
+endif(BUILD_AUX_TOOLS)
 
 # Registering tests.
 include(CTest)
