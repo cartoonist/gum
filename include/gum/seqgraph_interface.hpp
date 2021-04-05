@@ -180,6 +180,42 @@ namespace gum {
           } );
       return sorted;
     }
+
+    template< typename TGraph >
+    inline void
+    topological_sort( TGraph& graph )
+    {
+      using id_type = typename TGraph::id_type;
+      using rank_type = typename TGraph::rank_type;
+      using nodes_type = std::vector< std::pair< rank_type, id_type > >;
+      using map_type = typename sdsl::bit_vector;
+
+      auto n = graph.get_node_count();
+
+      nodes_type ordered;
+      nodes_type process;
+      map_type visited( n, 0 );
+      ordered.reserve( n );
+
+      for_each_start_node(
+          graph,
+          [&process]( auto rank, auto id ) {
+            process.push_back( { rank, id } );
+          } );
+      std::reverse( process.begin(), process.end() );
+
+      while ( !process.empty() ) {
+        ordered.push_back( process.pop_back() );
+        auto const& m = ordered.back();
+        assert( !visited[ m ] );
+        visited[ m ] = 1;
+        graph.for_each_edges_out(
+            m,
+            []( auto to, auto linktype ) {
+            }
+          );
+      }
+    }
   }  /* --- end of namespace util --- */
 }  /* --- end of namespace gum --- */
 
