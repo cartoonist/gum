@@ -14,7 +14,7 @@ if(sdsl_INCLUDE_DIRS)
 else()
   # Try pkg-config, first.
   find_package(PkgConfig QUIET)
-  pkg_check_modules(sdsl QUIET sdsl-lite>=2.1.0)
+  pkg_check_modules(sdsl QUIET sdsl-lite>=2.2.0)
   # If sdsl_INCLUDE_DIRS is not set, this searches for the header/library file.
   find_path(sdsl_INCLUDE_DIRS sdsl/config.hpp)
   find_library(sdsl_LIBRARIES sdsl)
