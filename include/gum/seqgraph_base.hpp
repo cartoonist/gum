@@ -150,29 +150,23 @@ namespace gum {
    *  This class defines any traits that are common between all kinds of graphs
    *  of the same directionality independent of their implementation.
    *
-   *  NOTE: In a bidirected graph, each node has two sides. Here, `side_type` can get a
-   *  value indicating each of these sides. It is defined as a pair `<id_type, bool>` in
-   *  which the first element shows the node ID of the side and the second one indicates
-   *  which side of the node is meant. Although the graph class __usually__ doesn't care
-   *  how this boolean is being used (e.g. either it can store `from_start`/`to_end` or
-   *  head/tail), all higher-level functions (e.g. interface functions in `io_utils`
-   *  module) assume that the boolean value shows head (`false`) and tail (`true`) of
-   *  the node if required; i.e.:
-   *
-   *              ─┬──────╮     ╭───────┬────┬──────╮     ╭───────┬─
-   *           ... │ true ├────⯈│ false │ ID │ true ├────⯈│ false │ ...
-   *              ─┴──────╯     ╰───────┴────┴──────╯     ╰───────┴─
+   *  NOTE: In a bidirected graph, each node has two orientations: forward, and reverse.
+   *  The `oriented_type`, which is basically an unsigned equivalent type of `id_type`,
+   *  denotes an oriented node where the most significant bit is reserved for indicating
+   *  the orientation: 0 for forward, and 1 for reverse. It is defined as a separated
+   *  type from `id_type` to avoid checking for orientation when it is not intended. With
+   *  this in mind, an edge can also be represented as a pair of oriented nodes.
    *
    *  In addition, each link can be represented by an integer called 'link type':
    *
-   *           ╭────────┬────────┬──────╮
-   *           │ From   │ To     │ Type │
-   *           ├────────┼────────┼──────┤
-   *           │ start  │ start  │ 0    │
-   *           │ start  │ end    │ 1    │
-   *           │ end    │ start  │ 2    │
-   *           │ end    │ end    │ 3    │
-   *           ╰────────┴────────┴──────╯
+   *           ╭─────────┬─────────┬──────╮
+   *           │ From    │ To      │ Type │
+   *           ├─────────┼─────────┼──────┤
+   *           │ forward │ forward │ 0    │
+   *           │ forward │ reverse │ 1    │
+   *           │ reverse │ forward │ 2    │
+   *           │ reverse │ reverse │ 3    │
+   *           ╰─────────┴─────────┴──────╯
    */
   template< typename TSpec, typename TDir, uint8_t ...TWidths >
   class DirectedGraphBaseTrait;
@@ -183,13 +177,13 @@ namespace gum {
     using spec_type = TSpec;
     using graph_type = GraphBaseTrait< spec_type, TWidths... >;
     using id_type = typename graph_type::id_type;
-    using sidetype_type = bool;
   public:
-    using side_type = std::pair< id_type, sidetype_type >;
-    using link_type = std::tuple< id_type, sidetype_type, id_type, sidetype_type >;
+    using oriented_type = std::make_unsigned_t< id_type >;
+    using link_type = std::pair< oriented_type, oriented_type >;
     using linktype_type = unsigned char;
 
-    constexpr static side_type DUMMY_SIDE = { 0, false };
+    constexpr static uint8_t ID_WIDTH = widthof< oriented_type >::value;
+    constexpr static side_type DUMMY_SIDE = { 0 };
     constexpr static linktype_type DEFAULT_LINKTYPE =
         DirectedGraphBaseTrait::get_default_linktype();
 
@@ -197,27 +191,28 @@ namespace gum {
     constexpr static inline id_type
     from_id( link_type sides )
     {
-      return std::get<0>( sides );
+      return DirectedGraphBaseTrait::id_of(
+          DirectedGraphBaseTrait::from_side( sides ) );
     }
 
     constexpr static inline id_type
     to_id( link_type sides )
     {
-      return std::get<2>( sides );
+      return DirectedGraphBaseTrait::id_of(
+          DirectedGraphBaseTrait::to_side( sides ) );
     }
 
     constexpr static inline id_type
-    id_of( side_type side )
+    id_of( orient_type node )
     {
-      return side.first;
+      return static_cast< id_type >( forward( node ) );
     }
 
     /* === Side === */
-    constexpr static inline side_type
+    constexpr static inline oriented_type
     from_side( link_type sides )
     {
-      return side_type( DirectedGraphBaseTrait::from_id( sides ),
-                        DirectedGraphBaseTrait::from_sidetype( sides ) );
+      return sides.first;
     }
 
     constexpr static inline side_type
@@ -227,11 +222,10 @@ namespace gum {
       return side_type( id, from_sidetype( type ) );
     }
 
-    constexpr static inline side_type
+    constexpr static inline oriented_type
     to_side( link_type sides )
     {
-      return side_type( DirectedGraphBaseTrait::to_id( sides ),
-                        DirectedGraphBaseTrait::to_sidetype( sides ) );
+      return sides.second;
     }
 
     constexpr static inline side_type
@@ -241,52 +235,40 @@ namespace gum {
       return side_type( id, DirectedGraphBaseTrait::to_sidetype( type ) );
     }
 
-    constexpr static inline side_type
-    start_side( id_type id )
+    constexpr static inline orient_type
+    forward( orient_type node )
     {
-      return side_type( id, DirectedGraphBaseTrait::start_sidetype() );
+      return node & DirectedGraphBaseTrait::get_orientation_mask();
     }
 
-    constexpr static inline side_type
-    end_side( id_type id )
+    constexpr static inline orient_type
+    reverse( orient_type node )
     {
-      return side_type( id, DirectedGraphBaseTrait::end_sidetype() );
+      return node | DirectedGraphBaseTrait::get_orientation_bit();
     }
 
-    constexpr static inline side_type
-    opposite_side( side_type side )
+    constexpr static inline orient_type
+    orient_toggle( orient_type node )
     {
-      return side_type(
-          DirectedGraphBaseTrait::id_of( side ),
-          DirectedGraphBaseTrait::opposite_side(
-              DirectedGraphBaseTrait::sidetype_of( side ) ) );
+      if ( is_reverse( node ) ) return forward( node );
+      return reverse( node );
     }
 
-    constexpr static inline side_type
-    get_dummy_side( )
+    constexpr static inline bool
+    is_reverse( orient_type node )
     {
-      return DUMMY_SIDE;
+      return node >> ( DirectedGraphBaseTrait::VALUE_WIDTH - 1 );
     }
 
     static inline bool
-    for_each_side( id_type id, std::function< bool( side_type ) > callback )
+    for_each_orientation( id_type id, std::function< bool( orient_type ) > callback )
     {
-      side_type side = { id, false };
-      if ( !callback( side ) ) return false;
-      if ( !callback( DirectedGraphBaseTrait::opposite_side( side ) ) ) return false;
+      if ( !callback( forward( id ) ) ) return false;
+      if ( !callback( reverse( id ) ) ) return false;
       return true;
     }
 
     /* === Link === */
-    constexpr static inline link_type
-    make_link( side_type from, side_type to )
-    {
-      return link_type( DirectedGraphBaseTrait::id_of( from ),
-                        DirectedGraphBaseTrait::sidetype_of( from ),
-                        DirectedGraphBaseTrait::id_of( to ),
-                        DirectedGraphBaseTrait::sidetype_of( to ) );
-    }
-
     constexpr static inline link_type
     make_link( id_type from_id, id_type to_id, linktype_type type )
     {
@@ -294,14 +276,6 @@ namespace gum {
                         DirectedGraphBaseTrait::from_sidetype( type ),
                         to_id,
                         DirectedGraphBaseTrait::to_sidetype( type ) );
-    }
-
-    constexpr static inline link_type
-    get_dummy_link( )
-    {
-      return DirectedGraphBaseTrait::make_link(
-          DirectedGraphBaseTrait::get_dummy_side(),
-          DirectedGraphBaseTrait::get_dummy_side() );
     }
 
     /* === Link type === */
@@ -314,19 +288,17 @@ namespace gum {
     }
 
     constexpr static inline linktype_type
-    linktype( side_type from, side_type to )
+    linktype( orient_type from, orient_type to )
     {
-      return DirectedGraphBaseTrait::_linktype(
-          DirectedGraphBaseTrait::sidetype_of( from ),
-          DirectedGraphBaseTrait::sidetype_of( to ) );
+      return ( is_reverse( from ) << 1 ) + is_reverse( to );
     }
 
     constexpr static inline linktype_type
     linktype( link_type sides )
     {
       return DirectedGraphBaseTrait::_linktype(
-          DirectedGraphBaseTrait::from_sidetype( sides ),
-          DirectedGraphBaseTrait::to_sidetype( sides ) );
+          DirectedGraphBaseTrait::from( sides ),
+          DirectedGraphBaseTrait::to( sides ) );
     }
 
     constexpr static inline bool
@@ -378,6 +350,18 @@ namespace gum {
     }
 
   private:
+    constexpr static inline side_type
+    get_orientation_bit( )
+    {
+      return 1UL << ( DirectedGraphBaseTrait::ID_WIDTH - 1 );
+    }
+
+    constexpr static inline side_type
+    get_orientation_mask( )
+    {
+      return ~( DirectedGraphBaseTrait::get_orientation_bit() );
+    }
+
     /* === Side type === */
     constexpr static inline sidetype_type
     start_sidetype( )
