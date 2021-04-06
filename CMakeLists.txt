@@ -73,17 +73,17 @@ if(BUILD_WITH_BDSG)
 endif(BUILD_WITH_BDSG)
 # Defining link libraries
 target_link_libraries(gum
-  INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/sdsl::sdsl>;$<INSTALL_INTERFACE:sdsl::sdsl>
-  INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/ParallelHashmap::ParallelHashmap>;$<INSTALL_INTERFACE:ParallelHashmap::ParallelHashmap>
-  INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/GFAKluge::GFAKluge>;$<INSTALL_INTERFACE:GFAKluge::GFAKluge>
+  INTERFACE $<BUILD_INTERFACE:sdsl::sdsl>;$<INSTALL_INTERFACE:sdsl::sdsl>
+  INTERFACE $<BUILD_INTERFACE:ParallelHashmap::ParallelHashmap>;$<INSTALL_INTERFACE:ParallelHashmap::ParallelHashmap>
+  INTERFACE $<BUILD_INTERFACE:GFAKluge::GFAKluge>;$<INSTALL_INTERFACE:GFAKluge::GFAKluge>
   INTERFACE $<BUILD_INTERFACE:OpenMP::OpenMP_CXX>;$<INSTALL_INTERFACE:OpenMP::OpenMP_CXX>)
 if(BUILD_WITH_VG)
   target_link_libraries(gum
-    INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/VGio::VGio>;$<INSTALL_INTERFACE:VGio::VGio>)
+    INTERFACE $<BUILD_INTERFACE:VGio::VGio>;$<INSTALL_INTERFACE:VGio::VGio>)
 endif(BUILD_WITH_VG)
 if(BUILD_WITH_BDSG)
   target_link_libraries(gum
-    INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/libbdsg::libbdsg>;$<INSTALL_INTERFACE:libbdsg::libbdsg>)
+    INTERFACE $<BUILD_INTERFACE:libbdsg::libbdsg>;$<INSTALL_INTERFACE:libbdsg::libbdsg>)
 endif(BUILD_WITH_BDSG)
 # Use C++17
 target_compile_features(gum INTERFACE cxx_std_17)
