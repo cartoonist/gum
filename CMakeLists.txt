@@ -58,32 +58,31 @@ endif()
 
 # Defining include directories
 target_include_directories(gum
-  INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-  SYSTEM INTERFACE $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>
-  INTERFACE sdsl::sdsl
-  INTERFACE ParallelHashmap::ParallelHashmap
-  INTERFACE GFAKluge::GFAKluge)
+  INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>;$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>
+  INTERFACE $<BUILD_INTERFACE:sdsl::sdsl>;$<INSTALL_INTERFACE:sdsl::sdsl>
+  INTERFACE $<BUILD_INTERFACE:ParallelHashmap::ParallelHashmap>;$<INSTALL_INTERFACE:ParallelHashmap::ParallelHashmap>
+  INTERFACE $<BUILD_INTERFACE:GFAKluge::GFAKluge>;$<INSTALL_INTERFACE:GFAKluge::GFAKluge>)
 if(BUILD_WITH_VG)
   target_include_directories(gum
-    INTERFACE VGio::VGio)
+    INTERFACE $<BUILD_INTERFACE:VGio::VGio>;$<INSTALL_INTERFACE:VGio::VGio>)
 endif(BUILD_WITH_VG)
 if(BUILD_WITH_BDSG)
   target_include_directories(gum
-    INTERFACE libbdsg::libbdsg)
+    INTERFACE $<BUILD_INTERFACE:libbdsg::libbdsg>;$<INSTALL_INTERFACE:libbdsg::libbdsg>)
 endif(BUILD_WITH_BDSG)
 # Defining link libraries
 target_link_libraries(gum
-  INTERFACE sdsl::sdsl
-  INTERFACE ParallelHashmap::ParallelHashmap
-  INTERFACE GFAKluge::GFAKluge
-  INTERFACE OpenMP::OpenMP_CXX)
+  INTERFACE $<BUILD_INTERFACE:sdsl::sdsl>;$<INSTALL_INTERFACE:sdsl::sdsl>
+  INTERFACE $<BUILD_INTERFACE:ParallelHashmap::ParallelHashmap>;$<INSTALL_INTERFACE:ParallelHashmap::ParallelHashmap>
+  INTERFACE $<BUILD_INTERFACE:GFAKluge::GFAKluge>;$<INSTALL_INTERFACE:GFAKluge::GFAKluge>
+  INTERFACE $<BUILD_INTERFACE:OpenMP::OpenMP_CXX>;$<INSTALL_INTERFACE:OpenMP::OpenMP_CXX>)
 if(BUILD_WITH_VG)
   target_link_libraries(gum
-    INTERFACE VGio::VGio)
+    INTERFACE $<BUILD_INTERFACE:VGio::VGio>;$<INSTALL_INTERFACE:VGio::VGio>)
 endif(BUILD_WITH_VG)
 if(BUILD_WITH_BDSG)
   target_link_libraries(gum
-    INTERFACE libbdsg::libbdsg)
+    INTERFACE $<BUILD_INTERFACE:libbdsg::libbdsg>;$<INSTALL_INTERFACE:libbdsg::libbdsg>)
 endif(BUILD_WITH_BDSG)
 # Use C++17
 target_compile_features(gum INTERFACE cxx_std_17)
