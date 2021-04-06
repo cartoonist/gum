@@ -164,8 +164,8 @@ Development
 -----------
 
 In order to build the tests or auxiliary tools, just turn on `BUILD_TESTING` or
-`BUILD_AUX_TOOLS` options when running `cmake`:
+`BUILD_GUM_AUX_TOOLS` options when running `cmake`:
 
 ```bash
-$ cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=on -DBUILD_AUX_TOOLS=on ..
+$ cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=on -DBUILD_GUM_AUX_TOOLS=on ..
 ```

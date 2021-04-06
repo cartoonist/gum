@@ -3,7 +3,7 @@ project(gum VERSION 0.0.1 LANGUAGES CXX)
 
 # Options
 option(BUILD_TESTING "Build test programs" OFF)
-option(BUILD_AUX_TOOLS "Build auxiliary tools" OFF)
+option(BUILD_GUM_AUX_TOOLS "Build GUM auxiliary tools" OFF)
 option(BUILD_WITH_VG "Build with VG support" ON)
 option(BUILD_WITH_BDSG "Build with BDSG support" OFF)
 option(USE_BUNDLED_PARALLEL_HASHMAP "Use bundled Parallel Hashmap" OFF)
@@ -16,10 +16,10 @@ if(BUILD_TESTING AND NOT (BUILD_WITH_VG AND BUILD_WITH_BDSG))
     "`BUILD_WITH_BDSG=on` or disable building tests (`BUILD_TESTING=off`).")
 endif()
 
-if(BUILD_AUX_TOOLS AND NOT (BUILD_WITH_VG AND BUILD_WITH_BDSG))
+if(BUILD_GUM_AUX_TOOLS AND NOT (BUILD_WITH_VG AND BUILD_WITH_BDSG))
   message(FATAL_ERROR "Building auxiliary tools requires `libvgio` and `libbdsg`. "
     "Either enable VG and BDSG support by defining `BUILD_WITH_VG=on` and "
-    "`BUILD_WITH_BDSG=on` or disable building auxiliary tools (`BUILD_AUX_TOOLS=off`).")
+    "`BUILD_WITH_BDSG=on` or disable building auxiliary tools (`BUILD_GUM_AUX_TOOLS=off`).")
 endif()
 
 # Include external modules
@@ -87,7 +87,7 @@ if(BUILD_WITH_BDSG)
 endif(BUILD_WITH_BDSG)
 # Use C++17
 target_compile_features(gum INTERFACE cxx_std_17)
-# Generating configure header file
+# Generating the configure header file
 set(GUM_IO_PROTOBUF_VG "${PROTOBUF_AS_DEFAULT_VG}")
 set(GUM_WITH_VG "${BUILD_WITH_VG}")
 set(GUM_WITH_BDSG "${BUILD_WITH_BDSG}")
@@ -103,7 +103,7 @@ if(NOT BUILD_WITH_BDSG)
   list(REMOVE_ITEM HEADER_FILES "gum/hg_utils.hpp")
 endif(NOT BUILD_WITH_BDSG)
 list(TRANSFORM HEADER_FILES PREPEND "${PROJECT_SOURCE_DIR}/include/" OUTPUT_VARIABLE BUILD_HEADER_FILES)
-list(TRANSFORM HEADER_FILES PREPEND "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/" OUTPUT_VARIABLE INSTALL_HEADER_FILES)
+list(TRANSFORM HEADER_FILES PREPEND "${CMAKE_INSTALL_FULL_INCLUDEDIR}/" OUTPUT_VARIABLE INSTALL_HEADER_FILES)
 # Defining target sources
 target_sources(gum
   INTERFACE "$<BUILD_INTERFACE:${BUILD_HEADER_FILES}>;$<INSTALL_INTERFACE:${INSTALL_HEADER_FILES}>")
@@ -119,9 +119,9 @@ if(BUILD_TESTING)
 endif(BUILD_TESTING)
 
 # Adding auxiliary tools submodule.
-if(BUILD_AUX_TOOLS)
+if(BUILD_GUM_AUX_TOOLS)
   add_subdirectory(tools)
-endif(BUILD_AUX_TOOLS)
+endif(BUILD_GUM_AUX_TOOLS)
 
 # Registering tests.
 include(CTest)
