@@ -24,6 +24,7 @@ endif()
 
 # Include external modules
 include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
 # Adding CMake module path.
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 # Finding dependencies.
@@ -111,6 +112,22 @@ add_library(gum::gum ALIAS gum)
 # Install targets
 install(FILES ${BUILD_HEADER_FILES} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/gum)
 install(FILES gum.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+# Exporting targets
+install(TARGETS gum EXPORT gum-targets)
+install(EXPORT gum-targets NAMESPACE gum:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/gum)
+# Creating the package configuration file
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake.in
+  "${CMAKE_CURRENT_BINARY_DIR}/gum-config.cmake"
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/gum)
+# Generating the version file for the configuration file
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/gum-config-version.cmake"
+  VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}"
+  COMPATIBILITY AnyNewerVersion)
+# Install generated configuration files
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/gum-config.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/gum-config-version.cmake"
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/gum)
 
 # Adding test submodule.
 if(BUILD_TESTING)
