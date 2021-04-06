@@ -1,3 +1,5 @@
+# Include external modules
+include(GNUInstallDirs)
 include(ExternalProject)
 
 if(ParallelHashmap_FOUND)
@@ -19,8 +21,8 @@ if(NOT TARGET ParallelHashmap::ParallelHashmap)
   ExternalProject_Get_Property(parallelhashmap_git INSTALL_DIR)
   add_library(ParallelHashmap::ParallelHashmap INTERFACE IMPORTED)
   set_target_properties(ParallelHashmap::ParallelHashmap PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "$<BUILD_INTERFACE:${INSTALL_DIR}/include>;$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>")
-  install(DIRECTORY ${INSTALL_DIR}/include/ DESTINATION include)
+    INTERFACE_INCLUDE_DIRECTORIES "$<BUILD_INTERFACE:${INSTALL_DIR}/include>;$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>")
+  install(DIRECTORY ${INSTALL_DIR}/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 endif()
 
 if(GFAKluge_FOUND)
@@ -45,6 +47,6 @@ if(NOT TARGET GFAKluge::GFAKluge)
   ExternalProject_Get_Property(gfakluge_git INSTALL_DIR)
   add_library(GFAKluge::GFAKluge INTERFACE IMPORTED)
   set_target_properties(GFAKluge::GFAKluge PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "$<BUILD_INTERFACE:${INSTALL_DIR}/include>;$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>")
-  install(DIRECTORY ${INSTALL_DIR}/include/ DESTINATION include)
+    INTERFACE_INCLUDE_DIRECTORIES "$<BUILD_INTERFACE:${INSTALL_DIR}/include>;$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>")
+  install(DIRECTORY ${INSTALL_DIR}/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 endif()
