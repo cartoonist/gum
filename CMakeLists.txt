@@ -128,6 +128,9 @@ write_basic_package_version_file(
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/gum-config.cmake"
   "${CMAKE_CURRENT_BINARY_DIR}/gum-config-version.cmake"
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/gum)
+# Install custom find modules
+file(GLOB GUM_FIND_MODULE_FILES "${PROJECT_SOURCE_DIR}/cmake/modules/Find*.cmake")
+install(FILES ${GUM_FIND_MODULE_FILES} DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/gum)
 
 # Adding test submodule.
 if(BUILD_TESTING)
