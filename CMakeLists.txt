@@ -22,8 +22,10 @@ if(BUILD_AUX_TOOLS AND NOT (BUILD_WITH_VG AND BUILD_WITH_BDSG))
     "`BUILD_WITH_BDSG=on` or disable building auxiliary tools (`BUILD_AUX_TOOLS=off`).")
 endif()
 
+# Include external modules
+include(GNUInstallDirs)
 # Adding CMake module path.
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 # Finding dependencies.
 find_package(ZLIB REQUIRED)
 find_package(sdsl REQUIRED)
@@ -101,15 +103,15 @@ if(NOT BUILD_WITH_BDSG)
   list(REMOVE_ITEM HEADER_FILES "gum/hg_utils.hpp")
 endif(NOT BUILD_WITH_BDSG)
 list(TRANSFORM HEADER_FILES PREPEND "${PROJECT_SOURCE_DIR}/include/" OUTPUT_VARIABLE BUILD_HEADER_FILES)
-list(TRANSFORM HEADER_FILES PREPEND "${CMAKE_INSTALL_PREFIX}/include/" OUTPUT_VARIABLE INSTALL_HEADER_FILES)
+list(TRANSFORM HEADER_FILES PREPEND "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/" OUTPUT_VARIABLE INSTALL_HEADER_FILES)
 # Defining target sources
 target_sources(gum
   INTERFACE "$<BUILD_INTERFACE:${BUILD_HEADER_FILES}>;$<INSTALL_INTERFACE:${INSTALL_HEADER_FILES}>")
 # Defining `gum::gum` alias
 add_library(gum::gum ALIAS gum)
 # Install targets
-install(FILES ${BUILD_HEADER_FILES} DESTINATION include/gum)
-install(FILES gum.pc DESTINATION lib/pkgconfig)
+install(FILES ${BUILD_HEADER_FILES} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/gum)
+install(FILES gum.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 
 # Adding test submodule.
 if(BUILD_TESTING)
