@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(gum VERSION 0.0.1 LANGUAGES CXX)
+project(gum VERSION 0.1.0 LANGUAGES CXX)
 
 # Options
 option(BUILD_TESTING "Build test programs" OFF)
