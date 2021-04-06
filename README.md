@@ -61,7 +61,8 @@ To prevent installing multiple versions, GUM does not install bundled dependenci
 default. If you want GUM to handle for example the Parallel Hashmap library, pass
 `-DUSE_BUNDLED_PARALLEL_HASHMAP=on` when calling cmake. Then, GUM build system
 (requiring CMake >=3.10) checks for its availability, and installs them if not present.
-This is also the same for GFAKluge (by `-DUSE_BUNDLED_GFAKLUGE=on`).
+This is also the same for GFAKluge (by `-DUSE_BUNDLED_GFAKLUGE=on`). Additionally,
+`-DUSE_BUNDLED_ALL=on` will handle all bundled dependencies.
 
 #### Optional dependencies
 
@@ -128,7 +129,7 @@ To install GUM (recommended):
 $ git clone https://github.com/cartoonist/gum.git
 $ mkdir gum/build
 $ cd gum/build
-$ cmake -DCMAKE_BUILD_TYPE=Release -DUSE_BUNDLED_PARALLEL_HASHMAP=on -DUSE_BUNDLED_GFAKLUGE=on ..
+$ cmake -DCMAKE_BUILD_TYPE=Release -DUSE_BUNDLED_ALL=on ..
 $ make
 $ sudo make install
 ```

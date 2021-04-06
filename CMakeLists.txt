@@ -8,7 +8,13 @@ option(BUILD_WITH_VG "Build with VG support" ON)
 option(BUILD_WITH_BDSG "Build with BDSG support" OFF)
 option(USE_BUNDLED_PARALLEL_HASHMAP "Use bundled Parallel Hashmap" OFF)
 option(USE_BUNDLED_GFAKLUGE "Use bundled GFAKluge" OFF)
+option(USE_BUNDLED_ALL "Use all bundled dependencies" ON)
 option(PROTOBUF_AS_DEFAULT_VG "Consider Protobuf vg as the default format for 'vg' files" ON)
+
+if(USE_BUNDLED_ALL)
+  set(USE_BUNDLED_PARALLEL_HASHMAP on)
+  set(USE_BUNDLED_GFAKLUGE on)
+endif(USE_BUNDLED_ALL)
 
 if(BUILD_TESTING AND NOT (BUILD_WITH_VG AND BUILD_WITH_BDSG))
   message(FATAL_ERROR "Building tests requires `libvgio` and `libbdsg`. "
