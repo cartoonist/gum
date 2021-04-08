@@ -8,7 +8,7 @@ option(BUILD_WITH_VG "Build with VG support" ON)
 option(BUILD_WITH_BDSG "Build with BDSG support" OFF)
 option(USE_BUNDLED_PARALLEL_HASHMAP "Use bundled Parallel Hashmap" OFF)
 option(USE_BUNDLED_GFAKLUGE "Use bundled GFAKluge" OFF)
-option(USE_BUNDLED_ALL "Use all bundled dependencies" ON)
+option(USE_BUNDLED_ALL "Use all bundled dependencies" OFF)
 option(PROTOBUF_AS_DEFAULT_VG "Consider Protobuf vg as the default format for 'vg' files" ON)
 
 if(USE_BUNDLED_ALL)
