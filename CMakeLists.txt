@@ -50,7 +50,7 @@ endif(BUILD_WITH_BDSG)
 # Handle bundled dependencies
 include(${PROJECT_SOURCE_DIR}/ext/external.cmake)
 
-# Creating an INTERFACE library
+# Creating the INTERFACE library
 add_library(gum INTERFACE)
 
 # If bundled libraries are used, the target should depend on them assuring build order

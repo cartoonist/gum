@@ -23,3 +23,6 @@ if(NOT TARGET gum::gum)
 endif()
 
 check_required_components(gum)
+
+include("${CMAKE_CURRENT_LIST_DIR}/gum-config-version.cmake")
+message(STATUS "Found gum (version ${PACKAGE_VERSION})")

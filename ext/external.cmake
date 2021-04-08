@@ -9,7 +9,7 @@ endif(ParallelHashmap_FOUND)
 if(NOT TARGET ParallelHashmap::ParallelHashmap)
   if(NOT USE_BUNDLED_PARALLEL_HASHMAP)
     message(FATAL_ERROR "Parallel Hashmap library not found. "
-      "Pass in `-DUSE_BUNDLED_PARALLEL_HASHMAP=on` when running cmake to use bundled version. "
+      "Pass in `-DUSE_BUNDLED_PARALLEL_HASHMAP=on` when running cmake to use the bundled version. "
       "It will be installed alongside the library.")
   endif()
   message(STATUS "Using bundled Parallel Hashmap library")
@@ -32,7 +32,7 @@ endif(GFAKluge_FOUND)
 if(NOT TARGET GFAKluge::GFAKluge)
   if(NOT USE_BUNDLED_GFAKLUGE)
     message(FATAL_ERROR "GFAKluge library not found. "
-      "Pass in `-DUSE_BUNDLED_GFAKLUGE=on` when running cmake to use bundled version. "
+      "Pass in `-DUSE_BUNDLED_GFAKLUGE=on` when running cmake to use the bundled version. "
       "It will be installed alongside the library.")
   endif()
   message(STATUS "Using bundled GFAKluge library")
