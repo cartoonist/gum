@@ -285,7 +285,7 @@ namespace gum {
     }
 
     constexpr inline side_type
-    from_side( id_type id, linktype_type type=get_default_linktype() ) const
+    from_side( id_type id, linktype_type type=trait_type::get_default_linktype() ) const
     {
       return trait_type::from_side( id, type );
     }
@@ -297,7 +297,7 @@ namespace gum {
     }
 
     constexpr inline side_type
-    to_side( id_type id, linktype_type type=get_default_linktype() ) const
+    to_side( id_type id, linktype_type type=trait_type::get_default_linktype() ) const
     {
       return trait_type::to_side( id, type );
     }
@@ -334,7 +334,7 @@ namespace gum {
 
     constexpr inline link_type
     make_link( id_type from, id_type to,
-               linktype_type type=get_default_linktype() ) const
+               linktype_type type=trait_type::get_default_linktype() ) const
     {
       return trait_type::make_link( from, to, type );
     }
@@ -431,7 +431,7 @@ namespace gum {
     }
 
     inline bool
-    has_edge( id_type from, id_type to, linktype_type type=get_default_linktype() )
+    has_edge( id_type from, id_type to, linktype_type type=trait_type::get_default_linktype() )
     {
       return this->has_edge( this->from_side( from, type ), this->to_side( to, type ) );
     }
@@ -1068,7 +1068,7 @@ namespace gum {
     }
 
     constexpr inline side_type
-    from_side( id_type id, linktype_type type=get_default_linktype() ) const
+    from_side( id_type id, linktype_type type=trait_type::get_default_linktype() ) const
     {
       return trait_type::from_side( id, type );
     }
@@ -1080,7 +1080,7 @@ namespace gum {
     }
 
     constexpr inline side_type
-    to_side( id_type id, linktype_type type=get_default_linktype() ) const
+    to_side( id_type id, linktype_type type=trait_type::get_default_linktype() ) const
     {
       return trait_type::to_side( id, type );
     }
@@ -1117,7 +1117,7 @@ namespace gum {
 
     constexpr inline link_type
     make_link( id_type from, id_type to,
-               linktype_type type=get_default_linktype() ) const
+               linktype_type type=trait_type::get_default_linktype() ) const
     {
       return trait_type::make_link( from, to, type );
     }
@@ -1183,7 +1183,7 @@ namespace gum {
     }
 
     inline bool
-    has_edge( id_type from, id_type to, linktype_type type=get_default_linktype() ) const
+    has_edge( id_type from, id_type to, linktype_type type=trait_type::get_default_linktype() ) const
     {
       if ( !this->has_node( from ) || !this->has_node( to ) ) return false;
       auto fod = this->outdegree( from );

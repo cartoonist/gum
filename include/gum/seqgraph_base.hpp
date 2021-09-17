@@ -190,6 +190,16 @@ namespace gum {
     using linktype_type = unsigned char;
 
     constexpr static side_type DUMMY_SIDE = { 0, false };
+
+    constexpr static inline linktype_type
+
+    get_default_linktype( )
+    {
+      return DirectedGraphBaseTrait::_linktype(
+          DirectedGraphBaseTrait::end_sidetype(),
+          DirectedGraphBaseTrait::start_sidetype() );
+    }
+
     constexpr static linktype_type DEFAULT_LINKTYPE =
         DirectedGraphBaseTrait::get_default_linktype();
 
@@ -305,14 +315,6 @@ namespace gum {
     }
 
     /* === Link type === */
-    constexpr static inline linktype_type
-    get_default_linktype( )
-    {
-      return DirectedGraphBaseTrait::_linktype(
-          DirectedGraphBaseTrait::end_sidetype(),
-          DirectedGraphBaseTrait::start_sidetype() );
-    }
-
     constexpr static inline linktype_type
     linktype( side_type from, side_type to )
     {
