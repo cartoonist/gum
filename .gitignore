@@ -24,6 +24,9 @@ build
 # Generated files
 gum.pc
 
+# Local config files
+.envrc
+
 ## GitHub defaults ##
 # Compiled Object files
 *.slo
