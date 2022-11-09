@@ -338,6 +338,26 @@ namespace gum {
       this->count = 0;
     }
 
+    inline void
+    save( std::ostream& ostr ) const
+    {
+      this->strset.serialize( ostr );
+      this->breaks.serialize( ostr );
+      ostr.write( reinterpret_cast< const char* >( &this->count ), sizeof( size_type ) );
+    }
+
+    inline void
+    load( std::istream& istr )
+    {
+      this->clear();
+
+      this->strset.load( ostr );
+      this->breaks.load( ostr );
+      istr.read( reinterpret_cast< char* >( &this->count ), sizeof( size_type ) );
+      sdsl::util::init_support( this->rank, &this->breaks );
+      sdsl::util::init_support( this->select, &this->breaks );
+    }
+
   private:
     /* === DATA MEMBERS === */
     container_type strset;

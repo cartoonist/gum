@@ -26,6 +26,9 @@
 #include <parallel_hashmap/phmap.h>
 #include <sdsl/int_vector.hpp>
 #include <sdsl/bit_vectors.hpp>
+#include <cereal/archive/binary.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/types/string.hpp>
 
 #include "coordinate.hpp"
 #include "stringset.hpp"
@@ -897,6 +900,28 @@ namespace gum {
     /* === LIFECYCLE === */
     Node( sequence_type s="", string_type n="" )  /* constructor */
       : sequence( std::move( s ) ), name( std::move( n ) ) { }
+    /* === METHODS === */
+    inline void
+    clear( )
+    {
+      this->sequence.clear();
+      this->name.clear();
+    }
+
+    template< typename TArchive >
+    inline void
+    save( TArchive& archive ) const
+    {
+      archive( this->sequence, this->name );
+    }
+
+    template< typename TArchive >
+    inline void
+    load( TArchive& archive )
+    {
+      this->clear();
+      archive( this->sequence, this->name );
+    }
     /* === DATA MEMBERS === */
     sequence_type sequence;
     string_type name;

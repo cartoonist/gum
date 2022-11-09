@@ -723,6 +723,33 @@ namespace gum {
       this->add_edge_imp( this->from_side( sides ), this->to_side( sides ), safe );
     }
 
+    inline void
+    save( std::ostream& ostr ) const
+    {
+      cereal::BinaryOutputArchive archive( ostr );
+      archive( this->node_count, this->edge_count );
+      archive( this->nodes, this->node_rank, this->adj_out, this->adj_in, this->coordinate );
+    }
+
+    inline void
+    load( std::istream& istr )
+    {
+      this->clear();
+
+      cereal::BinaryInputArchive archive( istr );
+      archive( this->node_count, this->edge_count );
+      this->nodes.reserve( this->node_count );
+      this->adj_in.reserve( this->edge_count );
+      this->adj_out.reserve( this->edge_count );
+      archive( this->nodes, this->node_rank, this->adj_out, this->adj_in, this->coordinate );
+
+      if ( this->nodes.size() != this->node_count ||
+           this->adj_in.size() != this->edge_count ||
+           this->adj_out.size() != this->edge_count ) {
+        throw std::runtime_error( "inconsistent serialised graph" );
+      }
+    }
+
   private:
     /* === DATA MEMBERS === */
     nodes_type nodes;
@@ -1451,6 +1478,30 @@ namespace gum {
       sdsl::util::init_support( this->node_id, &this->ids_bv );
     }
 
+    inline void
+    save( std::ostream& ostr ) const
+    {
+      cereal::BinaryOutputArchive archive( ostr );
+      archive( this->np_padding, this->ep_padding, this->node_count, this->edge_count );
+      this->nodes.serialize( ostr );
+      this->ids_bv.serialize( ostr );
+      archive( this->coordinate );
+    }
+
+    inline void
+    load( std::istream& istr )
+    {
+      this->clear();
+
+      cereal::BinaryInputArchive archive( istr );
+      archive( this->np_padding, this->ep_padding, this->node_count, this->edge_count );
+      this->nodes.load( istr );
+      this->ids_bv.load( istr );
+      archive( this->coordinate );
+      sdsl::util::init_support( this->node_rank, &this->ids_bv );
+      sdsl::util::init_support( this->node_id, &this->ids_bv );
+    }
+
   protected:
     /* === ACCESSORS === */
     inline coordinate_type&
@@ -1865,6 +1916,22 @@ namespace gum {
       this->nodes.shrink_to_fit();
     }
 
+    inline void
+    save( std::ostream& ostr ) const
+    {
+      cereal::BinaryOutputArchive archive( ostr );
+      archive( this->nodes, this->sequences_len_sum, this->names_len_sum );
+    }
+
+    inline void
+    load( std::istream& istr )
+    {
+      this->clear();
+
+      cereal::BinaryInputArchive archive( istr );
+      archive( this->nodes, this->sequences_len_sum, this->names_len_sum );
+    }
+
   private:
     /* === DATA MEMBERS === */
     container_type nodes;
@@ -2011,6 +2078,22 @@ namespace gum {
       this->nameset.clear();
     }
 
+    inline void
+    save( std::ostream& ostr ) const
+    {
+      this->seqset.save( ostr );
+      this->nameset.save( ostr );
+    }
+
+    inline void
+    load( std::istream& istr )
+    {
+      this->clear();
+
+      this->seqset.load( ostr );
+      this->nameset.load( ostr );
+    }
+
   private:
     /* === DATA MEMBERS === */
     sequenceset_type seqset;
@@ -2091,6 +2174,22 @@ namespace gum {
     clear( )
     {
       this->edges.clear();
+    }
+
+    inline void
+    save( std::ostream& ostr ) const
+    {
+      cereal::BinaryOutputArchive archive( ostr );
+      archive( this->edges );
+    }
+
+    inline void
+    load( std::istream& istr )
+    {
+      this->clear();
+
+      cereal::BinaryInputArchive archive( istr );
+      archive( this->edges );
     }
 
   private:
