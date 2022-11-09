@@ -25,7 +25,6 @@
 namespace gum {
   template< typename TContainer >
   class RandomAccessConstIterator
-    : public std::iterator< std::random_access_iterator_tag, typename TContainer::value_type, typename TContainer::difference_type >
   {
   public:
     /* === FRIENDSHIP === */
@@ -37,8 +36,14 @@ namespace gum {
     /* === TYPEDEFS === */
     using container_type = TContainer;
     using iterator = RandomAccessConstIterator;
-    using const_reference = typename container_type::const_reference;
+
+    using iterator_category = std::random_access_iterator_tag;
+    using value_type = typename container_type::value_type;
     using difference_type = typename container_type::difference_type;
+    using pointer = typename container_type::value_type*;
+    using reference = typename container_type::value_type&;
+
+    using const_reference = typename container_type::const_reference;
     using size_type = typename container_type::size_type;
 
     /* === LIFECYCLE === */
