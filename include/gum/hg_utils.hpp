@@ -125,13 +125,13 @@ namespace gum {
             TCoordinate&& coord={} )
     {
       other.for_each_handle(
-          [&]( auto const& handle ) {
+          [&]( handlegraph::handle_t const& handle ) -> bool {
             add( graph, other.get_id( handle ), other.get_sequence( handle ), coord, true );
             return true;
           } );
       if ( sort ) graph.sort_nodes();
       other.for_each_edge(
-          [&]( auto const& edge ) {
+          [&]( handlegraph::edge_t const& edge ) -> bool {
             add( graph, other.get_id( edge.first ), other.get_is_reverse( edge.first ),
                  other.get_id( edge.second ), other.get_is_reverse( edge.second ),
                  0 /* no overlap */, coord );
@@ -149,7 +149,7 @@ namespace gum {
       extend( graph, static_cast< handlegraph::HandleGraph const& >( other ), sort, coord );
 
       other.for_each_path_handle(
-          [&]( auto const& phandle ) {
+          [&]( handlegraph::path_handle_t const& phandle ) -> bool {
             using graph_type = TGraph;
             using id_type = typename graph_type::id_type;
             using rank_type = typename graph_type::rank_type;
