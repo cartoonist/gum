@@ -1,0 +1,24 @@
+{
+    "name": "gum",
+    "description": "A header-only library for representation of sequence graphs",
+    "version-string": "0.1.1",
+    "supports": "(linux & osx)",
+    "dependencies": [
+        "sdsl-lite-vgteam",
+        "parallel-hashmap"
+    ],
+    "features": {
+        "vgio": {
+            "description": "Support for libvgio helper functions",
+            "dependencies": [
+                "vgio"
+            ]
+        },
+        "bdsg": {
+            "description": "Support for libbdsg helper functions",
+            "dependencies": [
+                "libbdsg"
+            ]
+        }
+    }
+}

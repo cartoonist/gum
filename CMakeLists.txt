@@ -1,5 +1,7 @@
-cmake_minimum_required(VERSION 3.10)
-project(gum VERSION 0.1.1 LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.19)
+
+# Adding CMake module path.
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
 
 # Options
 option(BUILD_TESTING "Build test programs" OFF)
@@ -9,6 +11,7 @@ option(BUILD_WITH_BDSG "Build with BDSG support" OFF)
 option(USE_BUNDLED_PARALLEL_HASHMAP "Use bundled Parallel Hashmap" OFF)
 option(USE_BUNDLED_GFAKLUGE "Use bundled GFAKluge" OFF)
 option(USE_BUNDLED_ALL "Use all bundled dependencies" OFF)
+option(USE_VCPKG "Use vcpkg for installing dependencies" OFF)
 option(PROTOBUF_AS_DEFAULT_VG "Consider Protobuf vg as the default format for 'vg' files" ON)
 
 if(USE_BUNDLED_ALL)
@@ -28,11 +31,27 @@ if(BUILD_GUM_AUX_TOOLS AND NOT (BUILD_WITH_VG AND BUILD_WITH_BDSG))
     "`BUILD_WITH_BDSG=on` or disable building auxiliary tools (`BUILD_GUM_AUX_TOOLS=off`).")
 endif()
 
+if(BUILD_WITH_VG)
+  list(APPEND VCPKG_MANIFEST_FEATURES "vgio")
+endif(BUILD_WITH_VG)
+
+if(BUILD_WITH_BDSG)
+  list(APPEND VCPKG_MANIFEST_FEATURES "bdsg")
+endif(BUILD_WITH_BDSG)
+
+# Load AutoVcpkg module
+if(USE_VCPKG)
+  include(AutoVcpkg)
+  vcpkg_lazy_configure()
+  set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+    CACHE FILEPATH "Vcpkg toolchain file")
+endif(USE_VCPKG)
+
+project(gum VERSION 0.1.1 LANGUAGES CXX)
+
 # Include external modules
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
-# Adding CMake module path.
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 # Finding dependencies.
 find_package(ZLIB REQUIRED)
 find_package(sdsl REQUIRED)
