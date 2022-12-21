@@ -21,9 +21,6 @@ compile_commands.json
 # Build directory
 build
 
-# Generated files
-gum.pc
-
 # Local config files
 .envrc
 
