@@ -9,14 +9,12 @@ option(BUILD_GUM_AUX_TOOLS "Build GUM auxiliary tools" OFF)
 option(BUILD_WITH_VG "Build with VG support" ON)
 option(BUILD_WITH_BDSG "Build with BDSG support" OFF)
 option(USE_BUNDLED_PARALLEL_HASHMAP "Use bundled Parallel Hashmap" OFF)
-option(USE_BUNDLED_GFAKLUGE "Use bundled GFAKluge" OFF)
 option(USE_BUNDLED_ALL "Use all bundled dependencies" OFF)
 option(USE_VCPKG "Use vcpkg for installing dependencies" OFF)
 option(PROTOBUF_AS_DEFAULT_VG "Consider Protobuf vg as the default format for 'vg' files" ON)
 
 if(USE_BUNDLED_ALL)
   set(USE_BUNDLED_PARALLEL_HASHMAP on)
-  set(USE_BUNDLED_GFAKLUGE on)
 endif(USE_BUNDLED_ALL)
 
 if(BUILD_TESTING AND NOT (BUILD_WITH_VG AND BUILD_WITH_BDSG))
@@ -58,7 +56,6 @@ find_package(sdsl REQUIRED)
 find_package(OpenMP)
 # Bundled dependencies
 find_package(ParallelHashmap)
-find_package(GFAKluge)
 # Optional dependencies
 if(BUILD_WITH_VG)
   find_package(VGio REQUIRED)
@@ -78,16 +75,16 @@ if(USE_BUNDLED_PARALLEL_HASHMAP AND TARGET parallelhashmap_git)
   add_dependencies(gum parallelhashmap_git)
 endif()
 
-if(USE_BUNDLED_GFAKLUGE AND TARGET gfakluge_git)
+if(TARGET gfakluge_git)
   add_dependencies(gum gfakluge_git)
 endif()
 
 # Defining include directories
 target_include_directories(gum
   INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>;$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>
-  INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/sdsl::sdsl>;$<INSTALL_INTERFACE:sdsl::sdsl>
-  INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/ParallelHashmap::ParallelHashmap>;$<INSTALL_INTERFACE:ParallelHashmap::ParallelHashmap>
-  INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/GFAKluge::GFAKluge>;$<INSTALL_INTERFACE:GFAKluge::GFAKluge>)
+  INTERFACE $<TARGET_PROPERTY:sdsl::sdsl,INTERFACE_INCLUDE_DIRECTORIES>
+  INTERFACE $<TARGET_PROPERTY:ParallelHashmap::ParallelHashmap,INTERFACE_INCLUDE_DIRECTORIES>)
+
 if(BUILD_WITH_VG)
   target_include_directories(gum
     INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/VGio::VGio>;$<INSTALL_INTERFACE:VGio::VGio>)
@@ -100,7 +97,6 @@ endif(BUILD_WITH_BDSG)
 target_link_libraries(gum
   INTERFACE $<BUILD_INTERFACE:sdsl::sdsl>;$<INSTALL_INTERFACE:sdsl::sdsl>
   INTERFACE $<BUILD_INTERFACE:ParallelHashmap::ParallelHashmap>;$<INSTALL_INTERFACE:ParallelHashmap::ParallelHashmap>
-  INTERFACE $<BUILD_INTERFACE:GFAKluge::GFAKluge>;$<INSTALL_INTERFACE:GFAKluge::GFAKluge>
   INTERFACE $<BUILD_INTERFACE:OpenMP::OpenMP_CXX>;$<INSTALL_INTERFACE:OpenMP::OpenMP_CXX>)
 if(BUILD_WITH_VG)
   target_link_libraries(gum
@@ -121,6 +117,8 @@ configure_file(include/gum/config.hpp.in ${PROJECT_SOURCE_DIR}/include/gum/confi
 configure_file(gum.pc.in ${PROJECT_SOURCE_DIR}/gum.pc @ONLY)
 # Setting header files
 file(GLOB HEADER_FILES RELATIVE "${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/include/gum/*.hpp")
+file(GLOB INTERNAL_HEADER_FILES "${PROJECT_SOURCE_DIR}/include/gum/internal/*.hpp")
+set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES "${PROJECT_SOURCE_DIR}/include/gum/internal")
 if(NOT BUILD_WITH_VG)
   list(REMOVE_ITEM HEADER_FILES "gum/vg_utils.hpp")
 endif(NOT BUILD_WITH_VG)
@@ -136,6 +134,7 @@ target_sources(gum
 add_library(gum::gum ALIAS gum)
 # Install targets
 install(FILES ${BUILD_HEADER_FILES} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/gum)
+install(FILES ${INTERNAL_HEADER_FILES} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/gum/internal)
 install(FILES gum.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 # Exporting targets
 install(TARGETS gum EXPORT gum-targets)
