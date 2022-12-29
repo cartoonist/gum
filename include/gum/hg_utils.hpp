@@ -1,9 +1,14 @@
 /**
  *    @file  hg_utils.hpp
- *   @brief  `HashGraph` utility functions and data types.
+ *   @brief  SeqGraphs template interface functions for loading/extending `HashGraph`s.
  *
- *  This header file is a part of the utility header files specialised for `HashGraph`
+ *  This header file includes interface function definitions specialised for `HashGraph`
  *  data type.
+ *
+ *  NOTE: The interface functions are template functions parameterised by data types
+ *  defined in `libbdsg` (as template parameters). No specific data type from `libbdsg`
+ *  is explicitly used in this header file to prevent imposing unwanted dependencies
+ *  when `HashGraph` format is not used.
  *
  *  @author  Ali Ghaffaari (\@cartoonist), <ali.ghaffaari@mpi-inf.mpg.de>
  *
@@ -20,10 +25,6 @@
 #define  GUM_HG_UTILS_HPP__
 
 #include <string>
-#include <istream>
-
-#include <bdsg/hash_graph.hpp>
-#include <vg/io/vpkg.hpp>
 
 #include "coordinate.hpp"
 #include "iterators.hpp"
@@ -52,7 +53,7 @@ namespace gum {
               typename TCoordinate=HGFormat::DefaultCoord< TGraph >,
               typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
     inline void
-    update( TGraph& graph, HGFormat::nid_t eid, std::string seq, TCoordinate&& coord={} )
+    update_node( TGraph& graph, HGFormat::nid_t eid, std::string seq, HGFormat, TCoordinate&& coord={} )
     {
       using graph_type = TGraph;
       using id_type = typename graph_type::id_type;
@@ -70,8 +71,8 @@ namespace gum {
               typename TCoordinate=HGFormat::DefaultCoord< TGraph >,
               typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
     inline typename TGraph::id_type
-    add( TGraph& graph, HGFormat::nid_t eid, std::string seq, TCoordinate&& coord={},
-         bool force=false )
+    add_node( TGraph& graph, HGFormat::nid_t eid, std::string seq, HGFormat, TCoordinate&& coord={},
+              bool force=false )
     {
       using graph_type = TGraph;
       using id_type = typename graph_type::id_type;
@@ -93,8 +94,8 @@ namespace gum {
               typename TCoordinate=HGFormat::DefaultCoord< TGraph >,
               typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
     inline void
-    add( TGraph& graph, HGFormat::nid_t from, bool from_start, HGFormat::nid_t to,
-         bool to_end, HGFormat::off_t overlap, TCoordinate&& coord={}, bool force=false )
+    add_edge( TGraph& graph, HGFormat::nid_t from, bool from_start, HGFormat::nid_t to,
+              bool to_end, HGFormat::off_t overlap, HGFormat, TCoordinate&& coord={}, bool force=false )
     {
       using graph_type = TGraph;
       using id_type = typename graph_type::id_type;
@@ -118,38 +119,17 @@ namespace gum {
     }
 
     template< typename TGraph,
+              typename THGGraph,
               typename TCoordinate=HGFormat::DefaultCoord< TGraph >,
               typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
     inline void
-    extend( TGraph& graph, handlegraph::HandleGraph const& other, bool sort=false,
-            TCoordinate&& coord={} )
+    extend_path( TGraph& graph, THGGraph const& other, HGFormat, bool sort=false,
+                 TCoordinate&& coord={} )
     {
-      other.for_each_handle(
-          [&]( handlegraph::handle_t const& handle ) -> bool {
-            add( graph, other.get_id( handle ), other.get_sequence( handle ), coord, true );
-            return true;
-          } );
-      if ( sort ) graph.sort_nodes();
-      other.for_each_edge(
-          [&]( handlegraph::edge_t const& edge ) -> bool {
-            add( graph, other.get_id( edge.first ), other.get_is_reverse( edge.first ),
-                 other.get_id( edge.second ), other.get_is_reverse( edge.second ),
-                 0 /* no overlap */, coord );
-            return true;
-          } );
-    }
-
-    template< typename TGraph,
-              typename TCoordinate=HGFormat::DefaultCoord< TGraph >,
-              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
-    inline void
-    extend( TGraph& graph, handlegraph::PathHandleGraph const& other, bool sort=false,
-            TCoordinate&& coord={} )
-    {
-      extend( graph, static_cast< handlegraph::HandleGraph const& >( other ), sort, coord );
+      using hg_path_handle_t = decltype( THGGraph{}.get_path_handle( "" ) );
 
       other.for_each_path_handle(
-          [&]( handlegraph::path_handle_t const& phandle ) -> bool {
+          [&]( hg_path_handle_t const& phandle ) -> bool {
             using graph_type = TGraph;
             using id_type = typename graph_type::id_type;
             using rank_type = typename graph_type::rank_type;
@@ -176,75 +156,32 @@ namespace gum {
           } );
     }
 
-    template< typename TGraph, typename ...TArgs >
+    template< typename TGraph,
+              typename THGGraph,
+              typename TCoordinate=HGFormat::DefaultCoord< TGraph >,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
     inline void
-    extend_hg( TGraph& graph, std::istream& in, TArgs&&... args )
+    extend_graph( TGraph& graph, THGGraph const& other, HGFormat, bool sort=false,
+                  TCoordinate&& coord={} )
     {
-      bdsg::HashGraph other( in );
-      extend( graph, other, std::forward< TArgs >( args )... );
-    }
+      using hg_handle_t = decltype( THGGraph{}.get_handle( HGFormat::nid_t{} ) );
+      using hg_edge_t = decltype( THGGraph{}.edge_handle( hg_handle_t{}, hg_handle_t{} ) );
 
-    template< typename TGraph, typename ...TArgs >
-    inline void
-    extend_hg( TGraph& graph, std::string fname, TArgs&&... args )
-    {
-      std::ifstream ifs( fname, std::ifstream::in | std::ifstream::binary );
-      if( !ifs ) {
-        throw std::runtime_error( "cannot open file '" + fname + "'" );
-      }
-      extend_hg( graph, ifs, std::forward< TArgs >( args )... );
-    }
-
-    template< typename TGraph, typename ...TArgs >
-    inline void
-    extend( TGraph& graph, std::istream& in, HGFormat, TArgs&&... args )
-    {
-      extend_hg( graph, in, std::forward< TArgs >( args )... );
-    }
-
-    template< typename TGraph, typename ...TArgs >
-    inline void
-    extend( TGraph& graph, std::string fname, HGFormat, TArgs&&... args )
-    {
-      extend_hg( graph, std::move( fname ), std::forward< TArgs >( args )... );
-    }
-
-    template< typename TGraph, typename ...TArgs >
-    inline void
-    _load_hg( TGraph& graph, Dynamic, TArgs&&... args )
-    {
-      graph.clear();
-      extend_hg( graph, std::forward< TArgs >( args )... );
-    }
-
-    template< typename TGraph, typename ...TArgs >
-    inline void
-    _load_hg( TGraph& graph, Succinct, TArgs&&... args )
-    {
-      typename TGraph::dynamic_type dyn_graph;
-      extend_hg( dyn_graph, std::forward< TArgs >( args )... );
-      graph = dyn_graph;
-    }
-
-    template< typename TGraph, typename ...TArgs >
-    inline void
-    load_hg( TGraph& graph, TArgs&&... args )
-    {
-      _load_hg( graph, typename TGraph::spec_type(), std::forward< TArgs >( args )... );
-    }
-
-    template< typename TGraph, typename ...TArgs >
-    inline void
-    load( TGraph& graph, std::istream& in, HGFormat, TArgs&&... args )
-    {
-      load_hg( graph, in, std::forward< TArgs >( args )... );
-    }
-
-    template< typename TGraph, typename ...TArgs >
-    inline void
-    load( TGraph& graph, std::string fname, HGFormat, TArgs&&... args )
-    {
-      load_hg( graph, std::move( fname ), std::forward< TArgs >( args )... );
+      other.for_each_handle(
+          [&]( hg_handle_t const& handle ) -> bool {
+            add_node( graph, other.get_id( handle ), other.get_sequence( handle ), HGFormat{},
+                      coord, true );
+            return true;
+          } );
+      if ( sort ) graph.sort_nodes();
+      other.for_each_edge(
+          [&]( hg_edge_t const& edge ) -> bool {
+            add_edge( graph, other.get_id( edge.first ), other.get_is_reverse( edge.first ),
+                      other.get_id( edge.second ), other.get_is_reverse( edge.second ),
+                      0 /* no overlap */, HGFormat{}, coord );
+            return true;
+          } );
+      extend_path( graph, other, HGFormat{}, sort, coord );
     }
   }  /* --- end of namespace util --- */
 }  /* --- end of namespace gum --- */
