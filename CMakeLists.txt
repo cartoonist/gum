@@ -6,8 +6,10 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
 # Options
 option(BUILD_TESTING "Build test programs" OFF)
 option(BUILD_GUM_AUX_TOOLS "Build GUM auxiliary tools" OFF)
-option(BUILD_WITH_VG "Build with VG support" ON)
-option(BUILD_WITH_BDSG "Build with BDSG support" OFF)
+option(WITH_VG "With vg graph loading support" ON)
+option(WITH_HG "With HashGraph loading support" ON)
+option(WITH_VGIO "With io support for vg files" OFF)
+option(WITH_BDSG "With io support for HashGraph files" OFF)
 option(USE_BUNDLED_PARALLEL_HASHMAP "Use bundled Parallel Hashmap" OFF)
 option(USE_BUNDLED_ALL "Use all bundled dependencies" OFF)
 option(USE_VCPKG "Use vcpkg for installing dependencies" OFF)
@@ -17,25 +19,33 @@ if(USE_BUNDLED_ALL)
   set(USE_BUNDLED_PARALLEL_HASHMAP on)
 endif(USE_BUNDLED_ALL)
 
-if(BUILD_TESTING AND NOT (BUILD_WITH_VG AND BUILD_WITH_BDSG))
+if(WITH_VGIO)
+  set(WITH_VG on)
+endif(WITH_VGIO)
+
+if(WITH_BDSG)
+  set(WITH_HG on)
+endif(WITH_BDSG)
+
+if(BUILD_TESTING AND NOT (WITH_VGIO AND WITH_BDSG))
   message(FATAL_ERROR "Building tests requires `libvgio` and `libbdsg`. "
-    "Either enable VG and BDSG support by defining `BUILD_WITH_VG=on` and "
-    "`BUILD_WITH_BDSG=on` or disable building tests (`BUILD_TESTING=off`).")
+    "Either enable VG and BDSG support by defining `WITH_VGIO=on` and "
+    "`WITH_BDSG=on` or disable building tests (`BUILD_TESTING=off`).")
 endif()
 
-if(BUILD_GUM_AUX_TOOLS AND NOT (BUILD_WITH_VG AND BUILD_WITH_BDSG))
+if(BUILD_GUM_AUX_TOOLS AND NOT (WITH_VGIO AND WITH_BDSG))
   message(FATAL_ERROR "Building auxiliary tools requires `libvgio` and `libbdsg`. "
-    "Either enable VG and BDSG support by defining `BUILD_WITH_VG=on` and "
-    "`BUILD_WITH_BDSG=on` or disable building auxiliary tools (`BUILD_GUM_AUX_TOOLS=off`).")
+    "Either enable VG and BDSG support by defining `WITH_VGIO=on` and "
+    "`WITH_BDSG=on` or disable building auxiliary tools (`BUILD_GUM_AUX_TOOLS=off`).")
 endif()
 
-if(BUILD_WITH_VG)
+if(WITH_VGIO)
   list(APPEND VCPKG_MANIFEST_FEATURES "vgio")
-endif(BUILD_WITH_VG)
+endif(WITH_VGIO)
 
-if(BUILD_WITH_BDSG)
+if(WITH_BDSG)
   list(APPEND VCPKG_MANIFEST_FEATURES "bdsg")
-endif(BUILD_WITH_BDSG)
+endif(WITH_BDSG)
 
 # Load AutoVcpkg module
 if(USE_VCPKG)
@@ -57,12 +67,12 @@ find_package(OpenMP)
 # Bundled dependencies
 find_package(ParallelHashmap)
 # Optional dependencies
-if(BUILD_WITH_VG)
+if(WITH_VGIO)
   find_package(VGio REQUIRED)
-endif(BUILD_WITH_VG)
-if(BUILD_WITH_BDSG)
+endif(WITH_VGIO)
+if(WITH_BDSG)
   find_package(libbdsg REQUIRED)
-endif(BUILD_WITH_BDSG)
+endif(WITH_BDSG)
 # Handle bundled dependencies
 include(${PROJECT_SOURCE_DIR}/ext/external.cmake)
 
@@ -85,33 +95,35 @@ target_include_directories(gum
   INTERFACE $<TARGET_PROPERTY:sdsl::sdsl,INTERFACE_INCLUDE_DIRECTORIES>
   INTERFACE $<TARGET_PROPERTY:ParallelHashmap::ParallelHashmap,INTERFACE_INCLUDE_DIRECTORIES>)
 
-if(BUILD_WITH_VG)
+if(WITH_VGIO)
   target_include_directories(gum
     INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/VGio::VGio>;$<INSTALL_INTERFACE:VGio::VGio>)
-endif(BUILD_WITH_VG)
-if(BUILD_WITH_BDSG)
+endif(WITH_VGIO)
+if(WITH_BDSG)
   target_include_directories(gum
     INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/libbdsg::libbdsg>;$<INSTALL_INTERFACE:libbdsg::libbdsg>)
-endif(BUILD_WITH_BDSG)
+endif(WITH_BDSG)
 # Defining link libraries
 target_link_libraries(gum
   INTERFACE $<BUILD_INTERFACE:sdsl::sdsl>;$<INSTALL_INTERFACE:sdsl::sdsl>
   INTERFACE $<BUILD_INTERFACE:ParallelHashmap::ParallelHashmap>;$<INSTALL_INTERFACE:ParallelHashmap::ParallelHashmap>
   INTERFACE $<BUILD_INTERFACE:OpenMP::OpenMP_CXX>;$<INSTALL_INTERFACE:OpenMP::OpenMP_CXX>)
-if(BUILD_WITH_VG)
+if(WITH_VGIO)
   target_link_libraries(gum
     INTERFACE $<BUILD_INTERFACE:VGio::VGio>;$<INSTALL_INTERFACE:VGio::VGio>)
-endif(BUILD_WITH_VG)
-if(BUILD_WITH_BDSG)
+endif(WITH_VGIO)
+if(WITH_BDSG)
   target_link_libraries(gum
     INTERFACE $<BUILD_INTERFACE:libbdsg::libbdsg>;$<INSTALL_INTERFACE:libbdsg::libbdsg>)
-endif(BUILD_WITH_BDSG)
+endif(WITH_BDSG)
 # Use C++17
 target_compile_features(gum INTERFACE cxx_std_17)
 # Generating the configure header file
 set(GUM_IO_PROTOBUF_VG "${PROTOBUF_AS_DEFAULT_VG}")
-set(GUM_WITH_VG "${BUILD_WITH_VG}")
-set(GUM_WITH_BDSG "${BUILD_WITH_BDSG}")
+set(GUM_HAS_VG "${WITH_VG}")
+set(GUM_HAS_HG "${WITH_HG}")
+set(GUM_HAS_VGIO "${WITH_VGIO}")
+set(GUM_HAS_BDSG "${WITH_BDSG}")
 configure_file(include/gum/config.hpp.in ${PROJECT_SOURCE_DIR}/include/gum/config.hpp @ONLY)
 # Generating pkgconfig file
 configure_file(gum.pc.in ${PROJECT_SOURCE_DIR}/gum.pc @ONLY)
@@ -119,12 +131,18 @@ configure_file(gum.pc.in ${PROJECT_SOURCE_DIR}/gum.pc @ONLY)
 file(GLOB HEADER_FILES RELATIVE "${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/include/gum/*.hpp")
 file(GLOB INTERNAL_HEADER_FILES "${PROJECT_SOURCE_DIR}/include/gum/internal/*.hpp")
 set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES "${PROJECT_SOURCE_DIR}/include/gum/internal")
-if(NOT BUILD_WITH_VG)
+if(NOT WITH_VG)
   list(REMOVE_ITEM HEADER_FILES "gum/vg_utils.hpp")
-endif(NOT BUILD_WITH_VG)
-if(NOT BUILD_WITH_BDSG)
+endif(NOT WITH_VG)
+if(NOT WITH_HG)
   list(REMOVE_ITEM HEADER_FILES "gum/hg_utils.hpp")
-endif(NOT BUILD_WITH_BDSG)
+endif(NOT WITH_HG)
+if(NOT WITH_VGIO)
+  list(REMOVE_ITEM HEADER_FILES "gum/vgio_utils.hpp")
+endif(NOT WITH_VGIO)
+if(NOT WITH_BDSG)
+  list(REMOVE_ITEM HEADER_FILES "gum/bdsg_utils.hpp")
+endif(NOT WITH_BDSG)
 list(TRANSFORM HEADER_FILES PREPEND "${PROJECT_SOURCE_DIR}/include/" OUTPUT_VARIABLE BUILD_HEADER_FILES)
 list(TRANSFORM HEADER_FILES PREPEND "${CMAKE_INSTALL_FULL_INCLUDEDIR}/" OUTPUT_VARIABLE INSTALL_HEADER_FILES)
 # Defining target sources

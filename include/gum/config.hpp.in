@@ -24,7 +24,9 @@
 #define GUM_PROJECT_VERSION_PATCH "@PROJECT_VERSION_PATCH@"
 
 #cmakedefine GUM_IO_PROTOBUF_VG
-#cmakedefine GUM_WITH_VG
-#cmakedefine GUM_WITH_BDSG
+#cmakedefine GUM_HAS_VG
+#cmakedefine GUM_HAS_HG
+#cmakedefine GUM_HAS_VGIO
+#cmakedefine GUM_HAS_BDSG
 
 #endif  /* --- #ifndef GUM_CONFIG_HPP__ --- */

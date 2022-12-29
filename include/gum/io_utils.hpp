@@ -22,12 +22,14 @@
 #include "config.hpp"
 #include "gfa_utils.hpp"
 
-#ifdef GUM_WITH_BDSG
-#include "hg_utils.hpp"
+#if defined(GUM_HAS_BDSG) && !defined(GUM_USER_EXCLUDE_BDSG)
+#define GUM_INCLUDED_BDSG
+#include "bdsg_utils.hpp"
 #endif
 
-#ifdef GUM_WITH_VG
-#include "vg_utils.hpp"
+#if defined(GUM_HAS_VGIO) && !defined(GUM_USER_EXCLUDE_VGIO)
+#define GUM_INCLUDED_VGIO
+#include "vgio_utils.hpp"
 #endif
 
 
@@ -55,13 +57,13 @@ namespace gum {
         extend_gfa( graph, fname, std::forward< TArgs >( args )... );
       }
 #ifndef GUM_IO_PROTOBUF_VG
-#ifdef GUM_WITH_BDSG
+#ifdef GUM_INCLUDED_BDSG
       else if ( util::ends_with( fname, HGFormat::FILE_EXTENSION ) ) {
         extend_hg( graph, fname, std::forward< TArgs >( args )... );
       }
 #endif
 #else
-#ifdef GUM_WITH_VG
+#ifdef GUM_INCLUDED_VGIO
       else if ( util::ends_with( fname, VGFormat::FILE_EXTENSION ) ) {
         extend_vg( graph, fname, std::forward< TArgs >( args )... );
       }
@@ -89,13 +91,13 @@ namespace gum {
         load_gfa( graph, fname, std::forward< TArgs >( args )... );
       }
 #ifndef GUM_IO_PROTOBUF_VG
-#ifdef GUM_WITH_BDSG
+#ifdef GUM_INCLUDED_BDSG
       else if ( util::ends_with( fname, HGFormat::FILE_EXTENSION ) ) {
         load_hg( graph, fname, std::forward< TArgs >( args )... );
       }
 #endif
 #else
-#ifdef GUM_WITH_VG
+#ifdef GUM_INCLUDED_VGIO
       else if ( util::ends_with( fname, VGFormat::FILE_EXTENSION ) ) {
         load_vg( graph, fname, std::forward< TArgs >( args )... );
       }

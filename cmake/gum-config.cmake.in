@@ -1,7 +1,7 @@
 @PACKAGE_INIT@
 
-set(GUM_HAS_VG @BUILD_WITH_VG@)
-set(GUM_HAS_BDSG @BUILD_WITH_BDSG@)
+set(GUM_WITH_VGIO @WITH_VGIO@)
+set(GUM_WITH_BDSG @WITH_BDSG@)
 
 include(CMakeFindDependencyMacro)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
@@ -9,12 +9,12 @@ find_dependency(ZLIB REQUIRED)
 find_dependency(sdsl REQUIRED)
 find_dependency(ParallelHashmap REQUIRED)
 find_dependency(OpenMP)
-if(GUM_HAS_VG)
+if(GUM_WITH_VGIO)
   find_dependency(VGio REQUIRED)
-endif(GUM_HAS_VG)
-if(GUM_HAS_BDSG)
+endif(GUM_WITH_VGIO)
+if(GUM_WITH_BDSG)
   find_dependency(libbdsg REQUIRED)
-endif(GUM_HAS_BDSG)
+endif(GUM_WITH_BDSG)
 list(REMOVE_AT CMAKE_MODULE_PATH -1)
 
 if(NOT TARGET gum::gum)
