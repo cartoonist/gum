@@ -97,11 +97,11 @@ target_include_directories(gum
 
 if(WITH_VGIO)
   target_include_directories(gum
-    INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/VGio::VGio>;$<INSTALL_INTERFACE:VGio::VGio>)
+    INTERFACE $<TARGET_PROPERTY:VGio::VGio,INTERFACE_INCLUDE_DIRECTORIES>)
 endif(WITH_VGIO)
 if(WITH_BDSG)
   target_include_directories(gum
-    INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/libbdsg::libbdsg>;$<INSTALL_INTERFACE:libbdsg::libbdsg>)
+    INTERFACE $<TARGET_PROPERTY:libbdsg::libbdsg,INTERFACE_INCLUDE_DIRECTORIES>)
 endif(WITH_BDSG)
 # Defining link libraries
 target_link_libraries(gum

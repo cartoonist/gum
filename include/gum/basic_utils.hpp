@@ -22,6 +22,7 @@
 #include <string>
 #include <iterator>
 #include <numeric>
+#include <vector>
 
 
 namespace gum {
