@@ -1,8 +1,14 @@
 /**
  *    @file  vg_utils.hpp
- *   @brief  vg utility functions and data types.
+ *   @brief  SeqGraphs template interface functions for loading/extending vg graphs.
  *
- *  This header file is a part of the utility header files specialised for vg data type.
+ *  This header file includes interface function definitions specialised for vg data
+ *  type.
+ *
+ *  NOTE: The interface functions are template functions parameterised by vg data types
+ *  (as template parameters). No specific data type from vg is explicitly used in this
+ *  header file to prevent imposing unwanted dependencies especially when vg format is
+ *  not used.
  *
  *  @author  Ali Ghaffaari (\@cartoonist), <ali.ghaffaari@mpi-inf.mpg.de>
  *
@@ -19,11 +25,7 @@
 #define  GUM_VG_UTILS_HPP__
 
 #include <string>
-#include <istream>
 #include <functional>
-
-#include <vg/vg.pb.h>
-#include <vg/io/stream.hpp>
 
 #include "coordinate.hpp"
 #include "iterators.hpp"
@@ -35,20 +37,25 @@ namespace gum {
     struct VGFormat {
       inline static const std::string FILE_EXTENSION = ".vg";
       /**
+       *  NOTE: Node ID and offset type is defined independent of `libvgio` library.
+       */
+      typedef int64_t nid_t;  // decltype( vg::Node().id() )
+      typedef std::size_t off_t;
+      /**
        *  NOTE: The default coordinate system for vg graphs is
        *  `gum::coordinate::Identity`; i.e. the node IDs are identical to ones
        *  defined in vg graphs.
        */
       template< typename TGraph >
-      using DefaultCoord = gum::CoordinateType< TGraph, gum::coordinate::Identity,
-                                                decltype( vg::Node().id() ) >;
+      using DefaultCoord = gum::CoordinateType< TGraph, gum::coordinate::Identity, nid_t >;
     };
 
     template< typename TGraph,
+              typename TVGNode,
               typename TCoordinate=VGFormat::DefaultCoord< TGraph >,
               typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
     inline void
-    update( TGraph& graph, vg::Node const& node, TCoordinate&& coord={} )
+    update_node( TGraph& graph, TVGNode const& node, VGFormat, TCoordinate&& coord={} )
     {
       using graph_type = TGraph;
       using id_type = typename graph_type::id_type;
@@ -63,10 +70,11 @@ namespace gum {
     }
 
     template< typename TGraph,
+              typename TVGNode,
               typename TCoordinate=VGFormat::DefaultCoord< TGraph >,
               typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
     inline typename TGraph::id_type
-    add( TGraph& graph, vg::Node const& node, TCoordinate&& coord={}, bool force=false )
+    add_node( TGraph& graph, TVGNode const& node, VGFormat, TCoordinate&& coord={}, bool force=false )
     {
       using graph_type = TGraph;
       using id_type = typename graph_type::id_type;
@@ -85,10 +93,11 @@ namespace gum {
     }
 
     template< typename TGraph,
+              typename TVGEdge,
               typename TCoordinate=VGFormat::DefaultCoord< TGraph >,
               typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
     inline void
-    add( TGraph& graph, vg::Edge const& edge, TCoordinate&& coord={}, bool force=false )
+    add_edge( TGraph& graph, TVGEdge const& edge, VGFormat, TCoordinate&& coord={}, bool force=false )
     {
       using graph_type = TGraph;
       using id_type = typename graph_type::id_type;
@@ -114,16 +123,17 @@ namespace gum {
     }
 
     template< typename TGraph,
+              typename TVGPath,
               typename TCoordinate=VGFormat::DefaultCoord< TGraph >,
               typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
     inline void
-    extend( TGraph& graph, typename TGraph::id_type pid, vg::Path const& path,
-            TCoordinate&& coord={}, bool force=false )
+    extend_path( TGraph& graph, typename TGraph::id_type pid, TVGPath const& path, VGFormat,
+                 TCoordinate&& coord={}, bool force=false )
     {
       using graph_type = TGraph;
       using id_type = typename graph_type::id_type;
-      using mappings_type = std::decay_t< decltype( vg::Path().mapping() ) >;
-      using mapping_rank_type = std::decay_t< decltype( vg::Path().mapping()[0].rank() ) >;
+      using mappings_type = std::decay_t< decltype( TVGPath().mapping() ) >;
+      using mapping_rank_type = std::decay_t< decltype( TVGPath().mapping()[0].rank() ) >;
       using nodes_type = RandomAccessProxyContainer< mappings_type, id_type >;
       using orientations_type = RandomAccessProxyContainer< mappings_type, bool >;
 
@@ -162,11 +172,12 @@ namespace gum {
     }
 
     template< typename TGraph,
+              typename TVGPath,
               typename TCoordinate=VGFormat::DefaultCoord< TGraph >,
               typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
     inline typename TGraph::id_type
-    add( TGraph& graph, vg::Path const& path, TCoordinate&& coord={}, bool force=false,
-         bool force_node=false )
+    add_path( TGraph& graph, TVGPath const& path, VGFormat, TCoordinate&& coord={},
+              bool force=false, bool force_node=false )
     {
       using graph_type = TGraph;
       using id_type = typename graph_type::id_type;
@@ -185,100 +196,27 @@ namespace gum {
         path_id = graph.add_path( path.name() );
       }
       else if ( !force ) throw std::runtime_error( "adding a duplicate path" );
-      extend( graph, path_id, path, coord, force_node );
+      extend_path( graph, path_id, path, VGFormat{}, coord, force_node );
       return path_id;
     }
 
     template< typename TGraph,
+              typename TVGGraph,
               typename TCoordinate=VGFormat::DefaultCoord< TGraph >,
               typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
     inline void
-    extend( TGraph& graph, vg::Graph& other, bool sort=false, TCoordinate&& coord={} )
+    extend_graph( TGraph& graph, TVGGraph& other, VGFormat, bool sort=false, TCoordinate&& coord={} )
     {
       for ( auto const& node : other.node() ) {
-        add( graph, node, coord, true );
+        add_node( graph, node, VGFormat{}, coord, true );
       }
       if ( sort ) graph.sort_nodes();
       for ( auto const& edge : other.edge() ) {
-        add( graph, edge, coord, true );
+        add_edge( graph, edge, VGFormat{}, coord, true );
       }
       for ( auto const& path : other.path() ) {
-        add( graph, path, coord, true, true );
+        add_path( graph, path, VGFormat{}, coord, true, true );
       }
-    }
-
-    template< typename TGraph, typename ...TArgs >
-    inline void
-    extend_vg( TGraph& graph, std::istream& in, TArgs&&... args )
-    {
-      std::function< void( vg::Graph& ) > handle_chunks =
-          [&]( vg::Graph& other ) {
-            extend( graph, other, std::forward< TArgs >( args )... );
-          };
-      vg::io::for_each( in, handle_chunks );
-    }
-
-    template< typename TGraph, typename ...TArgs >
-    inline void
-    extend_vg( TGraph& graph, std::string fname, TArgs&&... args )
-    {
-      std::ifstream ifs( fname, std::ifstream::in | std::ifstream::binary );
-      if( !ifs ) {
-        throw std::runtime_error( "cannot open file '" + fname + "'" );
-      }
-      extend_vg( graph, ifs, std::forward< TArgs >( args )... );
-    }
-
-    template< typename TGraph, typename ...TArgs >
-    inline void
-    extend( TGraph& graph, std::istream& in, VGFormat, TArgs&&... args )
-    {
-      extend_vg( graph, in, std::forward< TArgs >( args )... );
-    }
-
-    template< typename TGraph, typename ...TArgs >
-    inline void
-    extend( TGraph& graph, std::string fname, VGFormat, TArgs&&... args )
-    {
-      extend_vg( graph, std::move( fname ), std::forward< TArgs >( args )... );
-    }
-
-    template< typename TGraph, typename ...TArgs >
-    inline void
-    _load_vg( TGraph& graph, Dynamic, TArgs&&... args )
-    {
-      graph.clear();
-      extend_vg( graph, std::forward< TArgs >( args )... );
-    }
-
-    template< typename TGraph, typename ...TArgs >
-    inline void
-    _load_vg( TGraph& graph, Succinct, TArgs&&... args )
-    {
-      typename TGraph::dynamic_type dyn_graph;
-      extend_vg( dyn_graph, std::forward< TArgs >( args )... );
-      graph = dyn_graph;
-    }
-
-    template< typename TGraph, typename ...TArgs >
-    inline void
-    load_vg( TGraph& graph, TArgs&&... args )
-    {
-      _load_vg( graph, typename TGraph::spec_type(), std::forward< TArgs >( args )... );
-    }
-
-    template< typename TGraph, typename ...TArgs >
-    inline void
-    load( TGraph& graph, std::istream& in, VGFormat, TArgs&&... args )
-    {
-      load_vg( graph, in, std::forward< TArgs >( args )... );
-    }
-
-    template< typename TGraph, typename ...TArgs >
-    inline void
-    load( TGraph& graph, std::string fname, VGFormat, TArgs&&... args )
-    {
-      load_vg( graph, std::move( fname ), std::forward< TArgs >( args )... );
     }
   }  /* --- end of namespace util --- */
 }  /* --- end of namespace gum --- */
