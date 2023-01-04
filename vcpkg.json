@@ -5,7 +5,6 @@
     "supports": "(linux & osx)",
     "dependencies": [
         "zlib",
-        "sdsl-lite-vgteam",
         "parallel-hashmap"
     ],
     "features": {

@@ -62,7 +62,6 @@ include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 # Finding dependencies.
 find_package(ZLIB REQUIRED)
-find_package(sdsl REQUIRED)
 find_package(OpenMP)
 # Bundled dependencies
 find_package(ParallelHashmap)
@@ -84,15 +83,17 @@ add_library(gum INTERFACE)
 if(USE_BUNDLED_PARALLEL_HASHMAP AND TARGET parallelhashmap_git)
   add_dependencies(gum parallelhashmap_git)
 endif()
-
 if(TARGET gfakluge_git)
   add_dependencies(gum gfakluge_git)
+endif()
+if(TARGET sdsl_git)
+  add_dependencies(gum sdsl_git)
 endif()
 
 # Defining include directories
 target_include_directories(gum
   INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>;$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>
-  INTERFACE $<TARGET_PROPERTY:sdsl::sdsl,INTERFACE_INCLUDE_DIRECTORIES>
+  INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/gum/internal>;$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}/gum/internal>
   INTERFACE $<TARGET_PROPERTY:ParallelHashmap::ParallelHashmap,INTERFACE_INCLUDE_DIRECTORIES>)
 
 if(WITH_VGIO)
@@ -105,7 +106,6 @@ if(WITH_BDSG)
 endif(WITH_BDSG)
 # Defining link libraries
 target_link_libraries(gum
-  INTERFACE $<BUILD_INTERFACE:sdsl::sdsl>;$<INSTALL_INTERFACE:sdsl::sdsl>
   INTERFACE $<BUILD_INTERFACE:ParallelHashmap::ParallelHashmap>;$<INSTALL_INTERFACE:ParallelHashmap::ParallelHashmap>
   INTERFACE $<BUILD_INTERFACE:OpenMP::OpenMP_CXX>;$<INSTALL_INTERFACE:OpenMP::OpenMP_CXX>)
 if(WITH_VGIO)
@@ -129,7 +129,6 @@ configure_file(include/gum/config.hpp.in ${PROJECT_SOURCE_DIR}/include/gum/confi
 configure_file(gum.pc.in ${PROJECT_SOURCE_DIR}/gum.pc @ONLY)
 # Setting header files
 file(GLOB HEADER_FILES RELATIVE "${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/include/gum/*.hpp")
-file(GLOB INTERNAL_HEADER_FILES "${PROJECT_SOURCE_DIR}/include/gum/internal/*.hpp")
 set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES "${PROJECT_SOURCE_DIR}/include/gum/internal")
 if(NOT WITH_VG)
   list(REMOVE_ITEM HEADER_FILES "gum/vg_utils.hpp")
@@ -152,7 +151,7 @@ target_sources(gum
 add_library(gum::gum ALIAS gum)
 # Install targets
 install(FILES ${BUILD_HEADER_FILES} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/gum)
-install(FILES ${INTERNAL_HEADER_FILES} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/gum/internal)
+install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/gum/internal" DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/gum)
 install(FILES gum.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 # Exporting targets
 install(TARGETS gum EXPORT gum-targets)

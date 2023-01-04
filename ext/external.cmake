@@ -17,6 +17,20 @@ if(NOT EXISTS ${PROJECT_SOURCE_DIR}/include/gum/internal/gfakluge.hpp)
     COMMAND ${CMAKE_COMMAND} -E copy_directory <INSTALL_DIR>/include/ ${PROJECT_SOURCE_DIR}/include/gum/internal)
 endif()
 
+# Include `xxsds/sdsl-lite` in the source code
+if(NOT EXISTS ${PROJECT_SOURCE_DIR}/include/gum/internal/sdsl/config.hpp)
+  message(STATUS "Using bundled xxsds/sdsl-lite library internally")
+  file(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/include/gum/internal/sdsl)
+  set(SDSL_SOURCE_DIR ${PROJECT_SOURCE_DIR}/ext/sdsl-lite)
+  ExternalProject_Add(sdsl_git
+    DOWNLOAD_COMMAND git -C ${PROJECT_SOURCE_DIR} submodule update --init --recursive -- ${SDSL_SOURCE_DIR}
+    SOURCE_DIR ${SDSL_SOURCE_DIR}
+    CONFIGURE_COMMAND ${CMAKE_COMMAND} -E echo "Skipping configure step..."
+    BUILD_COMMAND ${CMAKE_COMMAND} -E echo "Skipping build step..."
+    INSTALL_COMMAND ${CMAKE_COMMAND} -E echo "Skipping install step..."
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${SDSL_SOURCE_DIR}/include/sdsl/ ${PROJECT_SOURCE_DIR}/include/gum/internal/sdsl)
+endif()
+
 if(NOT TARGET ParallelHashmap::ParallelHashmap)
   if(NOT USE_BUNDLED_PARALLEL_HASHMAP)
     message(FATAL_ERROR "Parallel Hashmap library not found. "
