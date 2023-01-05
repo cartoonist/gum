@@ -15,6 +15,9 @@ option(USE_BUNDLED_ALL "Use all bundled dependencies" OFF)
 option(USE_VCPKG "Use vcpkg for installing dependencies" OFF)
 option(PROTOBUF_AS_DEFAULT_VG "Consider Protobuf vg as the default format for 'vg' files" ON)
 
+if(USE_VCPKG)
+  set(USE_BUNDLED_ALL off)
+endif(USE_VCPKG)
 if(USE_BUNDLED_ALL)
   set(USE_BUNDLED_PARALLEL_HASHMAP on)
 endif(USE_BUNDLED_ALL)
@@ -67,10 +70,16 @@ find_package(OpenMP)
 find_package(ParallelHashmap)
 # Optional dependencies
 if(WITH_VGIO)
-  find_package(VGio REQUIRED)
+  find_package(VGio CONFIG REQUIRED)
 endif(WITH_VGIO)
 if(WITH_BDSG)
-  find_package(libbdsg REQUIRED)
+  if (USE_VCPKG)
+    # Use CMake config files
+    find_package(libbdsg CONFIG REQUIRED)
+  else(USE_VCPKG)
+    # Use find module script
+    find_package(libbdsg REQUIRED)
+  endif(USE_VCPKG)
 endif(WITH_BDSG)
 # Handle bundled dependencies
 include(${PROJECT_SOURCE_DIR}/ext/external.cmake)
