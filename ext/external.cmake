@@ -11,9 +11,9 @@ if(NOT EXISTS ${PROJECT_SOURCE_DIR}/include/gum/internal/gfakluge.hpp)
     DOWNLOAD_COMMAND git -C ${PROJECT_SOURCE_DIR} submodule update --init --recursive -- ${GFAKluge_SOURCE_DIR}
     SOURCE_DIR ${GFAKluge_SOURCE_DIR}
     BUILD_IN_SOURCE 1
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND make
-    INSTALL_COMMAND make install PREFIX=<INSTALL_DIR>
+    CONFIGURE_COMMAND ${CMAKE_COMMAND} -E echo "Skipping configure step..."
+    BUILD_COMMAND ${CMAKE_COMMAND} -E echo "Skipping build step..."
+    INSTALL_COMMAND make install-headers PREFIX=<INSTALL_DIR>
     COMMAND ${CMAKE_COMMAND} -E copy_directory <INSTALL_DIR>/include/ ${PROJECT_SOURCE_DIR}/include/gum/internal)
 endif()
 
