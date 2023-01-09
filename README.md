@@ -231,7 +231,8 @@ Configuration
 
 The library needs to be configured before use. Please note that
 **pre-configured packages** can be found in
-[Releases](https://github.com/cartoonist/gum/releases).
+[Releases](https://github.com/cartoonist/gum/releases) (with naming pattern
+`gum-x.x.x-noarch.tar.gz`).
 
 In the configuration phase which is done by CMake, one can specifies which
 modules should be included in the library. Based on selected modules, it also
@@ -349,7 +350,7 @@ $ pkg-config --cflags gum
 
 ### As a part of the source tree
 
-Download and extract pre-configured packages in
+Download and extract pre-configured packages (i.e. `gum-x.x.x-noarch.tar.gz`) in
 [Releases](https://github.com/cartoonist/gum/releases). Copy the `include/gum`
 directory into the source tree.
 
