@@ -24,6 +24,7 @@ build
 
 # Local config files
 .envrc
+.ignore
 
 ## GitHub defaults ##
 # Compiled Object files
