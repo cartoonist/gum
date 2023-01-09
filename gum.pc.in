@@ -7,5 +7,5 @@ Description: Sequence Graph Library
 URL: https://github.com/cartoonist/gum
 Version: @PROJECT_VERSION@
 Requires: zlib
-Cflags: -I${includedir} @ParallelHashmap_PKG_CFLAGS@
+Cflags: -I${includedir}
 Libs: -fopenmp -lpthread -latomic

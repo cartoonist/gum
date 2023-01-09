@@ -4,8 +4,7 @@
     "version-string": "0.1.1",
     "supports": "(linux & osx)",
     "dependencies": [
-        "zlib",
-        "parallel-hashmap"
+        "zlib"
     ],
     "features": {
         "vgio": {

@@ -10,18 +10,10 @@ option(WITH_VG "With vg graph loading support" ON)
 option(WITH_HG "With HashGraph loading support" ON)
 option(WITH_VGIO "With io support for vg files" OFF)
 option(WITH_BDSG "With io support for HashGraph files" OFF)
-option(USE_BUNDLED_PARALLEL_HASHMAP "Use bundled Parallel Hashmap" OFF)
-option(USE_BUNDLED_ALL "Use all bundled dependencies" OFF)
 option(USE_VCPKG "Use vcpkg for installing dependencies" OFF)
 option(PROTOBUF_AS_DEFAULT_VG "Consider Protobuf vg as the default format for 'vg' files" ON)
 
-if(USE_VCPKG)
-  set(USE_BUNDLED_ALL off)
-endif(USE_VCPKG)
-if(USE_BUNDLED_ALL)
-  set(USE_BUNDLED_PARALLEL_HASHMAP on)
-endif(USE_BUNDLED_ALL)
-
+# Processing options
 if(WITH_VGIO)
   set(WITH_VG on)
 endif(WITH_VGIO)
@@ -58,16 +50,16 @@ if(USE_VCPKG)
     CACHE FILEPATH "Vcpkg toolchain file")
 endif(USE_VCPKG)
 
+# Defining the project
 project(gum VERSION 0.1.1 LANGUAGES CXX)
 
 # Include external modules
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
-# Finding dependencies.
+
+# Finding dependencies
 find_package(ZLIB REQUIRED)
 find_package(OpenMP)
-# Bundled dependencies
-find_package(ParallelHashmap)
 # Optional dependencies
 if(WITH_VGIO)
   find_package(VGio CONFIG REQUIRED)
@@ -81,15 +73,15 @@ if(WITH_BDSG)
     find_package(libbdsg REQUIRED)
   endif(USE_VCPKG)
 endif(WITH_BDSG)
-# Handle bundled dependencies
+# Handle embedded dependencies
 include(${PROJECT_SOURCE_DIR}/ext/external.cmake)
 
 # Creating the INTERFACE library
 add_library(gum INTERFACE)
 
-# If bundled libraries are used, the target should depend on them assuring build order
-# in parallel builds.
-if(USE_BUNDLED_PARALLEL_HASHMAP AND TARGET parallelhashmap_git)
+# The target should depend on embedded dependencies targets assuring proper
+# build order in parallel builds.
+if(TARGET parallelhashmap_git)
   add_dependencies(gum parallelhashmap_git)
 endif()
 if(TARGET gfakluge_git)
@@ -102,8 +94,7 @@ endif()
 # Defining include directories
 target_include_directories(gum
   INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>;$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>
-  INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/gum/internal>;$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}/gum/internal>
-  INTERFACE $<TARGET_PROPERTY:ParallelHashmap::ParallelHashmap,INTERFACE_INCLUDE_DIRECTORIES>)
+  INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/gum/internal>;$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}/gum/internal>)
 
 if(WITH_VGIO)
   target_include_directories(gum
@@ -115,7 +106,6 @@ if(WITH_BDSG)
 endif(WITH_BDSG)
 # Defining link libraries
 target_link_libraries(gum
-  INTERFACE $<BUILD_INTERFACE:ParallelHashmap::ParallelHashmap>;$<INSTALL_INTERFACE:ParallelHashmap::ParallelHashmap>
   INTERFACE $<BUILD_INTERFACE:OpenMP::OpenMP_CXX>;$<INSTALL_INTERFACE:OpenMP::OpenMP_CXX>)
 if(WITH_VGIO)
   target_link_libraries(gum
