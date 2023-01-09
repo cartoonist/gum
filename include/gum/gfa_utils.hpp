@@ -22,7 +22,7 @@
 #include <string>
 #include <istream>
 
-#include "internal/gfakluge.hpp"
+#include <gfakluge.hpp>
 
 #include "coordinate.hpp"
 #include "iterators.hpp"
