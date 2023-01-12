@@ -178,6 +178,124 @@ SCENARIO( "Word-wise range operations for bit-vectors", "[utils]" )
     }
   }
 
+  GIVEN( "A bit vector whose size is less than a word length (64-bit)" )
+  {
+    sdsl::bit_vector bv( 12, 1 );
+    bv[ 4 ] = 0;
+    bv[ 6 ] = 0;
+    bv[ 11 ] = 0;
+
+    WHEN( "Finding the first zero by 'integer find' in the entire range" )
+    {
+      auto idx = gum::util::bv_ifind( bv, false );
+
+      THEN( "The bit at the returned index should be zero" )
+      {
+        REQUIRE( bv[ idx ] == 0 );
+        REQUIRE( idx == 4 );
+      }
+
+      AND_THEN( "All bits before the returned index should be one" )
+      {
+        for ( std::size_t i = 0; i < idx; i++ ) REQUIRE( bv[ i ] == 1 );
+      }
+    }
+
+    WHEN( "Finding the first zero by 'integer find' in range [b, n)" )
+    {
+      std::size_t b = 7;
+      auto idx = gum::util::bv_ifind( bv, false, b );
+
+      THEN( "The bit at the returned index should be zero" )
+      {
+        REQUIRE( bv[ idx ] == 0 );
+        REQUIRE( idx == 11 );
+      }
+
+      AND_THEN( "All bits before the returned index should be one" )
+      {
+        for ( std::size_t i = b; i < idx; i++ ) REQUIRE( bv[ i ] == 1 );
+      }
+    }
+
+    WHEN( "Finding the first zero by 'integer find' in range [b, b+l)" )
+    {
+      std::size_t b = 5;
+      std::size_t l = 3;
+      auto idx = gum::util::bv_ifind( bv, false, b, l );
+
+      THEN( "The bit at the returned index should be zero" )
+      {
+        REQUIRE( bv[ idx ] == 0 );
+        REQUIRE( idx == 6 );
+      }
+
+      AND_THEN( "All bits before the returned index should be one" )
+      {
+        for ( std::size_t i = b; i < idx; i++ ) REQUIRE( bv[ i ] == 1 );
+      }
+    }
+  }
+
+  GIVEN( "A bit vector whose size is less than a word length (64-bit)" )
+  {
+    sdsl::bit_vector bv( 12, 0 );
+    bv[ 0 ] = 1;
+    bv[ 5 ] = 1;
+    bv[ 11 ] = 1;
+
+    WHEN( "Finding the first one by 'integer find' in the entire range" )
+    {
+      auto idx = gum::util::bv_ifind( bv, true );
+
+      THEN( "The bit at the returned index should be one" )
+      {
+        REQUIRE( bv[ idx ] == 1 );
+        REQUIRE( idx == 0 );
+      }
+
+      AND_THEN( "All bits before the returned index should be zero" )
+      {
+        for ( std::size_t i = 0; i < idx; i++ ) REQUIRE( bv[ i ] == 0 );
+      }
+    }
+
+    WHEN( "Finding the first one by 'integer find' in range [b, n)" )
+    {
+      std::size_t b = 6;
+      auto idx = gum::util::bv_ifind( bv, true, b );
+
+      THEN( "The bit at the returned index should be one" )
+      {
+        REQUIRE( bv[ idx ] == 1 );
+        REQUIRE( idx == 11 );
+      }
+
+      AND_THEN( "All bits before the returned index should be zero" )
+      {
+        for ( std::size_t i = b; i < idx; i++ ) REQUIRE( bv[ i ] == 0 );
+      }
+    }
+
+    WHEN( "Finding the first one by 'integer find' in range [b, b+l)" )
+    {
+      std::size_t b = 4;
+      std::size_t l = 4;
+      auto idx = gum::util::bv_ifind( bv, true, b, l );
+
+      THEN( "The bit at the returned index should be one" )
+      {
+        REQUIRE( bv[ idx ] == 1 );
+        REQUIRE( idx == 5 );
+      }
+
+      AND_THEN( "All bits before the returned index should be zero" )
+      {
+        for ( std::size_t i = b; i < idx; i++ ) REQUIRE( bv[ i ] == 0 );
+      }
+    }
+  }
+
   GIVEN( "A bit vector whose size is a multiplier of a word length (64-bit)" )
   {
     sdsl::bit_vector sbv( 7872, 0 );
@@ -275,7 +393,123 @@ SCENARIO( "Word-wise range operations for bit-vectors", "[utils]" )
     }
   }
 
-  GIVEN( "A bit vector whose size is larger than word length (64-bit)" )
+  GIVEN( "A bit vector whose size is a multiplier of a word length (64-bit)" )
+  {
+    sdsl::bit_vector bv( 7872, 1 );
+    bv.set_int( 542, 0xdcbafafffffffffb );
+    bv.set_int( 7808, 0xaaaaaaaaaaaaaaaa );
+
+    WHEN( "Finding the first zero by 'integer find' in the entire range" )
+    {
+      auto idx = gum::util::bv_ifind( bv, false );
+
+      THEN( "The bit at the returned index should be zero" )
+      {
+        REQUIRE( bv[ idx ] == 0 );
+        REQUIRE( idx == 544 );
+      }
+
+      AND_THEN( "All bits before the returned index should be one" )
+      {
+        for ( std::size_t i = 0; i < idx; i++ ) REQUIRE( bv[ i ] == 1 );
+      }
+    }
+
+    WHEN( "Finding the first zero by 'integer find' in range [b, n)" )
+    {
+      std::size_t b = 1000;
+      auto idx = gum::util::bv_ifind( bv, false, b );
+
+      THEN( "The bit at the returned index should be zero" )
+      {
+        REQUIRE( bv[ idx ] == 0 );
+        REQUIRE( idx == 7808 );
+      }
+
+      AND_THEN( "All bits before the returned index should be one" )
+      {
+        for ( std::size_t i = b; i < idx; i++ ) REQUIRE( bv[ i ] == 1 );
+      }
+    }
+
+    WHEN( "Finding the first zero by 'integer find' in range [b, b+l)" )
+    {
+      std::size_t b = 546;
+      std::size_t l = 128;
+      auto idx = gum::util::bv_ifind( bv, false, b, l );
+
+      THEN( "The bit at the returned index should be zero" )
+      {
+        REQUIRE( bv[ idx ] == 0 );
+        REQUIRE( idx == 582 );
+      }
+
+      AND_THEN( "All bits before the returned index should be one" )
+      {
+        for ( std::size_t i = b; i < idx; i++ ) REQUIRE( bv[ i ] == 1 );
+      }
+    }
+  }
+
+  GIVEN( "A bit vector whose size is a multiplier of a word length (64-bit)" )
+  {
+    sdsl::bit_vector bv( 7872, 0 );
+    bv.set_int( 542, 0x900000000fafabca );
+    bv.set_int( 7808, 0xaaaaaaaaaaaaaaaa );
+
+    WHEN( "Finding the first one by 'integer find' in the entire range" )
+    {
+      auto idx = gum::util::bv_ifind( bv, true );
+
+      THEN( "The bit at the returned index should be one" )
+      {
+        REQUIRE( bv[ idx ] == 1 );
+        REQUIRE( idx == 543 );
+      }
+
+      AND_THEN( "All bits before the returned index should be zero" )
+      {
+        for ( std::size_t i = 0; i < idx; i++ ) REQUIRE( bv[ i ] == 0 );
+      }
+    }
+
+    WHEN( "Finding the first one by 'integer find' in range [b, n)" )
+    {
+      std::size_t b = 570;
+      auto idx = gum::util::bv_ifind( bv, true, b );
+
+      THEN( "The bit at the returned index should be one" )
+      {
+        REQUIRE( bv[ idx ] == 1 );
+        REQUIRE( idx == 602 );
+      }
+
+      AND_THEN( "All bits before the returned index should be zero" )
+      {
+        for ( std::size_t i = b; i < idx; i++ ) REQUIRE( bv[ i ] == 0 );
+      }
+    }
+
+    WHEN( "Finding the first one by 'integer find' in range [b, b+l)" )
+    {
+      std::size_t b = 606;
+      std::size_t l = 7310;
+      auto idx = gum::util::bv_ifind( bv, true, b, l );
+
+      THEN( "The bit at the returned index should be one" )
+      {
+        REQUIRE( bv[ idx ] == 1 );
+        REQUIRE( idx == 7809 );
+      }
+
+      AND_THEN( "All bits before the returned index should be zero" )
+      {
+        for ( std::size_t i = b; i < idx; i++ ) REQUIRE( bv[ i ] == 0 );
+      }
+    }
+  }
+
+  GIVEN( "A bit vector whose size is not a multiplier of a word length (64-bit)" )
   {
     sdsl::bit_vector sbv( 7800, 0 );
     sbv.set_int( 0, 0xdddddddddddddddd );
@@ -370,6 +604,122 @@ SCENARIO( "Word-wise range operations for bit-vectors", "[utils]" )
         REQUIRE( sbv.get_int( 893 ) == 0x0 );
         REQUIRE( sbv.get_int( 7672 ) == 0x0 );
         REQUIRE( sbv.get_int( 7736 ) == 0x000000000000000a );
+      }
+    }
+  }
+
+  GIVEN( "A bit vector whose size is not a multiplier of a word length (64-bit)" )
+  {
+    sdsl::bit_vector bv( 7900, 1 );
+    bv.set_int( 542, 0xdcbafafffffffffb );
+    bv[7899] = 0;
+
+    WHEN( "Finding the first zero by 'integer find' in the entire range" )
+    {
+      auto idx = gum::util::bv_ifind( bv, false );
+
+      THEN( "The bit at the returned index should be zero" )
+      {
+        REQUIRE( bv[ idx ] == 0 );
+        REQUIRE( idx == 544 );
+      }
+
+      AND_THEN( "All bits before the returned index should be one" )
+      {
+        for ( std::size_t i = 0; i < idx; i++ ) REQUIRE( bv[ i ] == 1 );
+      }
+    }
+
+    WHEN( "Finding the first zero by 'integer find' in range [b, n)" )
+    {
+      std::size_t b = 1000;
+      auto idx = gum::util::bv_ifind( bv, false, b );
+
+      THEN( "The bit at the returned index should be zero" )
+      {
+        REQUIRE( bv[ idx ] == 0 );
+        REQUIRE( idx == 7899 );
+      }
+
+      AND_THEN( "All bits before the returned index should be one" )
+      {
+        for ( std::size_t i = b; i < idx; i++ ) REQUIRE( bv[ i ] == 1 );
+      }
+    }
+
+    WHEN( "Finding the first zero by 'integer find' in range [b, b+l)" )
+    {
+      std::size_t b = 546;
+      std::size_t l = 128;
+      auto idx = gum::util::bv_ifind( bv, false, b, l );
+
+      THEN( "The bit at the returned index should be zero" )
+      {
+        REQUIRE( bv[ idx ] == 0 );
+        REQUIRE( idx == 582 );
+      }
+
+      AND_THEN( "All bits before the returned index should be one" )
+      {
+        for ( std::size_t i = b; i < idx; i++ ) REQUIRE( bv[ i ] == 1 );
+      }
+    }
+  }
+
+  GIVEN( "A bit vector whose size is not a multiplier of a word length (64-bit)" )
+  {
+    sdsl::bit_vector bv( 7900, 0 );
+    bv.set_int( 542, 0x900000000fafabca );
+    bv.set_int( 7808, 0xaaaaaaaaaaaaaaaa );
+
+    WHEN( "Finding the first one by 'integer find' in the entire range" )
+    {
+      auto idx = gum::util::bv_ifind( bv, true );
+
+      THEN( "The bit at the returned index should be one" )
+      {
+        REQUIRE( bv[ idx ] == 1 );
+        REQUIRE( idx == 543 );
+      }
+
+      AND_THEN( "All bits before the returned index should be zero" )
+      {
+        for ( std::size_t i = 0; i < idx; i++ ) REQUIRE( bv[ i ] == 0 );
+      }
+    }
+
+    WHEN( "Finding the first one by 'integer find' in range [b, n)" )
+    {
+      std::size_t b = 570;
+      auto idx = gum::util::bv_ifind( bv, true, b );
+
+      THEN( "The bit at the returned index should be one" )
+      {
+        REQUIRE( bv[ idx ] == 1 );
+        REQUIRE( idx == 602 );
+      }
+
+      AND_THEN( "All bits before the returned index should be zero" )
+      {
+        for ( std::size_t i = b; i < idx; i++ ) REQUIRE( bv[ i ] == 0 );
+      }
+    }
+
+    WHEN( "Finding the first one by 'integer find' in range [b, b+l)" )
+    {
+      std::size_t b = 606;
+      std::size_t l = 7310;
+      auto idx = gum::util::bv_ifind( bv, true, b, l );
+
+      THEN( "The bit at the returned index should be one" )
+      {
+        REQUIRE( bv[ idx ] == 1 );
+        REQUIRE( idx == 7809 );
+      }
+
+      AND_THEN( "All bits before the returned index should be zero" )
+      {
+        for ( std::size_t i = b; i < idx; i++ ) REQUIRE( bv[ i ] == 0 );
       }
     }
   }

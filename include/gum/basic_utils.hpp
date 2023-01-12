@@ -24,6 +24,8 @@
 #include <numeric>
 #include <vector>
 
+#include "basic_types.hpp"
+
 
 namespace gum {
   namespace util {
@@ -137,6 +139,40 @@ namespace gum {
       }
       i -= WLEN;
       for ( ; i < idx + len; ++i ) bv[ i ] = 0;
+    }
+
+    /**
+     *  @brief  Find the first occurrance of an integer in range [idx...idx+len) of a
+     *          bit vector.
+     *
+     *  @param  bv The bit vector.
+     *  @param  idx The start of the range.
+     *  @param  len The length of the range.
+     *  @param  key The search key.
+     */
+    template< typename TBitVector, uint8_t WLEN=64 >
+    inline typename TBitVector::size_type
+    bv_ifind( TBitVector const& bv,
+              bool key=false,
+              typename TBitVector::size_type idx=0,
+              typename TBitVector::size_type len=0 )
+    {
+      using uint_type = uinteger_t< WLEN >;
+
+      assert( idx < bv.size() );
+      if ( len == 0 ) len = bv.size();
+      if ( len + idx > bv.size() ) len = bv.size() - idx;
+      uint_type int_key = key ? 0 : std::numeric_limits< uint_type >::max();
+
+      auto i = idx + WLEN;
+      for ( ; i < idx + len /* && i < src.size() */; i += WLEN ) {
+        if ( bv.get_int( i - WLEN, WLEN ) != int_key ) break;
+      }
+      i -= WLEN;
+      for ( ; i < idx + len; ++i ) {
+        if ( bool( bv[ i ] ) == key ) break;
+      }
+      return i;
     }
 
     /**
