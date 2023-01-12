@@ -574,7 +574,7 @@ TEMPLATE_SCENARIO( "Specialised functionality of DirectedGraph", "[seqgraph][tem
   }
 }
 
-TEMPLATE_SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[seqgraph]",
+TEMPLATE_SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[seqgraph][template]",
                    ( gum::DirectedGraph< gum::Dynamic, gum::Bidirected > ),
                    ( gum::DirectedGraph< gum::Dynamic, gum::Bidirected, void, 64, 16 > ),
                    ( gum::DirectedGraph< gum::Dynamic, gum::Bidirected, void, 16, 64 > ),

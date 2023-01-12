@@ -55,16 +55,16 @@ namespace gum {
 
     template< class TGraph >
     inline typename TGraph::offset_type
-    _total_nof_loci( TGraph const& graph, gum::Dynamic )
+    _total_nof_loci( TGraph const& graph, Dynamic )
     {
       return total_nof_loci( graph, 1 /* from the first node to the end */ );
     }
 
     template< class TGraph >
     inline typename TGraph::offset_type
-    _total_nof_loci( TGraph const& graph, gum::Succinct )
+    _total_nof_loci( TGraph const& graph, Succinct )
     {
-      return gum::util::length_sum( graph.get_node_prop().sequences() );
+      return length_sum( graph.get_node_prop().sequences() );
     }
 
     template< class TGraph >
