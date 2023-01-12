@@ -17,7 +17,7 @@ endif()
 # Defining target 'gstats': Graph statistics tool
 set(GSTATS_SOURCES "src/gstats.cpp")
 add_executable(gstats ${GSTATS_SOURCES})
-target_compile_options(gstats PRIVATE -g -Wall -Wpedantic -Werror)
+target_compile_options(gstats PRIVATE -g -Wall -Wpedantic -Werror -Wno-deprecated-declarations)
 target_include_directories(gstats
   PRIVATE gum::gum
   PRIVATE cxxopts::cxxopts)

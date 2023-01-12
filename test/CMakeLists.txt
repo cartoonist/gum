@@ -16,7 +16,7 @@ configure_file(src/test_config.hpp.in ${PROJECT_BINARY_DIR}/test/src/test_config
 file(GLOB TEST_SOURCES "src/*.cpp")
 add_executable(gum-tests ${TEST_SOURCES})
 
-target_compile_options(gum-tests PRIVATE -g -Wall -Wpedantic -Werror)
+target_compile_options(gum-tests PRIVATE -g -Wall -Wpedantic -Werror -Wno-deprecated-declarations)
 target_include_directories(gum-tests
   PRIVATE ${PROJECT_BINARY_DIR}/test/src
   PRIVATE gum::gum)
