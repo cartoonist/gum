@@ -1322,4 +1322,88 @@ TEMPLATE_SCENARIO( "Get graph statistics", "[seqgraph][template]",
       }
     }
   }
+
+  GIVEN( "A complex variation graph" )
+  {
+    std::string filepath = test_data_dir + "/complex_v2.gfa";
+    graph_type graph;
+    gum::util::load( graph, filepath, true );
+
+    WHEN( "Iterating over start nodes" )
+    {
+      std::vector< typename graph_type::id_type > starts;
+      gum::util::for_each_start_node(
+        graph,
+        [&starts]( auto rank, auto id ) {
+          starts.push_back( id );
+          return true;
+        } );
+
+      THEN( "It should gives the all start nodes" )
+      {
+        REQUIRE( starts.size() == 2 );
+        CHECK( graph.coordinate_id( starts[ 0 ] ) == 1 );
+        CHECK( graph.coordinate_id( starts[ 1 ] ) == 6 );
+      }
+    }
+
+    WHEN( "Iterating over end nodes" )
+    {
+      std::vector< typename graph_type::id_type > ends;
+      gum::util::for_each_end_node(
+        graph,
+        [&ends]( auto rank, auto id ) {
+          ends.push_back( id );
+          return true;
+        } );
+
+      THEN( "It should gives the all end nodes" )
+      {
+        REQUIRE( ends.size() == 3 );
+        CHECK( graph.coordinate_id( ends[ 0 ] ) == 5 );
+        CHECK( graph.coordinate_id( ends[ 1 ] ) == 9 );
+        CHECK( graph.coordinate_id( ends[ 2 ] ) == 12 );
+      }
+    }
+
+    WHEN( "Iterating over start sides" )
+    {
+      std::vector< typename graph_type::id_type > starts;
+      gum::util::for_each_start_side(
+        graph,
+        [&starts]( auto rank, auto id ) {
+          starts.push_back( id );
+          return true;
+        } );
+
+      THEN( "It should gives the all start sides" )
+      {
+        REQUIRE( starts.size() == 4 );
+        CHECK( graph.coordinate_id( starts[ 0 ] ) == 1 );
+        CHECK( graph.coordinate_id( starts[ 1 ] ) == 3 );
+        CHECK( graph.coordinate_id( starts[ 2 ] ) == 5 );
+        CHECK( graph.coordinate_id( starts[ 3 ] ) == 6 );
+      }
+    }
+
+    WHEN( "Iterating over end sides" )
+    {
+      std::vector< typename graph_type::id_type > ends;
+      gum::util::for_each_end_side(
+        graph,
+        [&ends]( auto rank, auto id ) {
+          ends.push_back( id );
+          return true;
+        } );
+
+      THEN( "It should gives the all end sides" )
+      {
+        REQUIRE( ends.size() == 4 );
+        CHECK( graph.coordinate_id( ends[ 0 ] ) == 3 );
+        CHECK( graph.coordinate_id( ends[ 1 ] ) == 5 );
+        CHECK( graph.coordinate_id( ends[ 2 ] ) == 9 );
+        CHECK( graph.coordinate_id( ends[ 3 ] ) == 12 );
+      }
+    }
+  }
 }

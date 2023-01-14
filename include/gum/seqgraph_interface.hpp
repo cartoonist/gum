@@ -87,11 +87,33 @@ namespace gum {
 
     template< typename TGraph, typename TCallback >
     inline void
+    for_each_start_side( TGraph const& graph, TCallback callback )
+    {
+      graph.for_each_node(
+          [&]( auto rank, auto id ) {
+            if ( !graph.indegree( graph.start_side( id ) ) && !callback( rank, id ) ) return false;
+            return true;
+          } );
+    }
+
+    template< typename TGraph, typename TCallback >
+    inline void
     for_each_end_node( TGraph const& graph, TCallback callback )
     {
       graph.for_each_node(
           [&]( auto rank, auto id ) {
             if ( !graph.outdegree( id ) && !callback( rank, id ) ) return false;
+            return true;
+          } );
+    }
+
+    template< typename TGraph, typename TCallback >
+    inline void
+    for_each_end_side( TGraph const& graph, TCallback callback )
+    {
+      graph.for_each_node(
+          [&]( auto rank, auto id ) {
+            if ( !graph.outdegree( graph.end_side( id ) ) && !callback( rank, id ) ) return false;
             return true;
           } );
     }
