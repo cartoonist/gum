@@ -21,6 +21,8 @@
 #include <vector>
 #include <algorithm>
 
+#include <sdsl/bit_vectors.hpp>
+
 
 namespace gum {
   namespace util {
@@ -201,6 +203,68 @@ namespace gum {
             return sorted;
           } );
       return sorted;
+    }
+
+    template< typename TGraph >
+    inline void
+    dfs_traverse( TGraph const& graph,
+                  std::function< void( typename TGraph::rank_type, typename TGraph::id_type ) > on_finishing,
+                  std::function< void( typename TGraph::rank_type, typename TGraph::id_type ) > on_discovery = [](auto,auto){},
+                  std::function< void( typename TGraph::rank_type, typename TGraph::id_type, bool ) > on_visited = [](auto,auto,auto){} )
+    {
+      using id_type = typename TGraph::id_type;
+      using rank_type = typename TGraph::rank_type;
+      using linktype_type = typename TGraph::linktype_type;
+      using nodes_type = std::vector< std::pair< rank_type, id_type > >;
+      using map_type = typename sdsl::bit_vector;
+
+      auto call = []( std::pair< rank_type, id_type > node,
+                      std::function< void( rank_type, id_type ) > function ){
+        function( node.first, node.second );
+      };
+
+      auto n = graph.get_node_count();
+
+      nodes_type stack;
+      map_type visited( 2*n+1, 0 );  // visited[rank*2] <- discovered | visited[rank*2-1] <- finished
+      visited[0] = 1;  // dummy
+
+      for_each_start_node(
+          graph,
+          [&stack]( auto rank, auto id ) -> bool {
+            stack.push_back( { rank, id } );
+            return true;
+          } );
+      std::reverse( stack.begin(), stack.end() );
+
+      typename map_type::size_type last_visited = 0;
+      do {
+        while ( !stack.empty() ) {
+          const auto& node = stack.back();
+          if ( visited[ node.first * 2 ] ) {
+            visited[ node.first * 2 - 1 ] = 1;
+            call( node, on_finishing );
+            stack.pop_back();
+            continue;
+          }
+          visited[ node.first * 2 ] = 1;
+          call( node, on_discovery );
+          graph.for_each_edges_out(
+            node.second,
+            [&stack, &graph, &visited, &on_visited]( id_type to, linktype_type ) -> bool {
+              auto rank = graph.id_to_rank( to );
+              if ( !visited[ rank * 2 ] ) stack.push_back( { rank, to } );
+              else on_visited( rank, to, visited[ rank * 2 - 1 ] );
+              return true;
+            }
+          );
+        }
+
+        last_visited = bv_ifind( visited, false, last_visited );
+        if ( last_visited == visited.size() ) break;
+        auto last_rank = ( last_visited + 1 ) / 2;
+        stack.push_back( { last_rank, graph.rank_to_id( last_rank )} );
+      } while ( true );
     }
   }  /* --- end of namespace util --- */
 }  /* --- end of namespace gum --- */

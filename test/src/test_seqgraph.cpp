@@ -1407,3 +1407,113 @@ TEMPLATE_SCENARIO( "Get graph statistics", "[seqgraph][template]",
     }
   }
 }
+
+TEMPLATE_SCENARIO( "DFS traversal", "[seqgraph][template]",
+                   ( gum::SeqGraph< gum::Dynamic > ),
+                   ( gum::SeqGraph< gum::Succinct > ) )
+{
+  using graph_type = TestType;
+  using id_type = typename graph_type::id_type;
+  using rank_type = typename graph_type::rank_type;
+
+  GIVEN( "A DAG" )
+  {
+    std::string filepath = test_data_dir + "/dfs_dag_v2.gfa";
+    graph_type graph;
+    gum::util::load( graph, filepath );
+
+    auto on_finishing = []( rank_type, id_type ){ };
+    auto on_discovery = []( rank_type, id_type ){ };
+    bool dag = true;
+    auto on_visited = [&dag]( rank_type, id_type, bool finished ) {
+      if ( dag && !finished ) dag = false;
+    };
+
+    WHEN( "It is traversed by DFS algorithm with callbacks for all events" )
+    {
+      gum::util::dfs_traverse( graph, on_finishing, on_discovery, on_visited );
+
+      THEN( "The DFS should have found no back edges" )
+      {
+        REQUIRE( dag );
+      }
+    }
+  }
+
+  GIVEN( "A cyclic graph" )
+  {
+    std::string filepath = test_data_dir + "/dfs_cyclic_v2.gfa";
+    graph_type graph;
+    gum::util::load( graph, filepath );
+
+    std::vector< rank_type > discovered;
+    std::vector< rank_type > finished;
+    discovered.reserve( graph.get_node_count() );
+    finished.reserve( graph.get_node_count() );
+
+    auto on_discovery = [&discovered]( rank_type r, id_type ) {
+      discovered.push_back( r );
+    };
+
+    auto on_finishing = [&finished]( rank_type r, id_type ) {
+      finished.push_back( r );
+    };
+
+    bool dag = true;
+    auto on_visited = [&dag]( rank_type, id_type, bool finished ) {
+      if ( dag && !finished ) dag = false;
+    };
+
+    const std::vector< rank_type > truth_dsc_ranks
+      = { 1, 3, 6, 8, 5, 7, 2, 4, 9, 13, 14, 15, 10, 11, 12 };
+
+    const std::vector< rank_type > truth_fin_ranks
+      = { 8, 7, 5, 6, 3, 4, 2, 1, 15, 14, 13, 12, 11, 10, 9 };
+
+    WHEN( "It is traversed by DFS algorithm with callbacks for all events" )
+    {
+      gum::util::dfs_traverse( graph, on_finishing, on_discovery, on_visited );
+
+      THEN( "The order of nodes by their finishing times should be correct" )
+      {
+        REQUIRE( std::equal( finished.begin(), finished.end(), truth_fin_ranks.begin() ) );
+      }
+
+      THEN( "The order of nodes by their discovery times should be correct" )
+      {
+        REQUIRE( std::equal( discovered.begin(), discovered.end(), truth_dsc_ranks.begin() ) );
+      }
+
+      THEN( "The DFS should have found at least one back edge" )
+      {
+        REQUIRE( !dag );
+      }
+    }
+
+
+    WHEN( "It is traversed by DFS algorithm with callbacks for both finishing and discovery" )
+    {
+      gum::util::dfs_traverse( graph, on_finishing, on_discovery );
+
+      THEN( "The order of nodes by their finishing times should be correct" )
+      {
+        REQUIRE( std::equal( finished.begin(), finished.end(), truth_fin_ranks.begin() ) );
+      }
+
+      THEN( "The order of nodes by their discovery times should be correct" )
+      {
+        REQUIRE( std::equal( discovered.begin(), discovered.end(), truth_dsc_ranks.begin() ) );
+      }
+    }
+
+    WHEN( "It is traversed by DFS algorithm with callback for finishing" )
+    {
+      gum::util::dfs_traverse( graph, on_finishing );
+
+      THEN( "The order of nodes by their finishing times should be correct" )
+      {
+        REQUIRE( std::equal( finished.begin(), finished.end(), truth_fin_ranks.begin() ) );
+      }
+    }
+  }
+}
