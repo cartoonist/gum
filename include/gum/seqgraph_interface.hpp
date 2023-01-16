@@ -23,6 +23,8 @@
 
 #include <sdsl/bit_vectors.hpp>
 
+#include "iterators.hpp"
+
 
 namespace gum {
   namespace util {
@@ -285,6 +287,52 @@ namespace gum {
         auto last_rank = ( last_visited + 1 ) / 2;
         stack.push_back( { last_rank, graph.rank_to_id( last_rank )} );
       } while ( true );
+    }
+
+    template< typename TGraph >
+    inline std::pair< std::vector< std::pair< typename TGraph::rank_type, typename TGraph::id_type > >, bool >
+    topological_sort_order( TGraph const& graph, bool reverse=false )
+    {
+      using graph_type = TGraph;
+      using rank_type = typename graph_type::rank_type;
+      using id_type = typename graph_type::id_type;
+
+      std::vector< std::pair< rank_type, id_type > > finished;
+      finished.reserve( graph.get_node_count() );
+
+      bool dag = true;
+      auto on_discovery = []( rank_type, id_type ){ };
+      auto on_finishing = [&finished]( rank_type r, id_type id ) {
+        finished.push_back( { r, id } );
+      };
+      auto on_visited = [&dag]( rank_type, id_type, bool finished ) {
+        if ( dag && !finished ) dag = false;  // back edge
+      };
+
+      dfs_traverse( graph, on_finishing, on_discovery, on_visited );
+      if ( !reverse ) std::reverse( finished.begin(), finished.end() );
+
+      return { finished, dag };
+    }
+
+    template< typename TGraph,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
+    inline bool
+    topological_sort( TGraph& graph, bool force=false, bool reverse=false )
+    {
+      using graph_type = TGraph;
+      using rank_type = typename graph_type::rank_type;
+      using id_type = typename graph_type::id_type;
+
+      auto [top_sort, dag] = topological_sort_order( graph, reverse );
+      if ( dag || force ) {
+        RandomAccessProxyContainer< decltype( top_sort ), rank_type > perm(
+          &top_sort,
+          []( std::pair< rank_type, id_type > const& p ) -> rank_type { return p.first - 1; } );
+        graph.sort_nodes( perm );
+      }
+
+      return dag;
     }
   }  /* --- end of namespace util --- */
 }  /* --- end of namespace gum --- */

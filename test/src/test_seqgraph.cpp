@@ -1517,3 +1517,62 @@ TEMPLATE_SCENARIO( "DFS traversal", "[seqgraph][template]",
     }
   }
 }
+
+SCENARIO( "Topological sort", "[seqgraph]" )
+{
+  using graph_type = gum::SeqGraph< gum::Dynamic >;
+
+  GIVEN( "A DAG" )
+  {
+    std::string filepath = test_data_dir + "/dfs_dag_v2.gfa";
+    graph_type graph;
+    gum::util::load( graph, filepath );
+
+    WHEN( "Node ranks are not topologically sorted" )
+    {
+      REQUIRE( !gum::util::ranks_in_topological_order( graph ) );
+
+      AND_WHEN( "It is topologically sorted" )
+      {
+        bool dag = gum::util::topological_sort( graph );
+
+        THEN( "Node ranks are in topological order" )
+        {
+          REQUIRE( gum::util::ranks_in_topological_order( graph ) );
+        }
+
+        THEN( "No back edges are found" )
+        {
+          REQUIRE( dag );
+        }
+      }
+    }
+  }
+
+  GIVEN( "A cyclic graph" )
+  {
+    std::string filepath = test_data_dir + "/dfs_cyclic_v2.gfa";
+    graph_type graph;
+    gum::util::load( graph, filepath );
+
+    WHEN( "Node ranks are not topologically sorted" )
+    {
+      REQUIRE( !gum::util::ranks_in_topological_order( graph ) );
+
+      AND_WHEN( "It is topologically sorted" )
+      {
+        bool dag = gum::util::topological_sort( graph );
+
+        THEN( "Node ranks cannot be in topological order" )
+        {
+          REQUIRE( !gum::util::ranks_in_topological_order( graph ) );
+        }
+
+        THEN( "There should be some back edges" )
+        {
+          REQUIRE( !dag );
+        }
+      }
+    }
+  }
+}
