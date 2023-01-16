@@ -206,6 +206,26 @@ namespace gum {
     }
 
     template< typename TGraph >
+    inline bool
+    ranks_in_topological_order( TGraph& graph )
+    {
+      bool sorted = true;
+      graph.for_each_node(
+          [&]( auto from_rank, auto from ) {
+            graph.for_each_edges_out(
+                from,
+                [&]( auto to, auto ) {
+                  auto to_rank = graph.id_to_rank( to );
+                  if ( from_rank < to_rank ) return true;
+                  sorted = false;
+                  return false;
+                } );
+            return sorted;
+          } );
+      return sorted;
+    }
+
+    template< typename TGraph >
     inline void
     dfs_traverse( TGraph const& graph,
                   std::function< void( typename TGraph::rank_type, typename TGraph::id_type ) > on_finishing,
