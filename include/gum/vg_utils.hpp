@@ -135,7 +135,6 @@ namespace gum {
       using id_type = typename graph_type::id_type;
       using mappings_type = std::decay_t< decltype( TVGPath().mapping() ) >;
       using mapping_rank_type = std::decay_t< decltype( TVGPath().mapping()[0].rank() ) >;
-      using nodes_type = RandomAccessProxyContainer< mappings_type, id_type >;
       using orientations_type = RandomAccessProxyContainer< mappings_type, bool >;
 
       if ( !graph.has_path( pid ) ) {
@@ -143,30 +142,41 @@ namespace gum {
       }
 
       mappings_type const& mappings = path.mapping();
-      mapping_rank_type rank = graph.path_length( pid );
-      for ( auto const& m : mappings ) {
-        if ( ++rank != m.rank() ) {
-          throw std::runtime_error( "extending a path with unordered node ranks" );
-        }
+      auto compare_rank
+          = []( auto const& left, auto const& right ) {
+            return left.rank() < right.rank();
+          };
+      // sort mappings by their ranks
+      auto perm = util::sort_permutation( mappings, compare_rank );
+
+      // validate if this chunk comes immediately after previously extended one without any gap in ranks
+      mapping_rank_type min_rank = path.mapping( perm[ 0 ] ).rank();
+      mapping_rank_type max_rank = path.mapping( perm[ perm.size() - 1 ] ).rank();
+      mapping_rank_type last_rank = graph.path_length( pid );
+      if ( min_rank != last_rank + 1 ||
+           max_rank - min_rank + 1 != static_cast< mapping_rank_type >( mappings.size() ) ) {
+        throw std::runtime_error( "embedded path in graph has invalid Mapping ranks" );
       }
 
-      auto get_id =
-          [&graph, &coord, force]( auto const& m ) {
-            id_type id = coord( m.position().node_id() );
-            if ( !graph.has_node( id ) ) {
-              if ( force ) {
-                id = graph.add_node( id );
-                coord( m.position().node_id(), id );
-              }
-              else throw std::runtime_error( "extending a path with non-existent nodes" );
-            }
-            return id;
-          };
+      std::vector< id_type > nodes;
+      nodes.reserve( mappings.size() );
+      for ( auto const& m : mappings ) {
+        id_type id = coord( m.position().node_id() );
+        if ( !graph.has_node( id ) ) {
+          if ( force ) {
+            id = graph.add_node( id );
+            coord( m.position().node_id(), id );
+          }
+          else throw std::runtime_error( "extending a path with non-existent nodes" );
+        }
+        nodes.push_back( id );
+      }
+      util::permute( perm, nodes );
+
       auto get_orient =
           []( auto const& m ) {
             return m.position().is_reverse();
           };
-      nodes_type nodes( &mappings, get_id );
       orientations_type orients( &mappings, get_orient );
       graph.extend_path( pid, nodes.begin(), nodes.end(),
                          orients.begin(), orients.end() );
