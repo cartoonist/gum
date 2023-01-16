@@ -248,9 +248,9 @@ namespace gum {
       return sort_permutation( container, compare );
     }
 
-    template< typename TContainer >
+    template< typename TPermContainer, typename TContainer >
     inline TContainer
-    permutated( std::vector< std::size_t > const& perm, TContainer& container )
+    permutated( TPermContainer const& perm, TContainer& container )
     {
       assert( container.size() == perm.size() );
 
@@ -261,9 +261,9 @@ namespace gum {
       return applied;
     }
 
-    template< typename TContainer >
+    template< typename TPermContainer, typename TContainer >
     inline void
-    permute( std::vector< std::size_t > const& perm, TContainer& container )
+    permute( TPermContainer const& perm, TContainer& container )
     {
       assert( container.size() == perm.size() );
 
@@ -282,9 +282,9 @@ namespace gum {
       }
     }
 
-    template< typename TFirst, typename ...TContainers >
+    template< typename TPermContainer, typename TFirst, typename ...TContainers >
     inline void
-    permute( std::vector< std::size_t > const& perm, TFirst& first, TContainers&&... rest )
+    permute( TPermContainer const& perm, TFirst& first, TContainers&&... rest )
     {
       permute( perm, first );
       permute( perm, std::forward< TContainers >( rest )... );

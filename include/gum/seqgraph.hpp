@@ -648,12 +648,19 @@ namespace gum {
       return this->indegree( side ) > 1;
     }
 
+    template< typename TContainer >
+    inline void
+    sort_nodes( TContainer const& perm )
+    {
+      util::permute( perm, this->nodes );
+      this->reset_ranks();
+    }
+
     inline auto
     sort_nodes( )
     {
-      auto perm = util::sort_permutation( this->nodes );
-      util::permute( perm, this->nodes );
-      this->reset_ranks();
+      auto perm = util::sort_permutation( this->nodes );  // sort by node ids
+      this->sort_nodes( perm );
       return perm;
     }
 
@@ -2883,6 +2890,14 @@ namespace gum {
     sort_nodes()
     {
       auto perm = base_type::sort_nodes();
+      this->node_prop.sort_nodes( perm );
+    }
+
+    template< typename TContainer >
+    inline void
+    sort_nodes( TContainer const& perm )
+    {
+      base_type::sort_nodes( perm );
       this->node_prop.sort_nodes( perm );
     }
 
