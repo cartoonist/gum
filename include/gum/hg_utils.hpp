@@ -29,6 +29,7 @@
 #include "coordinate.hpp"
 #include "iterators.hpp"
 #include "basic_types.hpp"
+#include "seqgraph_interface.hpp"
 
 
 namespace gum {
@@ -173,7 +174,6 @@ namespace gum {
                       coord, true );
             return true;
           } );
-      if ( sort ) graph.sort_nodes();
       other.for_each_edge(
           [&]( hg_edge_t const& edge ) -> bool {
             add_edge( graph, other.get_id( edge.first ), other.get_is_reverse( edge.first ),
@@ -181,6 +181,10 @@ namespace gum {
                       0 /* no overlap */, HGFormat{}, coord );
             return true;
           } );
+      if ( sort ) {
+        graph.sort_nodes();  // first, sort by ids
+        gum::util::topological_sort( graph, true );
+      }
       extend_path( graph, other, HGFormat{}, sort, coord );
     }
   }  /* --- end of namespace util --- */

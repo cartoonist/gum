@@ -30,6 +30,7 @@
 #include "coordinate.hpp"
 #include "iterators.hpp"
 #include "basic_types.hpp"
+#include "seqgraph_interface.hpp"
 
 
 namespace gum {
@@ -210,9 +211,12 @@ namespace gum {
       for ( auto const& node : other.node() ) {
         add_node( graph, node, VGFormat{}, coord, true );
       }
-      if ( sort ) graph.sort_nodes();
       for ( auto const& edge : other.edge() ) {
         add_edge( graph, edge, VGFormat{}, coord, true );
+      }
+      if ( sort ) {
+        graph.sort_nodes();  // first, sort by ids
+        gum::util::topological_sort( graph, true );
       }
       for ( auto const& path : other.path() ) {
         add_path( graph, path, VGFormat{}, coord, true, true );

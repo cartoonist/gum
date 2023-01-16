@@ -27,6 +27,7 @@
 #include "coordinate.hpp"
 #include "iterators.hpp"
 #include "basic_types.hpp"
+#include "seqgraph_interface.hpp"
 
 
 namespace gum {
@@ -194,11 +195,14 @@ namespace gum {
       for ( auto const& rec : other.get_name_to_seq() ) {
         add( graph, rec.second, coord, true );
       }
-      if ( sort ) graph.sort_nodes();
       for ( auto const& rec : other.get_seq_to_edges() ) {
         for ( auto const& elem : rec.second ) {
           add( graph, elem, coord, true );
         }
+      }
+      if ( sort ) {
+        graph.sort_nodes();  // first, sort by ids
+        gum::util::topological_sort( graph, true );
       }
       for ( auto const& rec : other.get_name_to_path() ) {
         add( graph, rec.second, coord, true, true );
