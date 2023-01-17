@@ -232,6 +232,62 @@ namespace gum {
         add_path( graph, path, VGFormat{}, coord, true, true );
       }
     }
+
+    template< typename TVGPath >
+    inline void
+    _extend_path( TVGPath* output, TVGPath const& chunk, VGFormat )
+    {
+      for ( auto const& m : chunk.mapping() ) {
+        auto mapping = output->add_mapping();
+        auto pos = mapping->mutable_position();
+        pos->set_node_id( m.position().node_id() );
+        pos->set_offset( m.position().offset() );
+        pos->set_is_reverse( m.position().is_reverse() );
+        pos->set_name( m.position().name() );
+        mapping->set_rank( m.rank() );
+        for ( auto const& e : m.edit() ) {
+          auto edit = mapping->add_edit();
+          edit->set_from_length( e.from_length() );
+          edit->set_to_length( e.to_length() );
+          edit->set_sequence( e.sequence() );
+        }
+      }
+    }
+
+    template< typename TVGGraph >
+    inline void
+    merge_vg( TVGGraph& output, TVGGraph const& chunk )
+    {
+      for ( std::size_t i = 0; i < chunk.node_size(); ++i ) {
+        auto node = output.add_node();
+        node->set_id( chunk.node( i ).id() );
+        node->set_sequence( chunk.node( i ).sequence() );
+        node->set_name( chunk.node( i ).name() );
+      }
+
+      for ( std::size_t i = 0; i < chunk.edge_size(); ++i ) {
+        auto edge = output.add_edge();
+        edge->set_from( chunk.edge( i ).from() );
+        edge->set_to( chunk.edge( i ).to() );
+        edge->set_from_start( chunk.edge( i ).from_start() );
+        edge->set_to_end( chunk.edge( i ).to_end() );
+        edge->set_overlap( chunk.edge( i ).overlap() );
+      }
+
+      for ( auto const& p : chunk.path() ) {
+        std::size_t i = 0;
+        for ( ; i < output.path_size(); ++i ) {
+          if ( output.path( i ).name() == p.name() ) break;
+        }
+        if ( i == output.path_size() ) {  // new path
+          auto path = output.add_path();
+          path->set_name( p.name() );
+          path->set_is_circular( p.is_circular() );
+          path->set_length( p.length() );
+        }
+        _extend_path( output.mutable_path( i ), p, VGFormat{} );
+      }
+    }
   }  /* --- end of namespace util --- */
 }  /* --- end of namespace gum --- */
 

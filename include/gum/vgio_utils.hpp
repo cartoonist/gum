@@ -89,11 +89,13 @@ namespace gum {
     inline void
     extend_vg( TGraph& graph, std::istream& in, TArgs&&... args )
     {
+      vg::Graph merged;
       std::function< void( vg::Graph& ) > handle_chunks =
           [&]( vg::Graph& other ) {
-            extend( graph, other, std::forward< TArgs >( args )... );
+            merge_vg( merged, static_cast< vg::Graph const& >( other ) );
           };
       vg::io::for_each( in, handle_chunks );
+      extend( graph, merged, std::forward< TArgs >( args )... );
     }
 
     template< typename TGraph, typename ...TArgs >
