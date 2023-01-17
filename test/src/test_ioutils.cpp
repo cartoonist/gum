@@ -39,14 +39,15 @@ SCENARIO( "Sanity check for deserialising a SeqGraph", "[ioutils]" )
           using rank_type = typename graph_type::rank_type;
           using side_type = typename graph_type::side_type;
           using link_type = typename graph_type::link_type;
+          using lid_type = typename graph_type::coordinate_type::lid_type;
           using linktype_type = typename graph_type::linktype_type;
           using nodes_type = std::vector< std::pair< id_type, bool > >;
           using pathset_type = std::unordered_map< std::string, nodes_type >;
 
-          auto rtoi =
-              [&graph]( rank_type rank ) {
-                return graph.rank_to_id( rank );
-              };
+          auto ibyc =
+            [&graph]( lid_type cid ) -> id_type {
+              return graph.id_by_coordinate( cid );
+            };
 
           id_type abs_id = 999;
           rank_type node_count = 15;
@@ -106,7 +107,7 @@ SCENARIO( "Sanity check for deserialising a SeqGraph", "[ioutils]" )
           for ( rank_type rank = 1; rank <= graph.get_node_count(); ++rank ) {
             bool sidetype = false;
             graph.for_each_side(
-                rtoi(rank),
+                graph.rank_to_id( rank ),
                 [&graph, &sidetype]( side_type side ) {
                   id_type id = graph.id_of( side );
                   if ( sidetype ) REQUIRE( graph.end_side( id ) == side );
@@ -117,8 +118,8 @@ SCENARIO( "Sanity check for deserialising a SeqGraph", "[ioutils]" )
                 } );
           }
           for ( auto const& e: edges ) {
-            link_type edge = graph.make_link( rtoi( graph.from_id(e) ),
-                                              rtoi( graph.to_id(e) ),
+            link_type edge = graph.make_link( ibyc( graph.from_id(e) ),
+                                              ibyc( graph.to_id(e) ),
                                               graph.linktype( e ) );
             REQUIRE( graph.has_edge( graph.from_side( edge ), graph.to_side( edge ) ) );
             REQUIRE( !graph.has_edge( graph.to_side( edge ), graph.from_side( edge ) ) );
@@ -150,299 +151,299 @@ SCENARIO( "Sanity check for deserialising a SeqGraph", "[ioutils]" )
                 REQUIRE( std::find( truth.begin(), truth.end(), side ) != truth.end() );
                 return true;
               };
-          auto adjs = graph.adjacents_out( { rtoi(1), true } );
-          truth = { { rtoi(2), false }, { rtoi(3), false } };
+          auto adjs = graph.adjacents_out( { ibyc(1), true } );
+          truth = { { ibyc(2), false }, { ibyc(3), false } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_out( { rtoi(1), true }, side_truth_check );
-          graph.for_each_edges_out(  rtoi(1), to_id_truth_check );
-          adjs = graph.adjacents_out( { rtoi(1), false } );
+          graph.for_each_edges_out( { ibyc(1), true }, side_truth_check );
+          graph.for_each_edges_out(  ibyc(1), to_id_truth_check );
+          adjs = graph.adjacents_out( { ibyc(1), false } );
           REQUIRE( adjs.empty() );
-          adjs = graph.adjacents_out( { rtoi(2), true } );
-          truth = { { rtoi(4), false }, { rtoi(5), false } };
+          adjs = graph.adjacents_out( { ibyc(2), true } );
+          truth = { { ibyc(4), false }, { ibyc(5), false } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_out( { rtoi(2), true }, side_truth_check );
-          graph.for_each_edges_out(  rtoi(2), to_id_truth_check );
-          adjs = graph.adjacents_out( { rtoi(3), true } );
-          truth = { { rtoi(4), false }, { rtoi(5), false } };
+          graph.for_each_edges_out( { ibyc(2), true }, side_truth_check );
+          graph.for_each_edges_out(  ibyc(2), to_id_truth_check );
+          adjs = graph.adjacents_out( { ibyc(3), true } );
+          truth = { { ibyc(4), false }, { ibyc(5), false } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_out( { rtoi(3), true }, side_truth_check );
-          graph.for_each_edges_out(  rtoi(3), to_id_truth_check );
-          REQUIRE( graph.is_branch( rtoi(2) ) );
-          REQUIRE( !graph.is_merge( rtoi(2) ) );
-          adjs = graph.adjacents_out( { rtoi(4), true } );
-          truth = { { rtoi(6), false } };
+          graph.for_each_edges_out( { ibyc(3), true }, side_truth_check );
+          graph.for_each_edges_out(  ibyc(3), to_id_truth_check );
+          REQUIRE( graph.is_branch( ibyc(2) ) );
+          REQUIRE( !graph.is_merge( ibyc(2) ) );
+          adjs = graph.adjacents_out( { ibyc(4), true } );
+          truth = { { ibyc(6), false } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_out( { rtoi(4), true }, side_truth_check );
-          graph.for_each_edges_out(  rtoi(4), to_id_truth_check );
-          adjs = graph.adjacents_out( { rtoi(5), true } );
-          truth = { { rtoi(6), false } };
+          graph.for_each_edges_out( { ibyc(4), true }, side_truth_check );
+          graph.for_each_edges_out(  ibyc(4), to_id_truth_check );
+          adjs = graph.adjacents_out( { ibyc(5), true } );
+          truth = { { ibyc(6), false } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_out( { rtoi(5), true }, side_truth_check );
-          graph.for_each_edges_out(  rtoi(5), to_id_truth_check );
-          REQUIRE( !graph.is_branch( rtoi(5) ) );
-          REQUIRE( graph.is_merge( rtoi(5) ) );
-          adjs = graph.adjacents_out( { rtoi(6), true } );
-          truth = { { rtoi(7), false }, { rtoi(8), false } };
+          graph.for_each_edges_out( { ibyc(5), true }, side_truth_check );
+          graph.for_each_edges_out(  ibyc(5), to_id_truth_check );
+          REQUIRE( !graph.is_branch( ibyc(5) ) );
+          REQUIRE( graph.is_merge( ibyc(5) ) );
+          adjs = graph.adjacents_out( { ibyc(6), true } );
+          truth = { { ibyc(7), false }, { ibyc(8), false } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_out( { rtoi(6), true }, side_truth_check );
-          graph.for_each_edges_out(  rtoi(6), to_id_truth_check );
-          REQUIRE( graph.is_branch( rtoi(6) ) );
-          REQUIRE( graph.is_merge( rtoi(6) ) );
-          adjs = graph.adjacents_out( { rtoi(12), true } );
-          truth = { { rtoi(13), false }, { rtoi(14), false } };
+          graph.for_each_edges_out( { ibyc(6), true }, side_truth_check );
+          graph.for_each_edges_out(  ibyc(6), to_id_truth_check );
+          REQUIRE( graph.is_branch( ibyc(6) ) );
+          REQUIRE( graph.is_merge( ibyc(6) ) );
+          adjs = graph.adjacents_out( { ibyc(12), true } );
+          truth = { { ibyc(13), false }, { ibyc(14), false } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_out( { rtoi(12), true }, side_truth_check );
-          graph.for_each_edges_out(  rtoi(12), to_id_truth_check );
-          adjs = graph.adjacents_out( { rtoi(13), true } );
-          truth = { { rtoi(15), false } };
+          graph.for_each_edges_out( { ibyc(12), true }, side_truth_check );
+          graph.for_each_edges_out(  ibyc(12), to_id_truth_check );
+          adjs = graph.adjacents_out( { ibyc(13), true } );
+          truth = { { ibyc(15), false } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_out( { rtoi(13), true }, side_truth_check );
-          graph.for_each_edges_out(  rtoi(13), to_id_truth_check );
-          adjs = graph.adjacents_out( { rtoi(14), true } );
-          truth = { { rtoi(15), false } };
+          graph.for_each_edges_out( { ibyc(13), true }, side_truth_check );
+          graph.for_each_edges_out(  ibyc(13), to_id_truth_check );
+          adjs = graph.adjacents_out( { ibyc(14), true } );
+          truth = { { ibyc(15), false } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_out( { rtoi(14), true }, side_truth_check );
-          graph.for_each_edges_out(  rtoi(14), to_id_truth_check );
-          adjs = graph.adjacents_out( { rtoi(15), true } );
+          graph.for_each_edges_out( { ibyc(14), true }, side_truth_check );
+          graph.for_each_edges_out(  ibyc(14), to_id_truth_check );
+          adjs = graph.adjacents_out( { ibyc(15), true } );
           REQUIRE( adjs.empty() );
-          adjs = graph.adjacents_in( { rtoi(1), false } );
+          adjs = graph.adjacents_in( { ibyc(1), false } );
           REQUIRE( adjs.empty() );
-          adjs = graph.adjacents_in( { rtoi(1), true } );
+          adjs = graph.adjacents_in( { ibyc(1), true } );
           REQUIRE( adjs.empty() );
-          adjs = graph.adjacents_in( { rtoi(2), false } );
-          truth = { { rtoi(1), true } };
+          adjs = graph.adjacents_in( { ibyc(2), false } );
+          truth = { { ibyc(1), true } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_in( { rtoi(2), false }, side_truth_check );
-          graph.for_each_edges_in(  rtoi(2), from_id_truth_check );
-          adjs = graph.adjacents_in( { rtoi(3), false } );
-          truth = { { rtoi(1), true } };
+          graph.for_each_edges_in( { ibyc(2), false }, side_truth_check );
+          graph.for_each_edges_in(  ibyc(2), from_id_truth_check );
+          adjs = graph.adjacents_in( { ibyc(3), false } );
+          truth = { { ibyc(1), true } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_in( { rtoi(3), false }, side_truth_check );
-          graph.for_each_edges_in(  rtoi(3), from_id_truth_check );
-          adjs = graph.adjacents_in( { rtoi(4), false } );
-          truth = { { rtoi(2), true }, { rtoi(3), true } };
+          graph.for_each_edges_in( { ibyc(3), false }, side_truth_check );
+          graph.for_each_edges_in(  ibyc(3), from_id_truth_check );
+          adjs = graph.adjacents_in( { ibyc(4), false } );
+          truth = { { ibyc(2), true }, { ibyc(3), true } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_in( { rtoi(4), false }, side_truth_check );
-          graph.for_each_edges_in(  rtoi(4), from_id_truth_check );
-          adjs = graph.adjacents_in( { rtoi(5), false } );
-          truth = { { rtoi(2), true }, { rtoi(3), true } };
+          graph.for_each_edges_in( { ibyc(4), false }, side_truth_check );
+          graph.for_each_edges_in(  ibyc(4), from_id_truth_check );
+          adjs = graph.adjacents_in( { ibyc(5), false } );
+          truth = { { ibyc(2), true }, { ibyc(3), true } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_in( { rtoi(5), false }, side_truth_check );
-          graph.for_each_edges_in(  rtoi(5), from_id_truth_check );
-          adjs = graph.adjacents_in( { rtoi(5), false } );
-          truth = { { rtoi(2), true }, { rtoi(3), true } };
+          graph.for_each_edges_in( { ibyc(5), false }, side_truth_check );
+          graph.for_each_edges_in(  ibyc(5), from_id_truth_check );
+          adjs = graph.adjacents_in( { ibyc(5), false } );
+          truth = { { ibyc(2), true }, { ibyc(3), true } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_in( { rtoi(5), false }, side_truth_check );
-          graph.for_each_edges_in(  rtoi(5), from_id_truth_check );
-          adjs = graph.adjacents_in( { rtoi(6), false } );
-          truth = { { rtoi(4), true }, { rtoi(5), true } };
+          graph.for_each_edges_in( { ibyc(5), false }, side_truth_check );
+          graph.for_each_edges_in(  ibyc(5), from_id_truth_check );
+          adjs = graph.adjacents_in( { ibyc(6), false } );
+          truth = { { ibyc(4), true }, { ibyc(5), true } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_in( { rtoi(6), false }, side_truth_check );
-          graph.for_each_edges_in(  rtoi(6), from_id_truth_check );
-          adjs = graph.adjacents_in( { rtoi(7), false } );
-          truth = { { rtoi(6), true } };
+          graph.for_each_edges_in( { ibyc(6), false }, side_truth_check );
+          graph.for_each_edges_in(  ibyc(6), from_id_truth_check );
+          adjs = graph.adjacents_in( { ibyc(7), false } );
+          truth = { { ibyc(6), true } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_in( { rtoi(7), false }, side_truth_check );
-          graph.for_each_edges_in(  rtoi(7), from_id_truth_check );
-          adjs = graph.adjacents_in( { rtoi(8), false } );
-          truth = { { rtoi(6), true } };
+          graph.for_each_edges_in( { ibyc(7), false }, side_truth_check );
+          graph.for_each_edges_in(  ibyc(7), from_id_truth_check );
+          adjs = graph.adjacents_in( { ibyc(8), false } );
+          truth = { { ibyc(6), true } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_in( { rtoi(8), false }, side_truth_check );
-          graph.for_each_edges_in(  rtoi(8), from_id_truth_check );
-          adjs = graph.adjacents_in( { rtoi(9), false } );
-          truth = { { rtoi(7), true }, { rtoi(8), true } };
+          graph.for_each_edges_in( { ibyc(8), false }, side_truth_check );
+          graph.for_each_edges_in(  ibyc(8), from_id_truth_check );
+          adjs = graph.adjacents_in( { ibyc(9), false } );
+          truth = { { ibyc(7), true }, { ibyc(8), true } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_in( { rtoi(9), false }, side_truth_check );
-          graph.for_each_edges_in(  rtoi(9), from_id_truth_check );
-          adjs = graph.adjacents_in( { rtoi(10), false } );
-          truth = { { rtoi(9), true } };
+          graph.for_each_edges_in( { ibyc(9), false }, side_truth_check );
+          graph.for_each_edges_in(  ibyc(9), from_id_truth_check );
+          adjs = graph.adjacents_in( { ibyc(10), false } );
+          truth = { { ibyc(9), true } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_in( { rtoi(10), false }, side_truth_check );
-          graph.for_each_edges_in(  rtoi(10), from_id_truth_check );
-          adjs = graph.adjacents_in( { rtoi(11), false } );
-          truth = { { rtoi(9), true } };
+          graph.for_each_edges_in( { ibyc(10), false }, side_truth_check );
+          graph.for_each_edges_in(  ibyc(10), from_id_truth_check );
+          adjs = graph.adjacents_in( { ibyc(11), false } );
+          truth = { { ibyc(9), true } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_in( { rtoi(11), false }, side_truth_check );
-          graph.for_each_edges_in(  rtoi(11), from_id_truth_check );
-          adjs = graph.adjacents_in( { rtoi(12), false } );
-          truth = { { rtoi(10), true }, { rtoi(11), true } };
+          graph.for_each_edges_in( { ibyc(11), false }, side_truth_check );
+          graph.for_each_edges_in(  ibyc(11), from_id_truth_check );
+          adjs = graph.adjacents_in( { ibyc(12), false } );
+          truth = { { ibyc(10), true }, { ibyc(11), true } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_in( { rtoi(12), false }, side_truth_check );
-          graph.for_each_edges_in(  rtoi(12), from_id_truth_check );
-          adjs = graph.adjacents_in( { rtoi(13), false } );
-          truth = { { rtoi(12), true } };
+          graph.for_each_edges_in( { ibyc(12), false }, side_truth_check );
+          graph.for_each_edges_in(  ibyc(12), from_id_truth_check );
+          adjs = graph.adjacents_in( { ibyc(13), false } );
+          truth = { { ibyc(12), true } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_in( { rtoi(13), false }, side_truth_check );
-          graph.for_each_edges_in(  rtoi(13), from_id_truth_check );
-          adjs = graph.adjacents_in( { rtoi(14), false } );
-          truth = { { rtoi(12), true } };
+          graph.for_each_edges_in( { ibyc(13), false }, side_truth_check );
+          graph.for_each_edges_in(  ibyc(13), from_id_truth_check );
+          adjs = graph.adjacents_in( { ibyc(14), false } );
+          truth = { { ibyc(12), true } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_in( { rtoi(14), false }, side_truth_check );
-          graph.for_each_edges_in(  rtoi(14), from_id_truth_check );
-          adjs = graph.adjacents_in( { rtoi(15), false } );
-          truth = { { rtoi(13), true }, { rtoi(14), true } };
+          graph.for_each_edges_in( { ibyc(14), false }, side_truth_check );
+          graph.for_each_edges_in(  ibyc(14), from_id_truth_check );
+          adjs = graph.adjacents_in( { ibyc(15), false } );
+          truth = { { ibyc(13), true }, { ibyc(14), true } };
           REQUIRE( adjs.size() == truth.size() );
           for ( auto const& side : truth ) {
             REQUIRE( std::find( adjs.begin(), adjs.end(), side ) != adjs.end() );
           }
-          graph.for_each_edges_in( { rtoi(15), false }, side_truth_check );
-          graph.for_each_edges_in(  rtoi(15), from_id_truth_check );
-          REQUIRE( graph.outdegree( rtoi(1) ) == 2 );
-          REQUIRE( graph.outdegree( rtoi(2) ) == 2 );
-          REQUIRE( graph.outdegree( rtoi(3) ) == 2 );
-          REQUIRE( graph.outdegree( rtoi(4) ) == 1 );
-          REQUIRE( graph.outdegree( rtoi(5) ) == 1 );
-          REQUIRE( graph.outdegree( rtoi(6) ) == 2 );
-          REQUIRE( graph.outdegree( rtoi(7) ) == 1 );
-          REQUIRE( graph.outdegree( rtoi(8) ) == 1 );
-          REQUIRE( graph.outdegree( rtoi(9) ) == 2 );
-          REQUIRE( graph.outdegree( rtoi(10) ) == 1 );
-          REQUIRE( graph.outdegree( rtoi(11) ) == 1 );
-          REQUIRE( graph.outdegree( rtoi(12) ) == 2 );
-          REQUIRE( graph.outdegree( rtoi(13) ) == 1 );
-          REQUIRE( graph.outdegree( rtoi(14) ) == 1 );
-          REQUIRE( graph.outdegree( rtoi(15) ) == 0 );
-          REQUIRE( graph.indegree( rtoi(1) ) == 0 );
-          REQUIRE( graph.indegree( rtoi(2) ) == 1 );
-          REQUIRE( graph.indegree( rtoi(3) ) == 1 );
-          REQUIRE( graph.indegree( rtoi(4) ) == 2 );
-          REQUIRE( graph.indegree( rtoi(5) ) == 2 );
-          REQUIRE( graph.indegree( rtoi(6) ) == 2 );
-          REQUIRE( graph.indegree( rtoi(7) ) == 1 );
-          REQUIRE( graph.indegree( rtoi(8) ) == 1 );
-          REQUIRE( graph.indegree( rtoi(9) ) == 2 );
-          REQUIRE( graph.indegree( rtoi(10) ) == 1 );
-          REQUIRE( graph.indegree( rtoi(11) ) == 1 );
-          REQUIRE( graph.indegree( rtoi(12) ) == 2 );
-          REQUIRE( graph.indegree( rtoi(13) ) == 1 );
-          REQUIRE( graph.indegree( rtoi(14) ) == 1 );
-          REQUIRE( graph.indegree( rtoi(15) ) == 2 );
-          REQUIRE( !graph.has_edges_in( { rtoi(1), true } ) );
-          REQUIRE( !graph.has_edges_in( { rtoi(1), false } ) );
-          REQUIRE( !graph.has_edges_in( { rtoi(2), true } ) );
-          REQUIRE( graph.has_edges_in( { rtoi(2), false } ) );
-          REQUIRE( !graph.has_edges_in( { rtoi(8), true } ) );
-          REQUIRE( graph.has_edges_in( { rtoi(8), false } ) );
-          REQUIRE( !graph.has_edges_in( { rtoi(9), true } ) );
-          REQUIRE( graph.has_edges_in( { rtoi(9), false } ) );
-          REQUIRE( !graph.has_edges_in( { rtoi(15), true } ) );
-          REQUIRE( graph.has_edges_in( { rtoi(15), false } ) );
-          REQUIRE( !graph.has_edges_in( rtoi(1) ) );
-          REQUIRE( graph.has_edges_in( rtoi(2) ) );
-          REQUIRE( graph.has_edges_in( rtoi(8) ) );
-          REQUIRE( graph.has_edges_in( rtoi(9) ) );
-          REQUIRE( graph.has_edges_out( { rtoi(1), true } ) );
-          REQUIRE( !graph.has_edges_out( { rtoi(1), false } ) );
-          REQUIRE( graph.has_edges_out( { rtoi(2), true } ) );
-          REQUIRE( !graph.has_edges_out( { rtoi(2), false } ) );
-          REQUIRE( graph.has_edges_out( { rtoi(8), true } ) );
-          REQUIRE( !graph.has_edges_out( { rtoi(8), false } ) );
-          REQUIRE( graph.has_edges_out( { rtoi(9), true } ) );
-          REQUIRE( !graph.has_edges_out( { rtoi(9), false } ) );
-          REQUIRE( graph.has_edges_out( rtoi(1) ) );
-          REQUIRE( graph.has_edges_out( rtoi(2) ) );
-          REQUIRE( graph.has_edges_out( rtoi(8) ) );
-          REQUIRE( graph.has_edges_out( rtoi(9) ) );
-          REQUIRE( !graph.has_edges_out( rtoi(15) ) );
-          REQUIRE( graph.node_sequence( rtoi(1) ) == "CAAATAAG" );
-          REQUIRE( graph.node_sequence( rtoi(2) ) == "A" );
-          REQUIRE( graph.node_sequence( rtoi(3) ) == "G" );
-          REQUIRE( graph.node_sequence( rtoi(4) ) == "T" );
-          REQUIRE( graph.node_sequence( rtoi(5) ) == "C" );
-          REQUIRE( graph.node_sequence( rtoi(6) ) == "TTG" );
-          REQUIRE( graph.node_sequence( rtoi(7) ) == "A" );
-          REQUIRE( graph.node_sequence( rtoi(8) ) == "G" );
-          REQUIRE( graph.node_sequence( rtoi(9) ) == "AAATTTTCTGGAGTTCTAT" );
-          REQUIRE( graph.node_sequence( rtoi(10) ) == "A" );
-          REQUIRE( graph.node_sequence( rtoi(11) ) == "T" );
-          REQUIRE( graph.node_sequence( rtoi(12) ) == "ATAT" );
-          REQUIRE( graph.node_sequence( rtoi(13) ) == "A" );
-          REQUIRE( graph.node_sequence( rtoi(14) ) == "T" );
-          REQUIRE( graph.node_sequence( rtoi(15) ) == "CCAACTCTCTG" );
-          REQUIRE( graph.node_length( rtoi(1) ) == 8 );
-          REQUIRE( graph.node_length( rtoi(2) ) == 1 );
-          REQUIRE( graph.node_length( rtoi(3) ) == 1 );
-          REQUIRE( graph.node_length( rtoi(4) ) == 1 );
-          REQUIRE( graph.node_length( rtoi(5) ) == 1 );
-          REQUIRE( graph.node_length( rtoi(6) ) == 3 );
-          REQUIRE( graph.node_length( rtoi(7) ) == 1 );
-          REQUIRE( graph.node_length( rtoi(8) ) == 1 );
-          REQUIRE( graph.node_length( rtoi(9) ) == 19 );
-          REQUIRE( graph.node_length( rtoi(10) ) == 1 );
-          REQUIRE( graph.node_length( rtoi(11) ) == 1 );
-          REQUIRE( graph.node_length( rtoi(12) ) == 4 );
-          REQUIRE( graph.node_length( rtoi(13) ) == 1 );
-          REQUIRE( graph.node_length( rtoi(14) ) == 1 );
-          REQUIRE( graph.node_length( rtoi(15) ) == 11 );
+          graph.for_each_edges_in( { ibyc(15), false }, side_truth_check );
+          graph.for_each_edges_in(  ibyc(15), from_id_truth_check );
+          REQUIRE( graph.outdegree( ibyc(1) ) == 2 );
+          REQUIRE( graph.outdegree( ibyc(2) ) == 2 );
+          REQUIRE( graph.outdegree( ibyc(3) ) == 2 );
+          REQUIRE( graph.outdegree( ibyc(4) ) == 1 );
+          REQUIRE( graph.outdegree( ibyc(5) ) == 1 );
+          REQUIRE( graph.outdegree( ibyc(6) ) == 2 );
+          REQUIRE( graph.outdegree( ibyc(7) ) == 1 );
+          REQUIRE( graph.outdegree( ibyc(8) ) == 1 );
+          REQUIRE( graph.outdegree( ibyc(9) ) == 2 );
+          REQUIRE( graph.outdegree( ibyc(10) ) == 1 );
+          REQUIRE( graph.outdegree( ibyc(11) ) == 1 );
+          REQUIRE( graph.outdegree( ibyc(12) ) == 2 );
+          REQUIRE( graph.outdegree( ibyc(13) ) == 1 );
+          REQUIRE( graph.outdegree( ibyc(14) ) == 1 );
+          REQUIRE( graph.outdegree( ibyc(15) ) == 0 );
+          REQUIRE( graph.indegree( ibyc(1) ) == 0 );
+          REQUIRE( graph.indegree( ibyc(2) ) == 1 );
+          REQUIRE( graph.indegree( ibyc(3) ) == 1 );
+          REQUIRE( graph.indegree( ibyc(4) ) == 2 );
+          REQUIRE( graph.indegree( ibyc(5) ) == 2 );
+          REQUIRE( graph.indegree( ibyc(6) ) == 2 );
+          REQUIRE( graph.indegree( ibyc(7) ) == 1 );
+          REQUIRE( graph.indegree( ibyc(8) ) == 1 );
+          REQUIRE( graph.indegree( ibyc(9) ) == 2 );
+          REQUIRE( graph.indegree( ibyc(10) ) == 1 );
+          REQUIRE( graph.indegree( ibyc(11) ) == 1 );
+          REQUIRE( graph.indegree( ibyc(12) ) == 2 );
+          REQUIRE( graph.indegree( ibyc(13) ) == 1 );
+          REQUIRE( graph.indegree( ibyc(14) ) == 1 );
+          REQUIRE( graph.indegree( ibyc(15) ) == 2 );
+          REQUIRE( !graph.has_edges_in( { ibyc(1), true } ) );
+          REQUIRE( !graph.has_edges_in( { ibyc(1), false } ) );
+          REQUIRE( !graph.has_edges_in( { ibyc(2), true } ) );
+          REQUIRE( graph.has_edges_in( { ibyc(2), false } ) );
+          REQUIRE( !graph.has_edges_in( { ibyc(8), true } ) );
+          REQUIRE( graph.has_edges_in( { ibyc(8), false } ) );
+          REQUIRE( !graph.has_edges_in( { ibyc(9), true } ) );
+          REQUIRE( graph.has_edges_in( { ibyc(9), false } ) );
+          REQUIRE( !graph.has_edges_in( { ibyc(15), true } ) );
+          REQUIRE( graph.has_edges_in( { ibyc(15), false } ) );
+          REQUIRE( !graph.has_edges_in( ibyc(1) ) );
+          REQUIRE( graph.has_edges_in( ibyc(2) ) );
+          REQUIRE( graph.has_edges_in( ibyc(8) ) );
+          REQUIRE( graph.has_edges_in( ibyc(9) ) );
+          REQUIRE( graph.has_edges_out( { ibyc(1), true } ) );
+          REQUIRE( !graph.has_edges_out( { ibyc(1), false } ) );
+          REQUIRE( graph.has_edges_out( { ibyc(2), true } ) );
+          REQUIRE( !graph.has_edges_out( { ibyc(2), false } ) );
+          REQUIRE( graph.has_edges_out( { ibyc(8), true } ) );
+          REQUIRE( !graph.has_edges_out( { ibyc(8), false } ) );
+          REQUIRE( graph.has_edges_out( { ibyc(9), true } ) );
+          REQUIRE( !graph.has_edges_out( { ibyc(9), false } ) );
+          REQUIRE( graph.has_edges_out( ibyc(1) ) );
+          REQUIRE( graph.has_edges_out( ibyc(2) ) );
+          REQUIRE( graph.has_edges_out( ibyc(8) ) );
+          REQUIRE( graph.has_edges_out( ibyc(9) ) );
+          REQUIRE( !graph.has_edges_out( ibyc(15) ) );
+          REQUIRE( graph.node_sequence( ibyc(1) ) == "CAAATAAG" );
+          REQUIRE( graph.node_sequence( ibyc(2) ) == "A" );
+          REQUIRE( graph.node_sequence( ibyc(3) ) == "G" );
+          REQUIRE( graph.node_sequence( ibyc(4) ) == "T" );
+          REQUIRE( graph.node_sequence( ibyc(5) ) == "C" );
+          REQUIRE( graph.node_sequence( ibyc(6) ) == "TTG" );
+          REQUIRE( graph.node_sequence( ibyc(7) ) == "A" );
+          REQUIRE( graph.node_sequence( ibyc(8) ) == "G" );
+          REQUIRE( graph.node_sequence( ibyc(9) ) == "AAATTTTCTGGAGTTCTAT" );
+          REQUIRE( graph.node_sequence( ibyc(10) ) == "A" );
+          REQUIRE( graph.node_sequence( ibyc(11) ) == "T" );
+          REQUIRE( graph.node_sequence( ibyc(12) ) == "ATAT" );
+          REQUIRE( graph.node_sequence( ibyc(13) ) == "A" );
+          REQUIRE( graph.node_sequence( ibyc(14) ) == "T" );
+          REQUIRE( graph.node_sequence( ibyc(15) ) == "CCAACTCTCTG" );
+          REQUIRE( graph.node_length( ibyc(1) ) == 8 );
+          REQUIRE( graph.node_length( ibyc(2) ) == 1 );
+          REQUIRE( graph.node_length( ibyc(3) ) == 1 );
+          REQUIRE( graph.node_length( ibyc(4) ) == 1 );
+          REQUIRE( graph.node_length( ibyc(5) ) == 1 );
+          REQUIRE( graph.node_length( ibyc(6) ) == 3 );
+          REQUIRE( graph.node_length( ibyc(7) ) == 1 );
+          REQUIRE( graph.node_length( ibyc(8) ) == 1 );
+          REQUIRE( graph.node_length( ibyc(9) ) == 19 );
+          REQUIRE( graph.node_length( ibyc(10) ) == 1 );
+          REQUIRE( graph.node_length( ibyc(11) ) == 1 );
+          REQUIRE( graph.node_length( ibyc(12) ) == 4 );
+          REQUIRE( graph.node_length( ibyc(13) ) == 1 );
+          REQUIRE( graph.node_length( ibyc(14) ) == 1 );
+          REQUIRE( graph.node_length( ibyc(15) ) == 11 );
           if ( check_name ) {
             REQUIRE( graph.get_node_prop( 1 ).name == "1" );
             REQUIRE( graph.get_node_prop( 2 ).name == "2" );
@@ -461,47 +462,47 @@ SCENARIO( "Sanity check for deserialising a SeqGraph", "[ioutils]" )
             REQUIRE( graph.get_node_prop( 15 ).name == "15" );
           }
           if ( check_overlap ) {
-            REQUIRE( graph.edge_overlap( link_type( { rtoi(1), true, rtoi(2), false } ) ) == 0 );
-            REQUIRE( graph.edge_overlap( link_type( { rtoi(1), true, rtoi(3), false } ) ) == 0 );
-            REQUIRE( graph.edge_overlap( link_type( { rtoi(2), true, rtoi(4), false } ) ) == 0 );
-            REQUIRE( graph.edge_overlap( link_type( { rtoi(2), true, rtoi(5), false } ) ) == 0 );
-            REQUIRE( graph.edge_overlap( link_type( { rtoi(3), true, rtoi(4), false } ) ) == 0 );
-            REQUIRE( graph.edge_overlap( link_type( { rtoi(3), true, rtoi(5), false } ) ) == 0 );
-            REQUIRE( graph.edge_overlap( link_type( { rtoi(4), true, rtoi(6), false } ) ) == 0 );
-            REQUIRE( graph.edge_overlap( link_type( { rtoi(5), true, rtoi(6), false } ) ) == 0 );
-            REQUIRE( graph.edge_overlap( link_type( { rtoi(6), true, rtoi(7), false } ) ) == 0 );
-            REQUIRE( graph.edge_overlap( link_type( { rtoi(6), true, rtoi(8), false } ) ) == 0 );
-            REQUIRE( graph.edge_overlap( link_type( { rtoi(7), true, rtoi(9), false } ) ) == 0 );
-            REQUIRE( graph.edge_overlap( link_type( { rtoi(8), true, rtoi(9), false } ) ) == 0 );
-            REQUIRE( graph.edge_overlap( link_type( { rtoi(9), true, rtoi(10), false } ) ) == 0 );
-            REQUIRE( graph.edge_overlap( link_type( { rtoi(9), true, rtoi(11), false } ) ) == 0 );
-            REQUIRE( graph.edge_overlap( link_type( { rtoi(10), true, rtoi(12), false } ) ) == 0 );
-            REQUIRE( graph.edge_overlap( link_type( { rtoi(11), true, rtoi(12), false } ) ) == 0 );
-            REQUIRE( graph.edge_overlap( link_type( { rtoi(12), true, rtoi(13), false } ) ) == 0 );
-            REQUIRE( graph.edge_overlap( link_type( { rtoi(12), true, rtoi(14), false } ) ) == 0 );
-            REQUIRE( graph.edge_overlap( link_type( { rtoi(13), true, rtoi(15), false } ) ) == 0 );
-            REQUIRE( graph.edge_overlap( link_type( { rtoi(14), true, rtoi(15), false } ) ) == 0 );
-            REQUIRE( graph.edge_overlap( rtoi(1), rtoi(2), graph.linktype( link_type( { rtoi(1), true, rtoi(2), false } ) ) ) == 0 );
-            REQUIRE( graph.edge_overlap( rtoi(1), rtoi(3), graph.linktype( link_type( { rtoi(1), true, rtoi(3), false } ) ) ) == 0 );
-            REQUIRE( graph.edge_overlap( rtoi(2), rtoi(4), graph.linktype( link_type( { rtoi(2), true, rtoi(4), false } ) ) ) == 0 );
-            REQUIRE( graph.edge_overlap( rtoi(2), rtoi(5), graph.linktype( link_type( { rtoi(2), true, rtoi(5), false } ) ) ) == 0 );
-            REQUIRE( graph.edge_overlap( rtoi(3), rtoi(4), graph.linktype( link_type( { rtoi(3), true, rtoi(4), false } ) ) ) == 0 );
-            REQUIRE( graph.edge_overlap( rtoi(3), rtoi(5), graph.linktype( link_type( { rtoi(3), true, rtoi(5), false } ) ) ) == 0 );
-            REQUIRE( graph.edge_overlap( rtoi(4), rtoi(6), graph.linktype( link_type( { rtoi(4), true, rtoi(6), false } ) ) ) == 0 );
-            REQUIRE( graph.edge_overlap( rtoi(5), rtoi(6), graph.linktype( link_type( { rtoi(5), true, rtoi(6), false } ) ) ) == 0 );
-            REQUIRE( graph.edge_overlap( rtoi(6), rtoi(7), graph.linktype( link_type( { rtoi(6), true, rtoi(7), false } ) ) ) == 0 );
-            REQUIRE( graph.edge_overlap( rtoi(6), rtoi(8), graph.linktype( link_type( { rtoi(6), true, rtoi(8), false } ) ) ) == 0 );
-            REQUIRE( graph.edge_overlap( rtoi(7), rtoi(9), graph.linktype( link_type( { rtoi(7), true, rtoi(9), false } ) ) ) == 0 );
-            REQUIRE( graph.edge_overlap( rtoi(8), rtoi(9), graph.linktype( link_type( { rtoi(8), true, rtoi(9), false } ) ) ) == 0 );
-            REQUIRE( graph.edge_overlap( rtoi(8), rtoi(9), graph.linktype( link_type( { rtoi(8), true, rtoi(9), false } ) ) ) == 0 );
-            REQUIRE( graph.edge_overlap( rtoi(9), rtoi(10), graph.linktype( link_type( { rtoi(9), true, rtoi(10), false } ) ) ) == 0 );
-            REQUIRE( graph.edge_overlap( rtoi(9), rtoi(11), graph.linktype( link_type( { rtoi(9), true, rtoi(11), false } ) ) ) == 0 );
-            REQUIRE( graph.edge_overlap( rtoi(10), rtoi(12), graph.linktype( link_type( { rtoi(10), true, rtoi(12), false } ) ) ) == 0 );
-            REQUIRE( graph.edge_overlap( rtoi(11), rtoi(12), graph.linktype( link_type( { rtoi(11), true, rtoi(12), false } ) ) ) == 0 );
-            REQUIRE( graph.edge_overlap( rtoi(12), rtoi(13), graph.linktype( link_type( { rtoi(12), true, rtoi(13), false } ) ) ) == 0 );
-            REQUIRE( graph.edge_overlap( rtoi(12), rtoi(14), graph.linktype( link_type( { rtoi(12), true, rtoi(14), false } ) ) ) == 0 );
-            REQUIRE( graph.edge_overlap( rtoi(13), rtoi(15), graph.linktype( link_type( { rtoi(13), true, rtoi(15), false } ) ) ) == 0 );
-            REQUIRE( graph.edge_overlap( rtoi(14), rtoi(15), graph.linktype( link_type( { rtoi(14), true, rtoi(15), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { ibyc(1), true, ibyc(2), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { ibyc(1), true, ibyc(3), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { ibyc(2), true, ibyc(4), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { ibyc(2), true, ibyc(5), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { ibyc(3), true, ibyc(4), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { ibyc(3), true, ibyc(5), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { ibyc(4), true, ibyc(6), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { ibyc(5), true, ibyc(6), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { ibyc(6), true, ibyc(7), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { ibyc(6), true, ibyc(8), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { ibyc(7), true, ibyc(9), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { ibyc(8), true, ibyc(9), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { ibyc(9), true, ibyc(10), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { ibyc(9), true, ibyc(11), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { ibyc(10), true, ibyc(12), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { ibyc(11), true, ibyc(12), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { ibyc(12), true, ibyc(13), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { ibyc(12), true, ibyc(14), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { ibyc(13), true, ibyc(15), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( link_type( { ibyc(14), true, ibyc(15), false } ) ) == 0 );
+            REQUIRE( graph.edge_overlap( ibyc(1), ibyc(2), graph.linktype( link_type( { ibyc(1), true, ibyc(2), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( ibyc(1), ibyc(3), graph.linktype( link_type( { ibyc(1), true, ibyc(3), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( ibyc(2), ibyc(4), graph.linktype( link_type( { ibyc(2), true, ibyc(4), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( ibyc(2), ibyc(5), graph.linktype( link_type( { ibyc(2), true, ibyc(5), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( ibyc(3), ibyc(4), graph.linktype( link_type( { ibyc(3), true, ibyc(4), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( ibyc(3), ibyc(5), graph.linktype( link_type( { ibyc(3), true, ibyc(5), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( ibyc(4), ibyc(6), graph.linktype( link_type( { ibyc(4), true, ibyc(6), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( ibyc(5), ibyc(6), graph.linktype( link_type( { ibyc(5), true, ibyc(6), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( ibyc(6), ibyc(7), graph.linktype( link_type( { ibyc(6), true, ibyc(7), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( ibyc(6), ibyc(8), graph.linktype( link_type( { ibyc(6), true, ibyc(8), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( ibyc(7), ibyc(9), graph.linktype( link_type( { ibyc(7), true, ibyc(9), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( ibyc(8), ibyc(9), graph.linktype( link_type( { ibyc(8), true, ibyc(9), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( ibyc(8), ibyc(9), graph.linktype( link_type( { ibyc(8), true, ibyc(9), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( ibyc(9), ibyc(10), graph.linktype( link_type( { ibyc(9), true, ibyc(10), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( ibyc(9), ibyc(11), graph.linktype( link_type( { ibyc(9), true, ibyc(11), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( ibyc(10), ibyc(12), graph.linktype( link_type( { ibyc(10), true, ibyc(12), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( ibyc(11), ibyc(12), graph.linktype( link_type( { ibyc(11), true, ibyc(12), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( ibyc(12), ibyc(13), graph.linktype( link_type( { ibyc(12), true, ibyc(13), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( ibyc(12), ibyc(14), graph.linktype( link_type( { ibyc(12), true, ibyc(14), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( ibyc(13), ibyc(15), graph.linktype( link_type( { ibyc(13), true, ibyc(15), false } ) ) ) == 0 );
+            REQUIRE( graph.edge_overlap( ibyc(14), ibyc(15), graph.linktype( link_type( { ibyc(14), true, ibyc(15), false } ) ) ) == 0 );
           }
           REQUIRE( graph.get_path_count() == path_count );
           REQUIRE( !graph.has_path( 0 ) );
