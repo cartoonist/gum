@@ -258,14 +258,16 @@ namespace gum {
     inline void
     merge_vg( TVGGraph& output, TVGGraph const& chunk )
     {
-      for ( std::size_t i = 0; i < chunk.node_size(); ++i ) {
+      using size_type = decltype( chunk.node_size() );
+
+      for ( size_type i = 0; i < chunk.node_size(); ++i ) {
         auto node = output.add_node();
         node->set_id( chunk.node( i ).id() );
         node->set_sequence( chunk.node( i ).sequence() );
         node->set_name( chunk.node( i ).name() );
       }
 
-      for ( std::size_t i = 0; i < chunk.edge_size(); ++i ) {
+      for ( size_type i = 0; i < chunk.edge_size(); ++i ) {
         auto edge = output.add_edge();
         edge->set_from( chunk.edge( i ).from() );
         edge->set_to( chunk.edge( i ).to() );
@@ -275,7 +277,7 @@ namespace gum {
       }
 
       for ( auto const& p : chunk.path() ) {
-        std::size_t i = 0;
+        size_type i = 0;
         for ( ; i < output.path_size(); ++i ) {
           if ( output.path( i ).name() == p.name() ) break;
         }
