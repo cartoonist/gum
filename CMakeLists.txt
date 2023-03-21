@@ -6,49 +6,49 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
 # Options
 option(BUILD_TESTING "Build test programs" OFF)
 option(BUILD_GUM_AUX_TOOLS "Build GUM auxiliary tools" OFF)
-option(WITH_VG "With vg graph loading support" ON)
-option(WITH_HG "With HashGraph loading support" ON)
-option(WITH_VGIO "With io support for vg files" OFF)
-option(WITH_BDSG "With io support for HashGraph files" OFF)
-option(USE_VCPKG "Use vcpkg for installing dependencies" OFF)
+option(GUM_WITH_VG "With vg graph loading support" ON)
+option(GUM_WITH_HG "With HashGraph loading support" ON)
+option(GUM_WITH_VGIO "With io support for vg files" OFF)
+option(GUM_WITH_BDSG "With io support for HashGraph files" OFF)
+option(GUM_USE_VCPKG "Use vcpkg for installing dependencies" OFF)
 option(PROTOBUF_AS_DEFAULT_VG "Consider Protobuf vg as the default format for 'vg' files" ON)
 
 # Processing options
-if(WITH_VGIO)
-  set(WITH_VG on)
-endif(WITH_VGIO)
+if(GUM_WITH_VGIO)
+  set(GUM_WITH_VG on)
+endif(GUM_WITH_VGIO)
 
-if(WITH_BDSG)
-  set(WITH_HG on)
-endif(WITH_BDSG)
+if(GUM_WITH_BDSG)
+  set(GUM_WITH_HG on)
+endif(GUM_WITH_BDSG)
 
-if(BUILD_TESTING AND NOT (WITH_VGIO AND WITH_BDSG))
+if(BUILD_TESTING AND NOT (GUM_WITH_VGIO AND GUM_WITH_BDSG))
   message(FATAL_ERROR "Building tests requires `libvgio` and `libbdsg`. "
-    "Either enable VG and BDSG support by defining `WITH_VGIO=on` and "
-    "`WITH_BDSG=on` or disable building tests (`BUILD_TESTING=off`).")
+    "Either enable VG and BDSG support by defining `GUM_WITH_VGIO=on` and "
+    "`GUM_WITH_BDSG=on` or disable building tests (`BUILD_TESTING=off`).")
 endif()
 
-if(BUILD_GUM_AUX_TOOLS AND NOT (WITH_VGIO AND WITH_BDSG))
+if(BUILD_GUM_AUX_TOOLS AND NOT (GUM_WITH_VGIO AND GUM_WITH_BDSG))
   message(FATAL_ERROR "Building auxiliary tools requires `libvgio` and `libbdsg`. "
-    "Either enable VG and BDSG support by defining `WITH_VGIO=on` and "
-    "`WITH_BDSG=on` or disable building auxiliary tools (`BUILD_GUM_AUX_TOOLS=off`).")
+    "Either enable VG and BDSG support by defining `GUM_WITH_VGIO=on` and "
+    "`GUM_WITH_BDSG=on` or disable building auxiliary tools (`BUILD_GUM_AUX_TOOLS=off`).")
 endif()
 
-if(WITH_VGIO)
+if(GUM_WITH_VGIO)
   list(APPEND VCPKG_MANIFEST_FEATURES "vgio")
-endif(WITH_VGIO)
+endif(GUM_WITH_VGIO)
 
-if(WITH_BDSG)
+if(GUM_WITH_BDSG)
   list(APPEND VCPKG_MANIFEST_FEATURES "bdsg")
-endif(WITH_BDSG)
+endif(GUM_WITH_BDSG)
 
 # Load AutoVcpkg module
-if(USE_VCPKG)
+if(GUM_USE_VCPKG)
   include(AutoVcpkg)
   vcpkg_lazy_configure()
   set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
     CACHE FILEPATH "Vcpkg toolchain file")
-endif(USE_VCPKG)
+endif(GUM_USE_VCPKG)
 
 # Defining the project
 project(gum VERSION 1.1.1 LANGUAGES CXX)
@@ -61,18 +61,18 @@ include(CMakePackageConfigHelpers)
 find_package(ZLIB REQUIRED)
 find_package(OpenMP)
 # Optional dependencies
-if(WITH_VGIO)
+if(GUM_WITH_VGIO)
   find_package(VGio CONFIG REQUIRED)
-endif(WITH_VGIO)
-if(WITH_BDSG)
-  if (USE_VCPKG)
+endif(GUM_WITH_VGIO)
+if(GUM_WITH_BDSG)
+  if (GUM_USE_VCPKG)
     # Use CMake config files
     find_package(libbdsg CONFIG REQUIRED)
-  else(USE_VCPKG)
+  else(GUM_USE_VCPKG)
     # Use find module script
     find_package(libbdsg REQUIRED)
-  endif(USE_VCPKG)
-endif(WITH_BDSG)
+  endif(GUM_USE_VCPKG)
+endif(GUM_WITH_BDSG)
 # Handle embedded dependencies
 include(${PROJECT_SOURCE_DIR}/ext/external.cmake)
 
@@ -96,51 +96,51 @@ target_include_directories(gum
   INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>;$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>
   INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/gum/internal>;$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}/gum/internal>)
 
-if(WITH_VGIO)
+if(GUM_WITH_VGIO)
   target_include_directories(gum
     INTERFACE $<TARGET_PROPERTY:VGio::VGio,INTERFACE_INCLUDE_DIRECTORIES>)
-endif(WITH_VGIO)
-if(WITH_BDSG)
+endif(GUM_WITH_VGIO)
+if(GUM_WITH_BDSG)
   target_include_directories(gum
     INTERFACE $<TARGET_PROPERTY:libbdsg::libbdsg,INTERFACE_INCLUDE_DIRECTORIES>)
-endif(WITH_BDSG)
+endif(GUM_WITH_BDSG)
 # Defining link libraries
 target_link_libraries(gum
   INTERFACE $<BUILD_INTERFACE:OpenMP::OpenMP_CXX>;$<INSTALL_INTERFACE:OpenMP::OpenMP_CXX>)
-if(WITH_VGIO)
+if(GUM_WITH_VGIO)
   target_link_libraries(gum
     INTERFACE $<BUILD_INTERFACE:VGio::VGio>;$<INSTALL_INTERFACE:VGio::VGio>)
-endif(WITH_VGIO)
-if(WITH_BDSG)
+endif(GUM_WITH_VGIO)
+if(GUM_WITH_BDSG)
   target_link_libraries(gum
     INTERFACE $<BUILD_INTERFACE:libbdsg::libbdsg>;$<INSTALL_INTERFACE:libbdsg::libbdsg>)
-endif(WITH_BDSG)
+endif(GUM_WITH_BDSG)
 # Use C++17
 target_compile_features(gum INTERFACE cxx_std_17)
 # Generating the configure header file
 set(GUM_IO_PROTOBUF_VG "${PROTOBUF_AS_DEFAULT_VG}")
-set(GUM_HAS_VG "${WITH_VG}")
-set(GUM_HAS_HG "${WITH_HG}")
-set(GUM_HAS_VGIO "${WITH_VGIO}")
-set(GUM_HAS_BDSG "${WITH_BDSG}")
+set(GUM_HAS_VG "${GUM_WITH_VG}")
+set(GUM_HAS_HG "${GUM_WITH_HG}")
+set(GUM_HAS_VGIO "${GUM_WITH_VGIO}")
+set(GUM_HAS_BDSG "${GUM_WITH_BDSG}")
 configure_file(include/gum/config.hpp.in ${PROJECT_SOURCE_DIR}/include/gum/config.hpp @ONLY)
 # Generating pkgconfig file
 configure_file(gum.pc.in ${PROJECT_SOURCE_DIR}/gum.pc @ONLY)
 # Setting header files
 file(GLOB HEADER_FILES RELATIVE "${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/include/gum/*.hpp")
 set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES "${PROJECT_SOURCE_DIR}/include/gum/internal")
-if(NOT WITH_VG)
+if(NOT GUM_WITH_VG)
   list(REMOVE_ITEM HEADER_FILES "gum/vg_utils.hpp")
-endif(NOT WITH_VG)
-if(NOT WITH_HG)
+endif(NOT GUM_WITH_VG)
+if(NOT GUM_WITH_HG)
   list(REMOVE_ITEM HEADER_FILES "gum/hg_utils.hpp")
-endif(NOT WITH_HG)
-if(NOT WITH_VGIO)
+endif(NOT GUM_WITH_HG)
+if(NOT GUM_WITH_VGIO)
   list(REMOVE_ITEM HEADER_FILES "gum/vgio_utils.hpp")
-endif(NOT WITH_VGIO)
-if(NOT WITH_BDSG)
+endif(NOT GUM_WITH_VGIO)
+if(NOT GUM_WITH_BDSG)
   list(REMOVE_ITEM HEADER_FILES "gum/bdsg_utils.hpp")
-endif(NOT WITH_BDSG)
+endif(NOT GUM_WITH_BDSG)
 list(TRANSFORM HEADER_FILES PREPEND "${PROJECT_SOURCE_DIR}/include/" OUTPUT_VARIABLE BUILD_HEADER_FILES)
 list(TRANSFORM HEADER_FILES PREPEND "${CMAKE_INSTALL_FULL_INCLUDEDIR}/" OUTPUT_VARIABLE INSTALL_HEADER_FILES)
 # Defining target sources

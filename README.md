@@ -140,8 +140,8 @@ section. We go through both approaches below.
 This is the easiest way to handle dependencies. However, it is not enabled by
 default. If enabled, GUM will build required dependencies based on selected
 modules during [configuration](#configuration). This functionality can be
-enabled by setting CMake option `USE_VCPKG` to `on` or `TRUE`; for example by
-passing `-DUSE_VCPKG=on` to CMake in configuration phase.
+enabled by setting CMake option `GUM_USE_VCPKG` to `on` or `TRUE`; for example by
+passing `-DGUM_USE_VCPKG=on` to CMake in configuration phase.
 
 In this mode, GUM automatically downloads vcpkg into the build directory and
 bootstraps it. vcpkg is a free C/C++ package manager developed by Microsoft for
@@ -246,25 +246,25 @@ name definitions and version information.
 ### CMake configuration options
 
 - Options for including additional modules:
-  - `WITH_VG`: if `on`, `vg_utils.hpp` is included supporting loading vg
+  - `GUM_WITH_VG`: if `on`, `vg_utils.hpp` is included supporting loading vg
     objects. As described [above](#structure), it does not explicitly impose a
     dependency on `libvgio` and it is assumed that the caller handles parsing
     input files (`on` by default). No inclusion order is imposed by the library
     either; i.e. it does not matter if vg namespace is defined before including
     the header file.  This is useful when the library is installed system-wide
     and not all downstream projects are supposed to work with vg.
-  - `WITH_VGIO`: if `on`, it includes io supports for vg files by including
+  - `GUM_WITH_VGIO`: if `on`, it includes io supports for vg files by including
     `vgio_utils.hpp` which utilise `libvgio` for parsing vg files (`off` by
     default).
-  - `WITH_HG`: if `on`, `hg_utils.hpp` is included only without imposing
+  - `GUM_WITH_HG`: if `on`, `hg_utils.hpp` is included only without imposing
     `libbdsg` with no inclusion order obligations (`on` by default).
-  - `WITH_BDSG`: if `on`, it includes io supports for vg files with HashGraph
+  - `GUM_WITH_BDSG`: if `on`, it includes io supports for vg files with HashGraph
     format by including `bdsg_utils.hpp` which uses `libbdsg` (`off` by
     default).
   - `PROTOBUF_AS_DEFAULT_VG`: if `on`, Protobuf vg file format is considered as
     the default format for 'vg' files rather than `HashGraph` (`on` by default).
 - Options for handling dependencies:
-  - `USE_VCPKG`: use vcpkg for building dependencies (`off` by default). See
+  - `GUM_USE_VCPKG`: use vcpkg for building dependencies (`off` by default). See
     [Dependencies](#dependencies) for more details.
 - Development options:
   - `BUILD_GUM_AUX_TOOLS`: Build some auxiliary tools (`off` by default).
@@ -306,7 +306,7 @@ linking the required libraries.
 
 In addition, if you are using GUM with vg support it is recommended to
 [use vcpkg](#using-vcpkg) which automatically builds required dependencies. To
-do so, set `USE_VCPKG` to `on` before calling `add_subdirectory`.
+do so, set `GUM_USE_VCPKG` to `on` before calling `add_subdirectory`.
 
 [Other CMake options](#cmake-configuration-options) can also be set before
 calling `add_subdirectory`.
@@ -322,7 +322,7 @@ if(NOT TARGET gum::gum)
   set(GUM_SOURCE_DIR path/to/gum)
   execute_process(COMMAND git submodule update --init -- ${GUM_SOURCE_DIR}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-  #set(USE_VCPKG on)  # uncomment for using vcpkg
+  #set(GUM_USE_VCPKG on)  # uncomment for using vcpkg
   add_subdirectory(${GUM_SOURCE_DIR} EXCLUDE_FROM_ALL)
 endif()
 
@@ -375,8 +375,8 @@ conda install -c bioconda gum
 
 Note that since `libvgio` and `libbdsg` are not available on conda, the
 installed version only supports parsing GFA files. More specifically, it is
-packaged with default CMake options `-DWITH_VG=on -DWITH_HG=on -DWITH_VGIO=off
--DWITH_BDSG=off`.
+packaged with default CMake options
+`-DGUM_WITH_VG=on -DGUM_WITH_HG=on -DGUM_WITH_VGIO=off -DGUM_WITH_BDSG=off`.
 
 ### Install from source code
 
@@ -405,10 +405,10 @@ optional modules to be included in the installation (see
 [Structure](#structure) and
 [CMake configuration options](#cmake-configuration-options) for further details).
 
-As explained above, if you pass `-DUSE_VCPKG=on` to the `cmake` command, the
+As explained above, if you pass `-DGUM_USE_VCPKG=on` to the `cmake` command, the
 required dependencies will be installed during configuration time. This is only
 necessary when options enabling io supports for vg/HashGraph files (i.e.
-`-DWITH_VGIO` and `-DWITH_BDSG`) are provided.
+`-DGUM_WITH_VGIO` and `-DGUM_WITH_BDSG`) are provided.
 
 Development
 -----------
@@ -418,5 +418,5 @@ In order to build the tests or auxiliary tools, just turn on `BUILD_TESTING` or
 tools need the full library with all modules included:
 
 ```bash
-$ cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=on -DBUILD_GUM_AUX_TOOLS=on -DWITH_VGIO=on -DWITH_BDSG=on ..
+$ cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=on -DBUILD_GUM_AUX_TOOLS=on -DGUM_WITH_VGIO=on -DGUM_WITH_BDSG=on ..
 ```
