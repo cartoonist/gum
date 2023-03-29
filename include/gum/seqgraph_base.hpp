@@ -278,9 +278,12 @@ namespace gum {
       return DUMMY_SIDE;
     }
 
+    template< typename TCallback >
     static inline bool
-    for_each_side( id_type id, std::function< bool( side_type ) > callback )
+    for_each_side( id_type id, TCallback callback )
     {
+      static_assert( std::is_invocable_r_v< bool, TCallback, side_type >, "received a non-invocable as callback" );
+
       side_type side = { id, false };
       if ( !callback( side ) ) return false;
       if ( !callback( DirectedGraphBaseTrait::opposite_side( side ) ) ) return false;
@@ -523,9 +526,12 @@ namespace gum {
       return DUMMY_SIDE;
     }
 
+    template< typename TCallback >
     static inline bool
-    for_each_side( id_type id, std::function< bool( side_type ) > callback )
+    for_each_side( id_type id, TCallback callback )
     {
+      static_assert( std::is_invocable_r_v< bool, TCallback, side_type >, "received a non-invocable as callback" );
+
       return callback( side_type( id ) );
     }
 
@@ -1178,9 +1184,12 @@ namespace gum {
         this->nodes.push_back( base_type::encode( id, reversed ) );
       }
 
+      template< typename TCallback >
       inline void
-      for_each_node( std::function< bool( id_type, bool ) > callback )
+      for_each_node( TCallback callback )
       {
+        static_assert( std::is_invocable_r_v< bool, TCallback, id_type, bool >, "received a non-invocable as callback" );
+
         for ( auto it = this->nodes.begin(); it != this->nodes.end(); ++it ) {
           callback( base_type::id_of( *it ), base_type::is_reverse( *it ) );
         }
@@ -1343,9 +1352,12 @@ namespace gum {
       }
 
       /* === METHODS === */
+      template< typename TCallback >
       inline void
-      for_each_node( std::function< bool( id_type, bool ) > callback )
+      for_each_node( TCallback callback )
       {
+        static_assert( std::is_invocable_r_v< bool, TCallback, id_type, bool >, "received a non-invocable as callback" );
+
         auto nodes_end = this->end();
         for ( auto it = this->begin(); it != nodes_end; ++it ) {
           callback( base_type::id_of( *it ), base_type::is_reverse( *it ) );

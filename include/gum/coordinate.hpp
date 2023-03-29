@@ -235,9 +235,12 @@ namespace gum {
       }
 
       /* === METHODS === */
+      template< typename TCallback >
       inline bool
-      for_each_element( std::function< bool( lid_type, id_type ) > callback ) const
+      for_each_element( TCallback callback ) const
       {
+        static_assert( std::is_invocable_r_v< bool, TCallback, lid_type, id_type >, "received a non-invocable as callback" );
+
         for ( auto const& elem : this->ids ) {
           if ( !callback( elem.first, elem.second ) ) return false;
         }
@@ -352,9 +355,12 @@ namespace gum {
       }
 
       /* === METHODS === */
+      template< typename TCallback >
       inline bool
-      for_each_element( std::function< bool( lid_type, id_type ) > callback )
+      for_each_element( TCallback callback )
       {
+        static_assert( std::is_invocable_r_v< bool, TCallback, lid_type, id_type >, "received a non-invocable as callback" );
+
         size_type rank = 0;
         for ( auto lid = this->id_min; lid <= this->id_max; ++lid ) {
           if ( !callback( lid, this->ids[ rank++ ] ) ) return false;

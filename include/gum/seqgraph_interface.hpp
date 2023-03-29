@@ -227,12 +227,15 @@ namespace gum {
       return sorted;
     }
 
-    template< typename TGraph >
+    template< typename TGraph,
+              typename TCallback1,
+              typename TCallback2 = void(*)( typename TGraph::rank_type, typename TGraph::id_type ),
+              typename TCallback3 = void(*)( typename TGraph::rank_type, typename TGraph::id_type, bool ) >
     inline void
     dfs_traverse( TGraph const& graph,
-                  std::function< void( typename TGraph::rank_type, typename TGraph::id_type ) > on_finishing,
-                  std::function< void( typename TGraph::rank_type, typename TGraph::id_type ) > on_discovery = [](auto,auto){},
-                  std::function< void( typename TGraph::rank_type, typename TGraph::id_type, bool ) > on_visited = [](auto,auto,auto){} )
+                  TCallback1 on_finishing,
+                  TCallback2 on_discovery = [](auto,auto){},
+                  TCallback3 on_visited = [](auto,auto,auto){} )
     {
       using id_type = typename TGraph::id_type;
       using rank_type = typename TGraph::rank_type;
@@ -240,10 +243,9 @@ namespace gum {
       using nodes_type = std::vector< std::pair< rank_type, id_type > >;
       using map_type = typename sdsl::bit_vector;
 
-      auto call = []( std::pair< rank_type, id_type > node,
-                      std::function< void( rank_type, id_type ) > function ){
-        function( node.first, node.second );
-      };
+      static_assert( std::is_invocable_v< TCallback1, rank_type, id_type >, "received a non-invocable as callback" );
+      static_assert( std::is_invocable_v< TCallback2, rank_type, id_type >, "received a non-invocable as callback" );
+      static_assert( std::is_invocable_v< TCallback3, rank_type, id_type, bool >, "received a non-invocable as callback" );
 
       auto n = graph.get_node_count();
 
@@ -265,12 +267,12 @@ namespace gum {
           const auto& node = stack.back();
           if ( visited[ node.first * 2 ] ) {
             visited[ node.first * 2 - 1 ] = 1;
-            call( node, on_finishing );
+            std::invoke( on_finishing, node.first, node.second );
             stack.pop_back();
             continue;
           }
           visited[ node.first * 2 ] = 1;
-          call( node, on_discovery );
+          std::invoke( on_discovery, node.first, node.second );
           graph.for_each_edges_out(
             node.second,
             [&stack, &graph, &visited, &on_visited]( id_type to, linktype_type ) -> bool {

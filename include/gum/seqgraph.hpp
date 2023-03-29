@@ -221,10 +221,13 @@ namespace gum {
      *  @param  count The number of nodes to be added.
      *  @param  callback A function to be called on IDs of added nodes.
      */
+    template< typename TCallback = void(*)( id_type ) >
     inline void
     add_nodes( size_type count,
-               std::function< void( id_type ) > callback = []( id_type ){} )
+               TCallback callback = []( id_type ){} )
     {
+      static_assert( std::is_invocable_v< TCallback, id_type >, "received a non-invocable as callback" );
+
       for ( size_type i = 0; i < count; ++i ) callback( this->add_node_imp() );
       this->set_last_rank( count );
     }
@@ -248,10 +251,13 @@ namespace gum {
      *  @return `true` if it has iterated over all nodes, and `false` if the
      *  iteration has been interrupted by `callback`.
      */
+    template< typename TCallback >
     inline bool
-    for_each_node( std::function< bool( rank_type, id_type ) > callback,
+    for_each_node( TCallback callback,
                    rank_type s_rank=1 ) const
     {
+      static_assert( std::is_invocable_r_v< bool, TCallback, rank_type, id_type >, "received a non-invocable as callback" );
+
       rank_type rank = 1;
       for ( id_type id : this->nodes ) {
         if ( rank >= s_rank && !callback( rank, id ) ) return false;
@@ -320,9 +326,12 @@ namespace gum {
       return trait_type::opposite_side( side );
     }
 
+    template< typename TCallback >
     inline bool
-    for_each_side( id_type id, std::function< bool( side_type ) > callback ) const
+    for_each_side( id_type id, TCallback callback ) const
     {
+      static_assert( std::is_invocable_r_v< bool, TCallback, side_type >, "received a non-invocable as callback" );
+
       return trait_type::for_each_side( id, callback );
     }
 
@@ -463,10 +472,13 @@ namespace gum {
      *  @return `true` if it has iterated over all edges, and `false` if the
      *  iteration has been interrupted by `callback`.
      */
+    template< typename TCallback >
     inline bool
     for_each_edges_out( side_type from,
-                        std::function< bool( side_type ) > callback ) const
+                        TCallback callback ) const
     {
+      static_assert( std::is_invocable_r_v< bool, TCallback, side_type >, "received a non-invocable as callback" );
+
       auto found = this->adj_out.find( from );
       if ( found == this->adj_out.end() ) return true;
       for ( side_type to : found->second ) {
@@ -487,10 +499,13 @@ namespace gum {
      *  @return `true` if it has iterated over all edges, and `false` if the
      *  iteration has been interrupted by `callback`.
      */
+    template< typename TCallback >
     inline bool
     for_each_edges_out( id_type id,
-                        std::function< bool( id_type, linktype_type ) > callback ) const
+                        TCallback callback ) const
     {
+      static_assert( std::is_invocable_r_v< bool, TCallback, id_type, linktype_type >, "received a non-invocable as callback" );
+
       return this->for_each_side(
           id,
           [this, callback]( side_type from ) {
@@ -515,10 +530,13 @@ namespace gum {
      *  @return `true` if it has iterated over all edges, and `false` if the
      *  iteration has been interrupted by `callback`.
      */
+    template< typename TCallback >
     inline bool
     for_each_edges_in( side_type to,
-                       std::function< bool( side_type ) > callback ) const
+                       TCallback callback ) const
     {
+      static_assert( std::is_invocable_r_v< bool, TCallback, side_type >, "received a non-invocable as callback" );
+
       auto found = this->adj_in.find( to );
       if ( found == this->adj_in.end() ) return true;
       for ( side_type from : found->second ) {
@@ -539,10 +557,13 @@ namespace gum {
      *  @return `true` if it has iterated over all edges, and `false` if the
      *  iteration has been interrupted by `callback`.
      */
+    template< typename TCallback >
     inline bool
     for_each_edges_in( id_type id,
-                       std::function< bool( id_type, linktype_type ) > callback ) const
+                       TCallback callback ) const
     {
+      static_assert( std::is_invocable_r_v< bool, TCallback, id_type, linktype_type >, "received a non-invocable as callback" );
+
       return this->for_each_side(
           id,
           [this, callback]( side_type to ) {
@@ -1036,10 +1057,13 @@ namespace gum {
      *  @return `true` if it has iterated over all nodes, and `false` if the
      *  iteration has been interrupted by `callback`.
      */
+    template < typename TCallback >
     inline bool
-    for_each_node( std::function< bool( rank_type, id_type ) > callback,
+    for_each_node( TCallback callback,
                    rank_type s_rank=1 ) const
     {
+      static_assert( std::is_invocable_r_v< bool, TCallback, rank_type, id_type >, "received a non-invocable as callback" );
+
       id_type id = ( this->get_node_count() != 0 ) ? 1 : 0;
       rank_type rank = 1;
       while ( id != 0 ) {
@@ -1110,9 +1134,12 @@ namespace gum {
       return trait_type::opposite_side( side );
     }
 
+    template< typename TCallback >
     inline bool
-    for_each_side( id_type id, std::function< bool( side_type ) > callback ) const
+    for_each_side( id_type id, TCallback callback ) const
     {
+      static_assert( std::is_invocable_r_v< bool, TCallback, side_type >, "received a non-invocable as callback" );
+
       return trait_type::for_each_side( id, callback );
     }
 
@@ -1264,10 +1291,13 @@ namespace gum {
      *  @return `true` if it has iterated over all edges, and `false` if the
      *  iteration has been interrupted by `callback`.
      */
+    template< typename TCallback >
     inline bool
     for_each_edges_out( side_type from,
-                        std::function< bool( side_type ) > callback ) const
+                        TCallback callback ) const
     {
+      static_assert( std::is_invocable_r_v< bool, TCallback, side_type >, "received a non-invocable as callback" );
+
       return this->for_each_edges_out(
           this->id_of( from ),
           [this, from, callback]( id_type id, linktype_type type ) {
@@ -1290,10 +1320,13 @@ namespace gum {
      *  @return `true` if it has iterated over all edges, and `false` if the
      *  iteration has been interrupted by `callback`.
      */
+    template< typename TCallback >
     inline bool
     for_each_edges_out( id_type id,
-                        std::function< bool( id_type, linktype_type ) > callback ) const
+                        TCallback callback ) const
     {
+      static_assert( std::is_invocable_r_v< bool, TCallback, id_type, linktype_type >, "received a non-invocable as callback" );
+
       if ( !this->has_edges_out( id ) ) return true;
       return this->for_each_edges_out_pos(
           id,
@@ -1315,10 +1348,13 @@ namespace gum {
      *  @return `true` if it has iterated over all edges, and `false` if the
      *  iteration has been interrupted by `callback`.
      */
+    template< typename TCallback >
     inline bool
     for_each_edges_in( side_type to,
-                       std::function< bool( side_type ) > callback ) const
+                       TCallback callback ) const
     {
+      static_assert( std::is_invocable_r_v< bool, TCallback, side_type >, "received a non-invocable as callback" );
+
       return this->for_each_edges_in(
           this->id_of( to ),
           [this, to, callback]( id_type id, linktype_type type ) {
@@ -1341,10 +1377,13 @@ namespace gum {
      *  @return `true` if it has iterated over all edges, and `false` if the
      *  iteration has been interrupted by `callback`.
      */
+    template< typename TCallback >
     inline bool
     for_each_edges_in( id_type id,
-                       std::function< bool( id_type, linktype_type ) > callback ) const
+                       TCallback callback ) const
     {
+      static_assert( std::is_invocable_r_v< bool, TCallback, id_type, linktype_type >, "received a non-invocable as callback" );
+
       if ( !this->has_edges_in( id ) ) return true;
       return this->for_each_edges_in_pos(
           id,
@@ -1519,10 +1558,13 @@ namespace gum {
           this->outdegree( id ) * this->edge_entry_len();
     }
 
+    template< typename TCallback >
     inline bool
     for_each_edges_out_pos( id_type id,
-                           std::function< bool( size_type ) > callback ) const
+                            TCallback callback ) const
     {
+      static_assert( std::is_invocable_r_v< bool, TCallback, size_type >, "received a non-invocable as callback" );
+
       size_type pos = this->edges_out_pos( id );
       for ( rank_type i = 0; i < this->outdegree( id ); ++i ) {
         if ( !callback( pos ) ) return false;
@@ -1531,10 +1573,13 @@ namespace gum {
       return true;
     }
 
+    template< typename TCallback >
     inline bool
     for_each_edges_in_pos( id_type id,
-                           std::function< bool( size_type ) > callback ) const
+                            TCallback callback ) const
     {
+      static_assert( std::is_invocable_r_v< bool, TCallback, size_type >, "received a non-invocable as callback" );
+
       size_type pos = this->edges_in_pos( id );
       for ( rank_type i = 0; i < this->indegree( id ); ++i ) {
         if ( !callback( pos ) ) return false;
@@ -2268,10 +2313,13 @@ namespace gum {
       return this->path_rank.find( id ) != this->path_rank.end();
     }
 
+    template< typename TCallback >
     inline bool
-    for_each_path( std::function< bool( rank_type, id_type ) > callback,
+    for_each_path( TCallback callback,
                    rank_type s_rank=1 ) const
     {
+      static_assert( std::is_invocable_r_v< bool, TCallback, rank_type, id_type >, "received a non-invocable as callback" );
+
       rank_type rank = 1;
       for ( auto const& path : this->paths ) {
         if ( rank >= s_rank && !callback( rank, path.get_id() ) ) return false;
@@ -2592,10 +2640,13 @@ namespace gum {
       return this->ids_bv[ id - 1 ] == 1;
     }
 
+    template< typename TCallback >
     inline bool
-    for_each_path( std::function< bool( rank_type, id_type ) > callback,
+    for_each_path( TCallback callback,
                    rank_type s_rank=1 ) const
     {
+      static_assert( std::is_invocable_r_v< bool, TCallback, rank_type, id_type >, "received a non-invocable as callback" );
+
       id_type id = ( this->get_path_count() != 0 ) ? 1 : 0;
       rank_type rank = 1;
       while ( id != 0 ) {
@@ -2871,10 +2922,13 @@ namespace gum {
       return base_type::add_node( ext_id );
     }
 
+    template< typename TCallback = void(*)( id_type ) >
     inline void
     add_nodes( size_type count,
-               std::function< void( id_type ) > callback = []( id_type ){} )
+               TCallback callback = []( id_type ){} )
     {
+      static_assert( std::is_invocable_v< TCallback, id_type >, "received a non-invocable as callback" );
+
       for ( size_type i = 0; i < count; ++i ) this->node_prop.add_node( node_type() );
       base_type::add_nodes( count, callback );
     }
@@ -2964,10 +3018,13 @@ namespace gum {
       return this->graph_prop.has_path( id );
     }
 
+    template< typename TCallback >
     inline bool
-    for_each_path( std::function< bool( rank_type, id_type ) > callback,
+    for_each_path( TCallback callback,
                    rank_type s_rank=1 ) const
     {
+      static_assert( std::is_invocable_r_v< bool, TCallback, rank_type, id_type >, "received a non-invocable as callback" );
+
       return this->graph_prop.for_each_path( callback, s_rank );
     }
 
@@ -3216,10 +3273,13 @@ namespace gum {
       return this->graph_prop.has_path( id );
     }
 
+    template< typename TCallback >
     inline bool
-    for_each_path( std::function< bool( rank_type, id_type ) > callback,
+    for_each_path( TCallback callback,
                    rank_type s_rank=1 ) const
     {
+      static_assert( std::is_invocable_r_v< bool, TCallback, rank_type, id_type >, "received a non-invocable as callback" );
+
       return this->graph_prop.for_each_path( callback, s_rank );
     }
 
