@@ -233,6 +233,17 @@ namespace gum {
       }
     }
 
+    template< typename TGraph,
+              typename TVGGraph,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value >,
+              typename ...TArgs >
+    inline void
+    load_graph( TGraph& graph, TVGGraph& other, VGFormat, TArgs&&... args )
+    {
+      graph.clear();
+      extend_graph( graph, other, VGFormat{}, std::forward< TArgs >( args )... );
+    }
+
     template< typename TVGPath >
     inline void
     _extend_path( TVGPath* output, TVGPath const& chunk, VGFormat )

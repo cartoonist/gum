@@ -85,6 +85,15 @@ namespace gum {
       extend_graph( graph, other, VGFormat{}, sort, coord );
     }
 
+    template< typename TGraph,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value >,
+              typename ...TArgs >
+    inline void
+    load( TGraph& graph, vg::Graph& other, TArgs&&... args )
+    {
+      load_graph( graph, other, VGFormat{}, std::forward< TArgs >( args )... );
+    }
+
     template< typename TGraph, typename ...TArgs >
     inline void
     extend_vg( TGraph& graph, std::istream& in, TArgs&&... args )

@@ -187,6 +187,17 @@ namespace gum {
       }
       extend_path( graph, other, HGFormat{}, sort, coord );
     }
+
+    template< typename TGraph,
+              typename THGGraph,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value >,
+              typename ...TArgs >
+    inline void
+    load_graph( TGraph& graph, THGGraph& other, HGFormat, TArgs&&... args )
+    {
+      graph.clear();
+      extend_graph( graph, other, HGFormat{}, std::forward< TArgs >( args )... );
+    }
   }  /* --- end of namespace util --- */
 }  /* --- end of namespace gum --- */
 

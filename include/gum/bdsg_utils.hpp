@@ -67,6 +67,15 @@ namespace gum {
       extend_graph( graph, other, HGFormat{}, sort, coord );
     }
 
+    template< typename TGraph,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value >,
+              typename ...TArgs >
+    inline void
+    load( TGraph& graph, bdsg::HashGraph const& other, TArgs&&... args )
+    {
+      load_graph( graph, other, HGFormat{}, std::forward< TArgs >( args )... );
+    }
+
     template< typename TGraph, typename ...TArgs >
     inline void
     extend_hg( TGraph& graph, std::istream& in, TArgs&&... args )
