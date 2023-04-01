@@ -124,8 +124,7 @@ namespace gum {
               typename TCoordinate=HGFormat::DefaultCoord< TGraph >,
               typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
     inline void
-    extend_path( TGraph& graph, THGGraph const& other, HGFormat, bool sort=false,
-                 TCoordinate&& coord={} )
+    extend_path( TGraph& graph, THGGraph const& other, HGFormat, TCoordinate&& coord={} )
     {
       using hg_path_handle_t = decltype( THGGraph{}.get_path_handle( "" ) );
 
@@ -185,7 +184,7 @@ namespace gum {
         graph.sort_nodes();  // first, sort by ids
         gum::util::topological_sort( graph, true );
       }
-      extend_path( graph, other, HGFormat{}, sort, coord );
+      extend_path( graph, other, HGFormat{}, coord );
     }
 
     template< typename TGraph,
