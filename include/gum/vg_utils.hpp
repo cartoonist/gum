@@ -51,6 +51,30 @@ namespace gum {
       using DefaultCoord = gum::CoordinateType< TGraph, gum::coordinate::Identity, nid_t >;
     };
 
+    /**
+     *  @brief  Update an exisiting node in the graph (vg overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  node External node
+     *  @param  tag Format specifier tag
+     *  @param  coord Coorindate system converting the given node id to graph local id
+     *
+     *  This function is a part of `update_node` family of interface functions with this
+     *  signature for different external graph data structures:
+     *
+     *  @code
+     *      update_node( graph_type, node_type, format_tag, arg_types... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `node_type` is an external type; for example `gfak::sequence_elem`, or `vg::Node`,
+     *  - `format_tag` specifies the type of the external graph whose node is processed.
+     *
+     *  In this family of functions, all external types (for nodes, edges, and graphs)
+     *  are specified by template parameters. That is why a tag is needed as a format
+     *  specifier.
+     */
     template< typename TGraph,
               typename TVGNode,
               typename TCoordinate=VGFormat::DefaultCoord< TGraph >,
@@ -70,6 +94,32 @@ namespace gum {
       }
     }
 
+    /**
+     *  @brief  Add a node to the graph (vg overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  node External node
+     *  @param  tag Format specifier tag
+     *  @param  coord Coorindate system converting the given node id to graph local id
+     *  @param  force Force node update if node already exists in the graph
+     *
+     *  This function is a part of `add_node` family of interface functions with this
+     *  signature for different external graph data structures:
+     *
+     *  @code
+     *      add_node( graph_type, node_type, format_tag, arg_types... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `node_type` is an external type; for example `gfak::sequence_elem`,
+     *  - `format_tag` specifies the type of the external graph whose node is processed;
+     *    e.g. `GFAFormat` or `VGFormat`.
+     *
+     *  In this family of functions, all external types (for nodes, edges, and graphs)
+     *  are specified by template parameters. That is why a tag is needed as a format
+     *  specifier.
+     */
     template< typename TGraph,
               typename TVGNode,
               typename TCoordinate=VGFormat::DefaultCoord< TGraph >,
@@ -93,6 +143,32 @@ namespace gum {
       return id;
     }
 
+    /**
+     *  @brief  Add an edge to the graph (vg overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  edge External edge
+     *  @param  tag Format specifier tag
+     *  @param  coord Coorindate system converting the given node ids to graph local ids
+     *  @param  force Force node creation if any adjacent node does not exist in the graph
+     *
+     *  This function is a part of `add_edge` family of interface functions with this
+     *  signature for different external graph data structures:
+     *
+     *  @code
+     *      add_edge( graph_type, edge_type, format_tag, arg_types... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `edge_type` is an external type; for example `gfak::edge_elem`, or `vg::Edge`,
+     *  - `format_tag` specifies the type of the external graph whose edge is processed;
+     *    e.g. `GFAFormat` or `VGFormat`.
+     *
+     *  In this family of functions, all external types (for nodes, edges, and graphs)
+     *  are specified by template parameters. That is why a tag is needed as a format
+     *  specifier.
+     */
     template< typename TGraph,
               typename TVGEdge,
               typename TCoordinate=VGFormat::DefaultCoord< TGraph >,
@@ -123,6 +199,36 @@ namespace gum {
           edge_type( edge.overlap() ) );
     }
 
+    /**
+     *  @brief  Extend a path in the graph with an external path (vg overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  pid Path id to extend
+     *  @param  path External path
+     *  @param  tag Format specifier tag
+     *  @param  coord Coorindate system converting the given node ids to graph local ids
+     *  @param  force Force node creation if any node in the path does not exist
+     *
+     *  This function is a part of `extend_path` family of interface functions with this
+     *  signature for different external graph data structures:
+     *
+     *  @code
+     *      1. extend_path( graph_type, id_type, path_type, format_tag, arg_types... )
+     *      2. extend_path( graph_type, external_graph_type, format_tag, arg_types... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `id_type` is path id type; i.e. id type defined by the graph_type (1),
+     *  - `path_type` is an external type; for example `gfak::path_elem`, or `vg::Path` (1),
+     *  - or a set of paths in the form of a graph with type `external_graph_type` (2),
+     *  - `format_tag` specifies the type of the external graph whose path is processed;
+     *    e.g. `GFAFormat` or `VGFormat`.
+     *
+     *  In this family of functions, all external types (for nodes, edges, and graphs)
+     *  are specified by template parameters. That is why a tag is needed as a format
+     *  specifier.
+     */
     template< typename TGraph,
               typename TVGPath,
               typename TCoordinate=VGFormat::DefaultCoord< TGraph >,
@@ -182,6 +288,33 @@ namespace gum {
                          orients.begin(), orients.end() );
     }
 
+    /**
+     *  @brief  Add a path to the graph (vg overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  path External path
+     *  @param  tag Format specifier tag
+     *  @param  coord Coorindate system converting the given node ids to graph local ids
+     *  @param  force Force adding the given path even if it already exists
+     *  @param  force_node Force node creation if any node in the path does not exist
+     *
+     *  This function is a part of `add_path` family of interface functions with this
+     *  signature for different external graph data structures:
+     *
+     *  @code
+     *      add_path( graph_type, path_type, format_tag, arg_types... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `path_type` is an external type; for example `gfak::path_elem`, or `vg::Path`,
+     *  - `format_tag` specifies the type of the external graph whose path is processed;
+     *    e.g. `GFAFormat` or `VGFormat`.
+     *
+     *  In this family of functions, all external types (for nodes, edges, and graphs)
+     *  are specified by template parameters. That is why a tag is needed as a format
+     *  specifier.
+     */
     template< typename TGraph,
               typename TVGPath,
               typename TCoordinate=VGFormat::DefaultCoord< TGraph >,
@@ -211,6 +344,33 @@ namespace gum {
       return path_id;
     }
 
+    /**
+     *  @brief  Extend a native graph with an external one (vg overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  other External graph
+     *  @param  tag Format specifier tag
+     *  @param  sort Sort node ranks in topological order
+     *  @param  coord Coorindate system converting the given node ids to graph local ids
+     *
+     *  This function is a part of `extend_graph` family of interface functions with this
+     *  signature for different external graph data structures:
+     *
+     *  @code
+     *      extend_graph( graph_type, external_graph_type, format_tag, arg_types... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `external_graph_type` is an external graph type; for example
+     *    `gfak::graph_elem`, or `vg::Graph`,
+     *  - `format_tag` specifies the type of the external graph; e.g. `GFAFormat` or
+     *    `VGFormat`.
+     *
+     *  In this family of functions, all external types (for nodes, edges, and graphs)
+     *  are specified by template parameters. That is why a tag is needed as a format
+     *  specifier.
+     */
     template< typename TGraph,
               typename TVGGraph,
               typename TCoordinate=VGFormat::DefaultCoord< TGraph >,
@@ -233,6 +393,32 @@ namespace gum {
       }
     }
 
+    /**
+     *  @brief  Load a native graph with an external one (vg overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  other External graph
+     *  @param  tag Format specifier tag
+     *  @param  args Arguments passed to `extend_graph`
+     *
+     *  This function is a part of `load_graph` family of interface functions with this
+     *  signature for different external graph data structures:
+     *
+     *  @code
+     *      load_graph( graph_type, external_graph_type, format_tag, arg_types... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `external_graph_type` is an external graph type; for example
+     *    `gfak::graph_elem`, or `vg::Graph`,
+     *  - `format_tag` specifies the type of the external graph; e.g. `GFAFormat` or
+     *    `VGFormat`.
+     *
+     *  In this family of functions, all external types (for nodes, edges, and graphs)
+     *  are specified by template parameters. That is why a tag is needed as a format
+     *  specifier.
+     */
     template< typename TGraph,
               typename TVGGraph,
               typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value >,
@@ -265,6 +451,12 @@ namespace gum {
       }
     }
 
+    /**
+     *  @brief  A utility internal function to merge vg chunks
+     *
+     *  @param[out] output Reference to merged graph
+     *  @param[in] chunk Chunk to merge
+     */
     template< typename TVGGraph >
     inline void
     merge_vg( TVGGraph& output, TVGGraph const& chunk )

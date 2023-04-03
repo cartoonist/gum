@@ -50,6 +50,31 @@ namespace gum {
       using DefaultCoord = gum::CoordinateType< TGraph, gum::coordinate::Identity, nid_t >;
     };
 
+    /**
+     *  @brief  Update an exisiting node in the graph (HashGraph overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  eid External node id
+     *  @param  seq External node sequence
+     *  @param  tag Format specifier tag
+     *  @param  coord Coorindate system converting the given node id to graph local id
+     *
+     *  This function is a part of `update_node` family of interface functions with this
+     *  signature for different external graph data structures:
+     *
+     *  @code
+     *      update_node( graph_type, node_type, format_tag, arg_types... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `node_type` is an external type; for example `gfak::sequence_elem`, or `vg::Node`,
+     *  - `format_tag` specifies the type of the external graph whose node is processed.
+     *
+     *  In this family of functions, all external types (for nodes, edges, and graphs)
+     *  are specified by template parameters. That is why a tag is needed as a format
+     *  specifier.
+     */
     template< typename TGraph,
               typename TCoordinate=HGFormat::DefaultCoord< TGraph >,
               typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
@@ -68,6 +93,33 @@ namespace gum {
       }
     }
 
+    /**
+     *  @brief  Add a node to the graph (HashGraph overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  eid External node id
+     *  @param  seq External node sequence
+     *  @param  tag Format specifier tag
+     *  @param  coord Coorindate system converting the given node id to graph local id
+     *  @param  force Force node update if node already exists in the graph
+     *
+     *  This function is a part of `add_node` family of interface functions with this
+     *  signature for different external graph data structures:
+     *
+     *  @code
+     *      add_node( graph_type, node_type, format_tag, arg_types... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `node_type` is an external type; for example `gfak::sequence_elem`,
+     *  - `format_tag` specifies the type of the external graph whose node is processed;
+     *    e.g. `GFAFormat` or `VGFormat`.
+     *
+     *  In this family of functions, all external types (for nodes, edges, and graphs)
+     *  are specified by template parameters. That is why a tag is needed as a format
+     *  specifier.
+     */
     template< typename TGraph,
               typename TCoordinate=HGFormat::DefaultCoord< TGraph >,
               typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
@@ -91,6 +143,41 @@ namespace gum {
       return id;
     }
 
+    /**
+     *  @brief  Add an edge to the graph (HashGraph overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  from External edge 'from' id
+     *  @param  from_start External edge from side
+     *  @param  to External edge 'to' id
+     *  @param  to_end External edge to side
+     *  @param  tag Format specifier tag
+     *  @param  coord Coorindate system converting the given node ids to graph local ids
+     *  @param  force Force node creation if any adjacent node does not exist in the graph
+     *
+     *  The direction of added edge is indicated by two boolean values: `from_start` and
+     *  `to_end`. A regular edge starts from the end of a node ('from' node) to the
+     *  start of the adjacent node ('to' node). In this case, both `from_start` and
+     *  `to_end` is `false` since the edge does not start from end of the first node and
+     *  will not go to the end of the adjacent node.
+     *
+     *  This function is a part of `add_edge` family of interface functions with this
+     *  signature for different external graph data structures:
+     *
+     *  @code
+     *      add_edge( graph_type, edge_type, format_tag, arg_types... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `edge_type` is an external type; for example `gfak::edge_elem`, or `vg::Edge`,
+     *  - `format_tag` specifies the type of the external graph whose edge is processed;
+     *    e.g. `GFAFormat` or `VGFormat`.
+     *
+     *  In this family of functions, all external types (for nodes, edges, and graphs)
+     *  are specified by template parameters. That is why a tag is needed as a format
+     *  specifier.
+     */
     template< typename TGraph,
               typename TCoordinate=HGFormat::DefaultCoord< TGraph >,
               typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
@@ -119,6 +206,34 @@ namespace gum {
       graph.add_edge( link_type( src, !from_start, sink, to_end ), edge_type( overlap ) );
     }
 
+    /**
+     *  @brief  Extend a set of paths in the graph with an external set of paths (HashGraph overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  other External set of path in the form of `HashGraph`
+     *  @param  tag Format specifier tag
+     *  @param  coord Coorindate system converting the given node ids to graph local ids
+     *
+     *  This function is a part of `extend_path` family of interface functions with this
+     *  signature for different external graph data structures:
+     *
+     *  @code
+     *      1. extend_path( graph_type, id_type, path_type, format_tag, arg_types... )
+     *      2. extend_path( graph_type, external_graph_type, format_tag, arg_types... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `id_type` is path id type; i.e. id type defined by the graph_type (1),
+     *  - `path_type` is an external type; for example `gfak::path_elem`, or `vg::Path` (1),
+     *  - or a set of paths in the form of a graph with type `external_graph_type` (2),
+     *  - `format_tag` specifies the type of the external graph whose path is processed;
+     *    e.g. `GFAFormat` or `VGFormat`.
+     *
+     *  In this family of functions, all external types (for nodes, edges, and graphs)
+     *  are specified by template parameters. That is why a tag is needed as a format
+     *  specifier.
+     */
     template< typename TGraph,
               typename THGGraph,
               typename TCoordinate=HGFormat::DefaultCoord< TGraph >,
@@ -156,6 +271,33 @@ namespace gum {
           } );
     }
 
+    /**
+     *  @brief  Extend a native graph with an external one (HashGraph overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  other External graph
+     *  @param  tag Format specifier tag
+     *  @param  sort Sort node ranks in topological order
+     *  @param  coord Coorindate system converting the given node ids to graph local ids
+     *
+     *  This function is a part of `extend_graph` family of interface functions with this
+     *  signature for different external graph data structures:
+     *
+     *  @code
+     *      extend_graph( graph_type, external_graph_type, format_tag, arg_types... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `external_graph_type` is an external graph type; for example
+     *    `gfak::graph_elem`, or `vg::Graph`,
+     *  - `format_tag` specifies the type of the external graph; e.g. `GFAFormat` or
+     *    `VGFormat`.
+     *
+     *  In this family of functions, all external types (for nodes, edges, and graphs)
+     *  are specified by template parameters. That is why a tag is needed as a format
+     *  specifier.
+     */
     template< typename TGraph,
               typename THGGraph,
               typename TCoordinate=HGFormat::DefaultCoord< TGraph >,
@@ -187,6 +329,32 @@ namespace gum {
       extend_path( graph, other, HGFormat{}, coord );
     }
 
+    /**
+     *  @brief  Load a native graph with an external one (HashGraph overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  other External graph
+     *  @param  tag Format specifier tag
+     *  @param  args Arguments passed to `extend_graph`
+     *
+     *  This function is a part of `load_graph` family of interface functions with this
+     *  signature for different external graph data structures:
+     *
+     *  @code
+     *      load_graph( graph_type, external_graph_type, format_tag, arg_types... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `external_graph_type` is an external graph type; for example
+     *    `gfak::graph_elem`, or `vg::Graph`,
+     *  - `format_tag` specifies the type of the external graph; e.g. `GFAFormat` or
+     *    `VGFormat`.
+     *
+     *  In this family of functions, all external types (for nodes, edges, and graphs)
+     *  are specified by template parameters. That is why a tag is needed as a format
+     *  specifier.
+     */
     template< typename TGraph,
               typename THGGraph,
               typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value >,

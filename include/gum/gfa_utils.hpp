@@ -44,11 +44,36 @@ namespace gum {
       using DefaultCoord = gum::CoordinateType< TGraph, gum::coordinate::Stoid >;
     };
 
+    /**
+     *  @brief  Update an exisiting node in the graph (GFA overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  elem External node
+     *  @param  tag Format specifier tag
+     *  @param  coord Coorindate system converting the given node id to graph local id
+     *
+     *  This function is a part of `update_node` family of interface functions with this
+     *  signature for different external graph data structures:
+     *
+     *  @code
+     *      update_node( graph_type, node_type, format_tag, arg_types... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `node_type` is an external type; for example `gfak::sequence_elem`, or `vg::Node`,
+     *  - `format_tag` specifies the type of the external graph whose node is processed.
+     *
+     *  In this family of functions, all external types (for nodes, edges, and graphs)
+     *  are specified by template parameters. That is why a tag is needed as a format
+     *  specifier.
+     */
     template< typename TGraph,
+              typename TGFAKNode,
               typename TCoordinate=GFAFormat::DefaultCoord< TGraph >,
               typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
     inline void
-    update( TGraph& graph, gfak::sequence_elem const& elem, TCoordinate&& coord={} )
+    update_node( TGraph& graph, TGFAKNode const& elem, GFAFormat, TCoordinate&& coord={} )
     {
       using graph_type = TGraph;
       using id_type = typename graph_type::id_type;
@@ -62,12 +87,65 @@ namespace gum {
       }
     }
 
+    /**
+     *  @brief  Update an exisiting node in the graph (GFA overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  elem External node
+     *  @param  coord Coorindate system converting the given node id to graph local id
+     *
+     *  This is a part of `update` family of interface functions with this signature
+     *  overloaded for different external data structures:
+     *
+     *  @code
+     *      update( graph_type, element_type, args_type... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `element_type` is an external type of the element to be updated; e.g. node, etc
+     */
     template< typename TGraph,
               typename TCoordinate=GFAFormat::DefaultCoord< TGraph >,
               typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
+    inline void
+    update( TGraph& graph, gfak::sequence_elem const& elem, TCoordinate&& coord={} )
+    {
+      update_node( graph, elem, GFAFormat{}, coord );
+    }
+
+    /**
+     *  @brief  Add a node to the graph (GFA overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  elem External node
+     *  @param  tag Format specifier tag
+     *  @param  coord Coorindate system converting the given node id to graph local id
+     *  @param  force Force node update if node already exists in the graph
+     *
+     *  This function is a part of `add_node` family of interface functions with this
+     *  signature for different external graph data structures:
+     *
+     *  @code
+     *      add_node( graph_type, node_type, format_tag, arg_types... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `node_type` is an external type; for example `gfak::sequence_elem`,
+     *  - `format_tag` specifies the type of the external graph whose node is processed;
+     *    e.g. `GFAFormat` or `VGFormat`.
+     *
+     *  In this family of functions, all external types (for nodes, edges, and graphs)
+     *  are specified by template parameters. That is why a tag is needed as a format
+     *  specifier.
+     */
+    template< typename TGraph,
+              typename TGFAKNode,
+              typename TCoordinate=GFAFormat::DefaultCoord< TGraph >,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
     inline typename TGraph::id_type
-    add( TGraph& graph, gfak::sequence_elem const& elem, TCoordinate&& coord={},
-         bool force=false )
+    add_node( TGraph& graph, TGFAKNode const& elem, GFAFormat, TCoordinate&& coord={}, bool force=false )
     {
       using graph_type = TGraph;
       using id_type = typename graph_type::id_type;
@@ -85,12 +163,68 @@ namespace gum {
       return id;
     }
 
+    /**
+     *  @brief  Add a node to the graph (GFA overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  elem External node
+     *  @param  coord Coorindate system converting the given node id to graph local id
+     *  @param  force Force node update if node already exists in the graph
+     *
+     *  This is a part of `add` family of interface functions with this signature
+     *  overloaded for different external data structures:
+     *
+     *  @code
+     *      add( graph_type, element_type, args_type... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `element_type` is type of the external element to be added; e.g. node, etc.
+     */
     template< typename TGraph,
               typename TCoordinate=GFAFormat::DefaultCoord< TGraph >,
               typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
-    inline void
-    add( TGraph& graph, gfak::edge_elem const& elem, TCoordinate&& coord={},
+    inline typename TGraph::id_type
+    add( TGraph& graph, gfak::sequence_elem const& elem, TCoordinate&& coord={},
          bool force=false )
+    {
+      return add_node( graph, elem, GFAFormat{}, coord, force );
+    }
+
+    /**
+     *  @brief  Add an edge to the graph (GFA overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  elem External edge
+     *  @param  tag Format specifier tag
+     *  @param  coord Coorindate system converting the given node ids to graph local ids
+     *  @param  force Force node creation if any adjacent node does not exist in the graph
+     *
+     *  This function is a part of `add_edge` family of interface functions with this
+     *  signature for different external graph data structures:
+     *
+     *  @code
+     *      add_edge( graph_type, edge_type, format_tag, arg_types... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `edge_type` is an external type; for example `gfak::edge_elem`, or `vg::Edge`,
+     *  - `format_tag` specifies the type of the external graph whose edge is processed;
+     *    e.g. `GFAFormat` or `VGFormat`.
+     *
+     *  In this family of functions, all external types (for nodes, edges, and graphs)
+     *  are specified by template parameters. That is why a tag is needed as a format
+     *  specifier.
+     */
+    template< typename TGraph,
+              typename TGFAKEdge,
+              typename TCoordinate=GFAFormat::DefaultCoord< TGraph >,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
+    inline void
+    add_edge( TGraph& graph, TGFAKEdge const& elem, GFAFormat, TCoordinate&& coord={},
+              bool force=false )
     {
       using graph_type = TGraph;
       using id_type = typename graph_type::id_type;
@@ -121,12 +255,72 @@ namespace gum {
                       edge_type( elem.sink_end ) );
     }
 
+    /**
+     *  @brief  Add an edge to the graph (GFA overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  elem External edge
+     *  @param  coord Coorindate system converting the given node ids to graph local ids
+     *  @param  force Force node creation if any adjacent node does not exist in the graph
+     *
+     *  This is a part of `add` family of interface functions with this signature
+     *  overloaded for different external data structures:
+     *
+     *  @code
+     *      add( graph_type, element_type, args_type... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `element_type` is type of the external element to be added; e.g. node, etc.
+     */
     template< typename TGraph,
               typename TCoordinate=GFAFormat::DefaultCoord< TGraph >,
               typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
     inline void
-    extend( TGraph& graph, typename TGraph::id_type pid, gfak::path_elem const& elem,
-            TCoordinate&& coord={}, bool force=false )
+    add( TGraph& graph, gfak::edge_elem const& elem, TCoordinate&& coord={},
+         bool force=false )
+    {
+      add_edge( graph, elem, GFAFormat{}, coord, force );
+    }
+
+    /**
+     *  @brief  Extend a path in the graph with an external path (GFA overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  pid Path id to extend
+     *  @param  elem External path
+     *  @param  tag Format specifier tag
+     *  @param  coord Coorindate system converting the given node ids to graph local ids
+     *  @param  force Force node creation if any node in the path does not exist
+     *
+     *  This function is a part of `extend_path` family of interface functions with this
+     *  signature for different external graph data structures:
+     *
+     *  @code
+     *      1. extend_path( graph_type, id_type, path_type, format_tag, arg_types... )
+     *      2. extend_path( graph_type, external_graph_type, format_tag, arg_types... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `id_type` is path id type; i.e. id type defined by the graph_type (1),
+     *  - `path_type` is an external type; for example `gfak::path_elem`, or `vg::Path` (1),
+     *  - or a set of paths in the form of a graph with type `external_graph_type` (2),
+     *  - `format_tag` specifies the type of the external graph whose path is processed;
+     *    e.g. `GFAFormat` or `VGFormat`.
+     *
+     *  In this family of functions, all external types (for nodes, edges, and graphs)
+     *  are specified by template parameters. That is why a tag is needed as a format
+     *  specifier.
+     */
+    template< typename TGraph,
+              typename TGFAKPath,
+              typename TCoordinate=GFAFormat::DefaultCoord< TGraph >,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
+    inline void
+    extend_path( TGraph& graph, typename TGraph::id_type pid, TGFAKPath const& elem, GFAFormat,
+                 TCoordinate&& coord={}, bool force=false )
     {
       using graph_type = TGraph;
       using id_type = typename graph_type::id_type;
@@ -158,12 +352,74 @@ namespace gum {
                          orients.begin(), orients.end() );
     }
 
+    /**
+     *  @brief  Extend a path in the graph with an external path (GFA overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  pid Path id to extend
+     *  @param  elem External path
+     *  @param  coord Coorindate system converting the given node ids to graph local ids
+     *  @param  force Force node creation if any node in the path does not exist
+     *
+     *  This is a part of `extend` family of interface functions with this signature
+     *  overloaded for different external data structures:
+     *
+     *  @code
+     *      1. extend( graph_type, element_type, args_type... )
+     *      2. extend( graph_type, id_type, element_type, args_type... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `id_type` is the graph's id type indicating the id of the graph entity to be
+     *    extended unless it is the graph itself (1),
+     *  - `element_type` is type of the external element to be used for extension; e.g.
+     *    node, etc.
+     */
     template< typename TGraph,
               typename TCoordinate=GFAFormat::DefaultCoord< TGraph >,
               typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
+    inline void
+    extend( TGraph& graph, typename TGraph::id_type pid, gfak::path_elem const& elem,
+            TCoordinate&& coord={}, bool force=false )
+    {
+      extend_path( graph, pid, elem, GFAFormat{}, coord, force );
+    }
+
+    /**
+     *  @brief  Add a path to the graph (GFA overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  elem External path
+     *  @param  tag Format specifier tag
+     *  @param  coord Coorindate system converting the given node ids to graph local ids
+     *  @param  force Force adding the given path even if it already exists
+     *  @param  force_node Force node creation if any node in the path does not exist
+     *
+     *  This function is a part of `add_path` family of interface functions with this
+     *  signature for different external graph data structures:
+     *
+     *  @code
+     *      add_path( graph_type, path_type, format_tag, arg_types... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `path_type` is an external type; for example `gfak::path_elem`, or `vg::Path`,
+     *  - `format_tag` specifies the type of the external graph whose path is processed;
+     *    e.g. `GFAFormat` or `VGFormat`.
+     *
+     *  In this family of functions, all external types (for nodes, edges, and graphs)
+     *  are specified by template parameters. That is why a tag is needed as a format
+     *  specifier.
+     */
+    template< typename TGraph,
+              typename TGFAKPath,
+              typename TCoordinate=GFAFormat::DefaultCoord< TGraph >,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
     inline typename TGraph::id_type
-    add( TGraph& graph, gfak::path_elem const& elem, TCoordinate&& coord={},
-         bool force=false, bool force_node=false )
+    add_path( TGraph& graph, TGFAKPath const& elem, GFAFormat, TCoordinate&& coord={},
+              bool force=false, bool force_node=false )
     {
       using graph_type = TGraph;
       using id_type = typename graph_type::id_type;
@@ -186,11 +442,70 @@ namespace gum {
       return path_id;
     }
 
+    /**
+     *  @brief  Add a path to the graph (GFA overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  elem External path
+     *  @param  coord Coorindate system converting the given node ids to graph local ids
+     *  @param  force Force adding the given path even if it already exists
+     *  @param  force_node Force node creation if any node in the path does not exist
+     *
+     *  This is a part of `add` family of interface functions with this signature
+     *  overloaded for different external data structures:
+     *
+     *  @code
+     *      add( graph_type, element_type, args_type... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `element_type` is type of the external element to be added; e.g. node, etc.
+     */
     template< typename TGraph,
               typename TCoordinate=GFAFormat::DefaultCoord< TGraph >,
               typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
+    inline typename TGraph::id_type
+    add( TGraph& graph, gfak::path_elem const& elem, TCoordinate&& coord={},
+         bool force=false, bool force_node=false )
+    {
+      return add_path( graph, elem, GFAFormat{}, coord, force, force_node );
+    }
+
+    /**
+     *  @brief  Extend a native graph with an external one (GFA overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  other External graph
+     *  @param  tag Format specifier tag
+     *  @param  sort Sort node ranks in topological order
+     *  @param  coord Coorindate system converting the given node ids to graph local ids
+     *
+     *  This function is a part of `extend_graph` family of interface functions with this
+     *  signature for different external graph data structures:
+     *
+     *  @code
+     *      extend_graph( graph_type, external_graph_type, format_tag, arg_types... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `external_graph_type` is an external graph type; for example
+     *    `gfak::graph_elem`, or `vg::Graph`,
+     *  - `format_tag` specifies the type of the external graph; e.g. `GFAFormat` or
+     *    `VGFormat`.
+     *
+     *  In this family of functions, all external types (for nodes, edges, and graphs)
+     *  are specified by template parameters. That is why a tag is needed as a format
+     *  specifier.
+     */
+    template< typename TGraph,
+              typename TGFAKGraph,
+              typename TCoordinate=GFAFormat::DefaultCoord< TGraph >,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
     inline void
-    extend( TGraph& graph, gfak::GFAKluge& other, bool sort=false, TCoordinate&& coord={} )
+    extend_graph( TGraph& graph, TGFAKGraph& other, GFAFormat, bool sort=false,
+                  TCoordinate&& coord={} )
     {
       for ( auto const& rec : other.get_name_to_seq() ) {
         add( graph, rec.second, coord, true );
@@ -207,6 +522,102 @@ namespace gum {
       for ( auto const& rec : other.get_name_to_path() ) {
         add( graph, rec.second, coord, true, true );
       }
+    }
+
+    /**
+     *  @brief  Extend a native graph with an external one (GFA overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  other External graph
+     *  @param  sort Sort node ranks in topological order
+     *  @param  coord Coorindate system converting the given node ids to graph local ids
+     *
+     *  This is a part of `extend` family of interface functions with this signature
+     *  overloaded for different external data structures:
+     *
+     *  @code
+     *      1. extend( graph_type, element_type, args_type... )
+     *      2. extend( graph_type, id_type, element_type, args_type... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `id_type` is the graph's id type indicating the id of the graph entity to be
+     *    extended unless it is the graph itself (1),
+     *  - `element_type` is type of the external element to be used for extension; e.g.
+     *    node, etc.
+     */
+    template< typename TGraph,
+              typename TCoordinate=GFAFormat::DefaultCoord< TGraph >,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
+    inline void
+    extend( TGraph& graph, gfak::GFAKluge& other, bool sort=false, TCoordinate&& coord={} )
+    {
+      extend_graph( graph, other, GFAFormat{}, sort, coord );
+    }
+
+    /**
+     *  @brief  Load a native graph with an external one (GFA overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  other External graph
+     *  @param  tag Format specifier tag
+     *  @param  args Arguments passed to `extend_graph`
+     *
+     *  This function is a part of `load_graph` family of interface functions with this
+     *  signature for different external graph data structures:
+     *
+     *  @code
+     *      load_graph( graph_type, external_graph_type, format_tag, arg_types... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `external_graph_type` is an external graph type; for example
+     *    `gfak::graph_elem`, or `vg::Graph`,
+     *  - `format_tag` specifies the type of the external graph; e.g. `GFAFormat` or
+     *    `VGFormat`.
+     *
+     *  In this family of functions, all external types (for nodes, edges, and graphs)
+     *  are specified by template parameters. That is why a tag is needed as a format
+     *  specifier.
+     */
+    template< typename TGraph,
+              typename TGFAKGraph,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value >,
+              typename ...TArgs >
+    inline void
+    load_graph( TGraph& graph, TGFAKGraph& other, GFAFormat, TArgs&&... args )
+    {
+      graph.clear();
+      extend_graph( graph, other, GFAFormat{}, std::forward< TArgs >( args )... );
+    }
+
+    /**
+     *  @brief  Load a native graph with an external one (GFA overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  other External graph
+     *  @param  args Arguments passed to `load_graph`
+     *
+     *  This is a part of `load` family of interface functions with this signature
+     *  overloaded for different external data structures:
+     *
+     *  @code
+     *      load( graph_type, external_graph_type, args_type... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `external_graph_type` is type of the external graph to be loaded.
+     */
+    template< typename TGraph,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value >,
+              typename ...TArgs >
+    inline void
+    load( TGraph& graph, gfak::GFAKluge& other, TArgs&&... args )
+    {
+      load_graph( graph, other, GFAFormat{}, std::forward< TArgs >( args )... );
     }
 
     template< typename TGraph, typename ...TArgs >

@@ -28,6 +28,25 @@
 
 namespace gum {
   namespace util {
+    /**
+     *  @brief  Update an exisiting node in the graph (HashGraph overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  eid External node id
+     *  @param  seq External node sequence
+     *  @param  coord Coorindate system converting the given node id to graph local id
+     *
+     *  This is a part of `update` family of interface functions with this signature
+     *  overloaded for different external data structures:
+     *
+     *  @code
+     *      update( graph_type, element_type, args_type... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `element_type` is type of the external element to be updated; e.g. node, etc.
+     */
     template< typename TGraph,
               typename TCoordinate=HGFormat::DefaultCoord< TGraph >,
               typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
@@ -37,6 +56,26 @@ namespace gum {
       update_node( graph, eid, std::move( seq ), HGFormat{}, coord );
     }
 
+    /**
+     *  @brief  Add a node to the graph (HashGraph overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  eid External node id
+     *  @param  seq External node sequence
+     *  @param  coord Coorindate system converting the given node id to graph local id
+     *  @param  force Force node update if node already exists in the graph
+     *
+     *  This is a part of `add` family of interface functions with this signature
+     *  overloaded for different external data structures:
+     *
+     *  @code
+     *      add( graph_type, element_type, args_type... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `element_type` is type of the external element to be added; e.g. node, etc.
+     */
     template< typename TGraph,
               typename TCoordinate=HGFormat::DefaultCoord< TGraph >,
               typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
@@ -47,6 +86,28 @@ namespace gum {
       return add_node( graph, eid, std::move( seq ), HGFormat{}, coord, force );
     }
 
+    /**
+     *  @brief  Add an edge to the graph (HashGraph overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  from External edge 'from' id
+     *  @param  from_start External edge from side
+     *  @param  to External edge 'to' id
+     *  @param  to_end External edge to side
+     *  @param  coord Coorindate system converting the given node ids to graph local ids
+     *  @param  force Force node creation if any adjacent node does not exist in the graph
+     *
+     *  This is a part of `add` family of interface functions with this signature
+     *  overloaded for different external data structures:
+     *
+     *  @code
+     *      add( graph_type, element_type, args_type... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `element_type` is type of the external element to be added; e.g. node, etc.
+     */
     template< typename TGraph,
               typename TCoordinate=HGFormat::DefaultCoord< TGraph >,
               typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
@@ -57,6 +118,29 @@ namespace gum {
       add_edge( graph, from, from_start, to, to_end, overlap, HGFormat{}, coord, force );
     }
 
+    /**
+     *  @brief  Extend a native graph with an external one (HashGraph overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  other External graph
+     *  @param  sort Sort node ranks in topological order
+     *  @param  coord Coorindate system converting the given node ids to graph local ids
+     *
+     *  This is a part of `extend` family of interface functions with this signature
+     *  overloaded for different external data structures:
+     *
+     *  @code
+     *      1. extend( graph_type, element_type, args_type... )
+     *      2. extend( graph_type, id_type, element_type, args_type... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `id_type` is the graph's id type indicating the id of the graph entity to be
+     *    extended unless it is the graph itself (1),
+     *  - `element_type` is type of the external element to be used for extension; e.g.
+     *    node, etc.
+     */
     template< typename TGraph,
               typename TCoordinate=HGFormat::DefaultCoord< TGraph >,
               typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
@@ -67,6 +151,24 @@ namespace gum {
       extend_graph( graph, other, HGFormat{}, sort, coord );
     }
 
+    /**
+     *  @brief  Load a native graph with an external one (HashGraph overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  other External graph
+     *  @param  args Arguments passed to `load_graph`
+     *
+     *  This is a part of `load` family of interface functions with this signature
+     *  overloaded for different external data structures:
+     *
+     *  @code
+     *      load( graph_type, external_graph_type, args_type... )
+     *  @endcode
+     *
+     *  where:
+     *  - `graph_type` is native graph type (i.e. `SeqGraph`),
+     *  - `external_graph_type` is type of the external graph to be loaded.
+     */
     template< typename TGraph,
               typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value >,
               typename ...TArgs >
