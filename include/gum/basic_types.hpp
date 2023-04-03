@@ -20,6 +20,8 @@
 
 #include <cinttypes>
 #include <algorithm>
+#include <istream>
+#include <functional>
 
 
 namespace gum {
@@ -170,6 +172,46 @@ namespace gum {
   template< >
   struct widthof< uint64_t > {
     constexpr static uint8_t value = 64;
+  };
+
+  /**
+    *  @brief  A native date type wrapping a lambda useful for function overloading.
+    */
+  template< typename TReturn, typename ...TArgs >
+  class CallbackWrapper {
+    public:
+      /* === TYPEDEFS === */
+      using return_type = TReturn;
+      using function_type = std::function< return_type( TArgs... ) >;
+      /* === LIFECYCLE === */
+      CallbackWrapper( ) = default;
+      CallbackWrapper( function_type x_callback ) : m_f( x_callback ) { }
+      /* === OPERATORS === */
+      inline return_type
+      operator()( TArgs&&... args )
+      {
+        return this->m_f( std::forward< TArgs >( args )... );
+      }
+
+      inline
+      operator bool() const noexcept
+      {
+        return ( bool )( this->m_f );
+      }
+    private:
+      function_type m_f;
+  };
+
+  template< typename TReturn >
+  class ExternalLoader
+    : public CallbackWrapper< TReturn, std::istream& > {
+    public:
+      /* === TYPEDEFS === */
+      using return_type = TReturn;
+      using base_type = CallbackWrapper< return_type, std::istream& >;
+      using function_type = typename base_type::function_type;
+      /* === LIFECYCLE === */
+      using base_type::base_type;  // inherit constructors
   };
 }  /* --- end of namespace gum --- */
 

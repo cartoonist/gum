@@ -19,12 +19,12 @@
 #ifndef  GUM_VGIO_UTILS_HPP__
 #define  GUM_VGIO_UTILS_HPP__
 
-#include <istream>
-
 #include <vg/vg.pb.h>
 #include <vg/io/stream.hpp>
 
 #include "vg_utils.hpp"
+
+#define GUM_INCLUDED_VGIO
 
 
 namespace gum {

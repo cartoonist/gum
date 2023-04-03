@@ -25,11 +25,14 @@
 #define  GUM_HG_UTILS_HPP__
 
 #include <string>
+#include <istream>
 
 #include "coordinate.hpp"
 #include "iterators.hpp"
 #include "basic_types.hpp"
 #include "seqgraph_interface.hpp"
+
+#define GUM_INCLUDED_HG
 
 
 namespace gum {
@@ -363,6 +366,27 @@ namespace gum {
     load_graph( TGraph& graph, THGGraph& other, HGFormat, TArgs&&... args )
     {
       graph.clear();
+      extend_graph( graph, other, HGFormat{}, std::forward< TArgs >( args )... );
+    }
+
+    /**
+     *  @brief  Extend a native graph with an external one using an `ExternalLoader` (HashGraph overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  in Input stream
+     *  @param  loader An instance of `ExternalLoader`
+     *  @param  args Arguments passed to `extend_graph`
+     *
+     *  This overload uses parsing mechanism provided as input argument. Any calls to
+     *  `load`/`extend`/`load_{gfa|vg|hg}`/`extend_{gfa|vg|hg}` with `ExternalLoader`
+     *  will be delegated to this overload instead of using the bundled dependencies to
+     *  parse the input graph stream.
+     */
+    template< typename TGraph, typename THGGraph, typename ...TArgs >
+    inline void
+    extend_hg( TGraph& graph, std::istream& in, ExternalLoader< THGGraph > loader, TArgs&&... args )
+    {
+      THGGraph other = loader( in );
       extend_graph( graph, other, HGFormat{}, std::forward< TArgs >( args )... );
     }
   }  /* --- end of namespace util --- */

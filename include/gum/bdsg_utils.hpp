@@ -19,11 +19,11 @@
 #ifndef GUM_BDSG_UTILS_HPP_
 #define GUM_BDSG_UTILS_HPP_
 
-#include <istream>
-
 #include <bdsg/hash_graph.hpp>
 
 #include "hg_utils.hpp"
+
+#define GUM_INCLUDED_BDSG
 
 
 namespace gum {

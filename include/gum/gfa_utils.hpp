@@ -620,6 +620,30 @@ namespace gum {
       load_graph( graph, other, GFAFormat{}, std::forward< TArgs >( args )... );
     }
 
+    /**
+     *  @brief  Extend a native graph with an external one using an `ExternalLoader` (GFA overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  in Input stream
+     *  @param  loader An instance of `ExternalLoader`
+     *  @param  args Arguments passed to `extend_graph`
+     *
+     *  This overload uses parsing mechanism provided as input argument. Any calls to
+     *  `load`/`extend`/`load_{gfa|vg|hg}`/`extend_{gfa|vg|hg}` with `ExternalLoader`
+     *  will be delegated to this overload instead of using the bundled dependencies to
+     *  parse the input graph stream.
+     */
+    template< typename TGraph,
+              typename TGFAKGraph,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value >,
+              typename ...TArgs >
+    inline void
+    extend_gfa( TGraph& graph, std::istream& in, ExternalLoader< TGFAKGraph > loader, TArgs&&... args )
+    {
+      TGFAKGraph other = loader( in );
+      extend_graph( graph, other, GFAFormat{}, std::forward< TArgs >( args )... );
+    }
+
     template< typename TGraph, typename ...TArgs >
     inline void
     extend_gfa( TGraph& graph, std::istream& in, TArgs&&... args )

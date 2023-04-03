@@ -25,12 +25,14 @@
 #define  GUM_VG_UTILS_HPP__
 
 #include <string>
-#include <functional>
+#include <istream>
 
 #include "coordinate.hpp"
 #include "iterators.hpp"
 #include "basic_types.hpp"
 #include "seqgraph_interface.hpp"
+
+#define GUM_INCLUDED_VG
 
 
 namespace gum {
@@ -427,6 +429,30 @@ namespace gum {
     load_graph( TGraph& graph, TVGGraph& other, VGFormat, TArgs&&... args )
     {
       graph.clear();
+      extend_graph( graph, other, VGFormat{}, std::forward< TArgs >( args )... );
+    }
+
+    /**
+     *  @brief  Extend a native graph with an external one using an `ExternalLoader` (vg overload).
+     *
+     *  @param  graph Graph of any native type with Dynamic spec tag
+     *  @param  in Input stream
+     *  @param  loader An instance of `ExternalLoader`
+     *  @param  args Arguments passed to `extend_graph`
+     *
+     *  This overload uses parsing mechanism provided as input argument. Any calls to
+     *  `load`/`extend`/`load_{gfa|vg|hg}`/`extend_{gfa|vg|hg}` with `ExternalLoader`
+     *  will be delegated to this overload instead of using the bundled dependencies to
+     *  parse the input graph stream.
+     */
+    template< typename TGraph,
+              typename TVGGraph,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value >,
+              typename ...TArgs >
+    inline void
+    extend_vg( TGraph& graph, std::istream& in, ExternalLoader< TVGGraph > loader, TArgs&&... args )
+    {
+      TVGGraph other = loader( in );
       extend_graph( graph, other, VGFormat{}, std::forward< TArgs >( args )... );
     }
 

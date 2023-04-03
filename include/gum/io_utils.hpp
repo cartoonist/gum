@@ -23,13 +23,15 @@
 #include "gfa_utils.hpp"
 
 #if defined(GUM_HAS_BDSG) && !defined(GUM_USER_EXCLUDE_BDSG)
-#define GUM_INCLUDED_BDSG
 #include "bdsg_utils.hpp"
+#elif defined(GUM_HAS_HG) && !defined(GUM_USER_EXCLUDE_HG)
+#include "hg_utils.hpp"
 #endif
 
 #if defined(GUM_HAS_VGIO) && !defined(GUM_USER_EXCLUDE_VGIO)
-#define GUM_INCLUDED_VGIO
 #include "vgio_utils.hpp"
+#elif defined(GUM_HAS_VG) && !defined(GUM_USER_EXCLUDE_VG)
+#include "vg_utils.hpp"
 #endif
 
 
@@ -41,6 +43,12 @@ namespace gum {
      *  It extends the given `Dynamic` graph by the graph defined in the input
      *  file. The file format of the input file will be determined by the file
      *  extension.
+     *
+     *  NOTE: If `libvgio` or `bdsg` is not available with gum, this function should be
+     *  called with an `ExternalLoader< TXGraph >` as the third parameter; otherwise
+     *  there would be no defined function. In this case, `extend_*` calls here will be
+     *  resolved by ones defined in `vg_utils.hpp` and `hg_utils.hpp` (not the ones
+     *  defined in `vgio_utils.hpp` and `bdsg_utils.hpp`).
      *
      *  @param  graph The `Dynamic` graph.
      *  @param  fname The input file path.
@@ -57,13 +65,13 @@ namespace gum {
         extend_gfa( graph, fname, std::forward< TArgs >( args )... );
       }
 #ifndef GUM_IO_PROTOBUF_VG
-#ifdef GUM_INCLUDED_BDSG
+#ifdef GUM_INCLUDED_HG
       else if ( util::ends_with( fname, HGFormat::FILE_EXTENSION ) ) {
         extend_hg( graph, fname, std::forward< TArgs >( args )... );
       }
 #endif
 #else
-#ifdef GUM_INCLUDED_VGIO
+#ifdef GUM_INCLUDED_VG
       else if ( util::ends_with( fname, VGFormat::FILE_EXTENSION ) ) {
         extend_vg( graph, fname, std::forward< TArgs >( args )... );
       }
@@ -78,6 +86,13 @@ namespace gum {
      *  It constructs the given `Dynamic` graph from the input file. The file
      *  format of the input file will be determined by the file extension.
      *
+     *  NOTE: If `libvgio` or `bdsg` is not available with gum, this function should be
+     *  called with an `ExternalLoader< TXGraph >` as the third parameter; otherwise
+     *  there would be no defined function. In this case, `load_*` calls here will
+     *  eventually delegate graph loading to overloaded `extend_*` functions defined in
+     *  `vg_utils.hpp` and `hg_utils.hpp` (not those defined in `vgio_utils.hpp` and
+     *  `bdsg_utils.hpp`).
+     *
      *  @param  graph The `Dynamic` graph.
      *  @param  fname The input file path.
      *  @param  args The parameters forwarded to lower-level functions (see
@@ -91,13 +106,13 @@ namespace gum {
         load_gfa( graph, fname, std::forward< TArgs >( args )... );
       }
 #ifndef GUM_IO_PROTOBUF_VG
-#ifdef GUM_INCLUDED_BDSG
+#ifdef GUM_INCLUDED_HG
       else if ( util::ends_with( fname, HGFormat::FILE_EXTENSION ) ) {
         load_hg( graph, fname, std::forward< TArgs >( args )... );
       }
 #endif
 #else
-#ifdef GUM_INCLUDED_VGIO
+#ifdef GUM_INCLUDED_VG
       else if ( util::ends_with( fname, VGFormat::FILE_EXTENSION ) ) {
         load_vg( graph, fname, std::forward< TArgs >( args )... );
       }

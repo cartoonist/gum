@@ -280,6 +280,25 @@ present:
 - `GUM_HAS_VGIO`
 - `GUM_HAS_BDSG`
 
+**Note:** If the library is installed with supports for vg/HashGraph or
+configured with options `GUM_WITH_VGIO` and/or `GUM_WITH_BDSG`, the user can
+drop such dependencies by defining `GUM_USER_EXCLUDE_*` macros before including
+`io_utils.hpp`. For example by defining `GUM_USER_EXCLUDE_VGIO` before inclusion
+of `io_utils.hpp`, the library does not use `libvgio` for parsing vg files; i.e.
+only interface functions which are independent of `libvgio` will be declared;
+In this example for instance, `load_graph`/`load` always requires an instance of
+`ExternalLoader< vg::Graph >` as input parameters. These macros are:
+
+- `GUM_USER_EXCLUDE_VGIO`
+- `GUM_USER_EXCLUDE_BDSG`
+- `GUM_USER_EXCLUDE_VG`
+- `GUM_USER_EXCLUDE_HG`
+
+Note that, in this case, CMake/pkgconfig configurations cannot be used in the
+build script (e.g. `find_package(gum)`) as it expects all dependencies required
+for features specified during the installation be present including those you
+want to drop.
+
 Using GUM
 ---------
 
