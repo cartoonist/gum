@@ -26,12 +26,14 @@
 #include "bdsg_utils.hpp"
 #elif defined(GUM_HAS_HG) && !defined(GUM_USER_EXCLUDE_HG)
 #include "hg_utils.hpp"
+#include "io_utils_hg.hpp"
 #endif
 
 #if defined(GUM_HAS_VGIO) && !defined(GUM_USER_EXCLUDE_VGIO)
 #include "vgio_utils.hpp"
 #elif defined(GUM_HAS_VG) && !defined(GUM_USER_EXCLUDE_VG)
 #include "vg_utils.hpp"
+#include "io_utils_vg.hpp"
 #endif
 
 
