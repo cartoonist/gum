@@ -180,6 +180,57 @@ namespace gum {
       else throw std::runtime_error( "unsupported input file format" );
     }
 
+    template< typename TGraph, typename TVGGraph, typename ...TArgs >
+    inline void
+    _load( TGraph& graph, std::string fname, Dynamic,
+           ExternalLoader< gfak::GFAKluge > gfa_xloader,
+           ExternalLoader< TVGGraph > vg_xloader,
+           TArgs&&... args )
+    {
+      if ( util::ends_with( fname, GFAFormat::FILE_EXTENSION ) ) {
+        if ( gfa_xloader ) {
+          load_gfa( graph, fname, gfa_xloader, std::forward< TArgs >( args )... );
+        }
+        else {
+          load_gfa( graph, fname, std::forward< TArgs >( args )... );
+        }
+      }
+#ifndef GUM_IO_PROTOBUF_VG
+#ifdef GUM_INCLUDED_HG
+      else if ( util::ends_with( fname, HGFormat::FILE_EXTENSION ) ) {
+        if ( vg_xloader ) {
+          load_hg( graph, fname, vg_xloader, std::forward< TArgs >( args )... );
+        }
+        else {
+          load_hg( graph, fname, std::forward< TArgs >( args )... );
+        }
+      }
+#endif
+#else
+#ifdef GUM_INCLUDED_VG
+      else if ( util::ends_with( fname, VGFormat::FILE_EXTENSION ) ) {
+        if ( vg_xloader ) {
+          load_vg( graph, fname, vg_xloader, std::forward< TArgs >( args )... );
+        }
+        else {
+          load_vg( graph, fname, std::forward< TArgs >( args )... );
+        }
+      }
+#endif
+#endif
+      else throw std::runtime_error( "unsupported input file format" );
+    }
+
+    template< typename TGraph, typename TVGGraph, typename ...TArgs >
+    inline void
+    _load( TGraph& graph, std::string fname, Dynamic,
+           ExternalLoader< TVGGraph > vg_xloader,
+           TArgs&&... args )
+    {
+      _load( graph, fname, Dynamic{}, ExternalLoader< gfak::GFAKluge >{}, vg_xloader,
+             std::forward< TArgs >( args )... );
+    }
+
     /**
      *  @brief  Load a Succinct SeqGraph from a file.
      *
