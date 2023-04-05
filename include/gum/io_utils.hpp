@@ -82,6 +82,63 @@ namespace gum {
       else throw std::runtime_error( "unsupported input file format" );
     }
 
+    template< typename TGraph,
+              typename TVGGraph,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value >,
+              typename ...TArgs >
+    inline void
+    extend( TGraph& graph, std::string fname,
+            ExternalLoader< gfak::GFAKluge > gfa_xloader,
+            ExternalLoader< TVGGraph > vg_xloader,
+            TArgs&&... args )
+    {
+      if ( util::ends_with( fname, GFAFormat::FILE_EXTENSION ) ) {
+        if ( gfa_xloader ) {
+          extend_gfa( graph, fname, gfa_xloader, std::forward< TArgs >( args )... );
+        }
+        else {
+          extend_gfa( graph, fname, std::forward< TArgs >( args )... );
+        }
+      }
+#ifndef GUM_IO_PROTOBUF_VG
+#ifdef GUM_INCLUDED_HG
+      else if ( util::ends_with( fname, HGFormat::FILE_EXTENSION ) ) {
+        if ( vg_xloader ) {
+          extend_hg( graph, fname, vg_xloader, std::forward< TArgs >( args )... );
+        }
+        else {
+          extend_hg( graph, fname, std::forward< TArgs >( args )... );
+        }
+      }
+#endif
+#else
+#ifdef GUM_INCLUDED_VG
+      else if ( util::ends_with( fname, VGFormat::FILE_EXTENSION ) ) {
+        if ( vg_xloader ) {
+          extend_vg( graph, fname, vg_xloader, std::forward< TArgs >( args )... );
+        }
+        else {
+          extend_vg( graph, fname, std::forward< TArgs >( args )... );
+        }
+      }
+#endif
+#endif
+      else throw std::runtime_error( "unsupported input file format" );
+    }
+
+    template< typename TGraph,
+              typename TVGGraph,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value >,
+              typename ...TArgs >
+    inline void
+    extend( TGraph& graph, std::string fname,
+            ExternalLoader< TVGGraph > vg_xloader,
+            TArgs&&... args )
+    {
+      extend( graph, fname, ExternalLoader< gfak::GFAKluge >{}, vg_xloader,
+              std::forward< TArgs >( args )... );
+    }
+
     /**
      *  @brief  Load a Dynamic graph from a file.
      *
