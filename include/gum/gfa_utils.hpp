@@ -657,9 +657,11 @@ namespace gum {
     inline void
     extend_gfa( TGraph& graph, std::string fname, TArgs&&... args )
     {
-      gfak::GFAKluge gg;
-      gg.parse_gfa_file( fname );
-      extend( graph, gg, std::forward< TArgs >( args )... );
+      std::ifstream ifs( fname, std::ifstream::in | std::ifstream::binary );
+      if( !ifs ) {
+        throw std::runtime_error( "cannot open file '" + fname + "'" );
+      }
+      extend_gfa( graph, ifs, std::forward< TArgs >( args )... );
     }
 
     template< typename TGraph, typename ...TArgs >
