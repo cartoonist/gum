@@ -107,7 +107,11 @@ namespace gum {
           extend_hg( graph, fname, vg_xloader, std::forward< TArgs >( args )... );
         }
         else {
+#ifdef GUM_INCLUDED_BDSG
           extend_hg( graph, fname, std::forward< TArgs >( args )... );
+#else
+          throw std::runtime_error( "no vg/HashGraph parser specified" );
+#endif
         }
       }
 #endif
@@ -118,7 +122,11 @@ namespace gum {
           extend_vg( graph, fname, vg_xloader, std::forward< TArgs >( args )... );
         }
         else {
+#ifdef GUM_INCLUDED_VGIO
           extend_vg( graph, fname, std::forward< TArgs >( args )... );
+#else
+          throw std::runtime_error( "no vg/Protobuf parser specified" );
+#endif
         }
       }
 #endif
@@ -202,7 +210,11 @@ namespace gum {
           load_hg( graph, fname, vg_xloader, std::forward< TArgs >( args )... );
         }
         else {
+#ifdef GUM_INCLUDED_BDSG
           load_hg( graph, fname, std::forward< TArgs >( args )... );
+#else
+          throw std::runtime_error( "no vg/HashGraph parser specified" );
+#endif
         }
       }
 #endif
@@ -213,7 +225,11 @@ namespace gum {
           load_vg( graph, fname, vg_xloader, std::forward< TArgs >( args )... );
         }
         else {
+#ifdef GUM_INCLUDED_VGIO
           load_vg( graph, fname, std::forward< TArgs >( args )... );
+#else
+          throw std::runtime_error( "no vg/Protobuf parser specified" );
+#endif
         }
       }
 #endif
