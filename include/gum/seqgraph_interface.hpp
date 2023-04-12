@@ -24,6 +24,7 @@
 #include <sdsl/bit_vectors.hpp>
 
 #include "iterators.hpp"
+#include "stringset.hpp"
 
 
 namespace gum {
