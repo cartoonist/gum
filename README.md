@@ -92,7 +92,7 @@ C++17 compliant compiler first. It has been tested for these compilers:
 | Compiler   | Version                  |
 | ---------- | ------------------------ |
 | GCC        | 8.3, 9.2, 10.2.0, 12.2.0 |
-| AppleClang | 14.0.0                   |
+| AppleClang | 14.0.0, 16.0.1           |
 
 ### Required dependencies
 
