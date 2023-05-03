@@ -260,7 +260,6 @@ namespace gum {
             stack.push_back( { rank, id } );
             return true;
           } );
-      std::reverse( stack.begin(), stack.end() );
 
       typename map_type::size_type last_visited = 0;
       do {
