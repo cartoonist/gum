@@ -193,6 +193,7 @@ add_test(NAME TestSeqGraph COMMAND gum-tests "[seqgraph]")
 add_test(NAME TestIOUtils COMMAND gum-tests "[ioutils]")
 add_test(NAME TestAlphabet COMMAND gum-tests "[alphabet]")
 add_test(NAME TestStringSet COMMAND gum-tests "[stringset]")
+add_test(NAME TestTypes COMMAND gum-tests "[types]")
 
 # Packaging configuration
 set(CPACK_PACKAGE_NAME "gum")
