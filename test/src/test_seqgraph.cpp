@@ -1467,10 +1467,10 @@ TEMPLATE_SCENARIO( "DFS traversal", "[seqgraph][template]",
     };
 
     const std::vector< rank_type > truth_dsc_ranks
-      = { 1, 3, 6, 8, 5, 7, 2, 4, 9, 13, 14, 15, 10, 11, 12 };
+      = { 9, 13, 14, 15, 10, 11, 12, 1, 3, 6, 8, 5, 7, 2, 4 };
 
     const std::vector< rank_type > truth_fin_ranks
-      = { 8, 7, 5, 6, 3, 4, 2, 1, 15, 14, 13, 12, 11, 10, 9 };
+      = { 15, 14, 13, 12, 11, 10, 9, 8, 7, 5, 6, 3, 4, 2, 1 };
 
     WHEN( "It is traversed by DFS algorithm with callbacks for all events" )
     {
