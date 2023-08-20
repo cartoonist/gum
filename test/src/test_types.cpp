@@ -38,8 +38,8 @@ TEMPLATE_SCENARIO_SIG( "Determine the bitwise width of an integer", "[types]",
       THEN ( "It gets the corresponding integer types" ) {
         REQUIRE( gum::widthof< typename gum::integer< W >::type >::value == width );
         REQUIRE( gum::widthof< typename gum::uinteger< W >::type >::value == width );
-        REQUIRE( gum::widthof< typename gum::integer_t< W > >::value == width );
-        REQUIRE( gum::widthof< typename gum::uinteger_t< W > >::value == width );
+        REQUIRE( gum::widthof< gum::integer_t< W > >::value == width );
+        REQUIRE( gum::widthof< gum::uinteger_t< W > >::value == width );
         REQUIRE( !std::is_signed< typename gum::uinteger< W >::type >::value );
         REQUIRE( std::is_signed< typename gum::integer< W >::type >::value );
       }
