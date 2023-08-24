@@ -76,6 +76,7 @@ TEMPLATE_SCENARIO( "Generic functionality of DirectedGraph", "[seqgraph][templat
             REQUIRE( graph.has_node( nodes[ i - 1 ] ) );
           }
           REQUIRE( !graph.has_node( abs_id ) );
+          REQUIRE( !graph.has_node( 0 ) );
         };
 
     auto empty_graph_test =

@@ -19,6 +19,7 @@
 #define GUM_COORDINATE_HPP__
 
 #include <cinttypes>
+#include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <algorithm>
@@ -177,7 +178,17 @@ namespace gum {
       inline id_type
       operator()( lid_type const& lid ) const
       {
-        return std::stoll( lid );
+        id_type id;
+        try {  // extracting id number assuing `lid` matches /^[0-9]+.*/
+          id = std::stoll( lid );
+        }
+        catch ( std::invalid_argument const& ) {  // if failed; try matching /.*[0-9]+$/
+          auto itr = std::find_if( lid.rbegin(), lid.rend(),
+                                   []( unsigned char c ) { return !std::isdigit( c ); } );
+
+          id = std::stoll( lid.substr( itr.base() - lid.begin() ) );
+        }
+        return id;
       }
 
       constexpr inline void

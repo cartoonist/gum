@@ -36,7 +36,7 @@ config_parser( cxxopts::Options& options )
 {
   options.positional_help( "GRAPH" );
   options.add_options()
-      ( "f, format", "input file format (gfa, vg, hg)", cxxopts::value< std::string >()->default_value( "" ) )
+      ( "f, format", "Input file format (gfa, vg, hg)", cxxopts::value< std::string >()->default_value( "" ) )
       ( "h, help", "Print this message and exit" )
       ;
 
