@@ -20,40 +20,47 @@
 
 #include <functional>
 #include <iterator>
+#include <type_traits>
 
 
 namespace gum {
+  /**
+   *  @brief  Generic random-access iterator
+   *
+   *  It defines a generic iterator over a container whose type is determined by the
+   *  template type parameter `TContainer`.
+   *
+   *  NOTE: Defining an iterator constant does not prevent modification of the
+   *  underlying container just like const pointers. However, immutability is guarnteed
+   *  when `TContainer` has const qualifier. `RandomAccessConstIterator` type alias adds
+   *  const quilifier to the given container.
+   */
   template< typename TContainer >
-  class RandomAccessConstIterator
+  class RandomAccessIterator
   {
   public:
     /* === FRIENDSHIP === */
     template< typename TContainer2 >
-    friend typename RandomAccessConstIterator< TContainer2 >::difference_type
-    operator-( const RandomAccessConstIterator< TContainer2 >& x,
-               const RandomAccessConstIterator< TContainer2 >& y );
-
+    friend typename RandomAccessIterator< TContainer2 >::difference_type
+    operator-( const RandomAccessIterator< TContainer2 >& x,
+               const RandomAccessIterator< TContainer2 >& y );
     /* === TYPEDEFS === */
     using container_type = TContainer;
-    using iterator = RandomAccessConstIterator;
-
+    using iterator = RandomAccessIterator;
     using iterator_category = std::random_access_iterator_tag;
     using value_type = typename container_type::value_type;
     using difference_type = typename container_type::difference_type;
     using pointer = typename container_type::value_type*;
-    using reference = typename container_type::value_type&;
-
+    using reference = typename container_type::reference;
     using const_reference = typename container_type::const_reference;
     using size_type = typename container_type::size_type;
-
     /* === LIFECYCLE === */
-    RandomAccessConstIterator( ) : ptr( nullptr ), idx( 0 ) { }
+    RandomAccessIterator( ) : ptr( nullptr ), idx( 0 ) { }
 
-    RandomAccessConstIterator( TContainer const* _ptr, size_type _idx = 0 )
+    RandomAccessIterator( TContainer * _ptr, size_type _idx = 0 )
       : ptr( _ptr ), idx( _idx ) { }
-
     /* === OPERATORS === */
-    inline const_reference
+    inline decltype(auto)
     operator*( ) const
     {
       return ( *this->ptr )[ this->idx ];
@@ -160,29 +167,41 @@ namespace gum {
     {
       return !( *this > it );
     }
-
   protected:
     /* === DATA MEMBERS === */
-    container_type const* ptr;
+    container_type * ptr;
     size_type idx;
-  };  /* --- end of template class RandomAccessConstIterator --- */
+  };  /* --- end of template class RandomAccessIterator --- */
 
+  /* --- RandomAccessIterator interface functions --- */
   template< typename TContainer >
-  inline typename RandomAccessConstIterator< TContainer >::difference_type
-  operator-( const RandomAccessConstIterator< TContainer >& x,
-             const RandomAccessConstIterator< TContainer >& y )
+  inline typename RandomAccessIterator< TContainer >::difference_type
+  operator-( const RandomAccessIterator< TContainer >& x,
+             const RandomAccessIterator< TContainer >& y )
   {
-    using difference_type = typename RandomAccessConstIterator< TContainer >::difference_type;
+    using difference_type = typename RandomAccessIterator< TContainer >::difference_type;
     return static_cast< difference_type >( x.idx ) - static_cast< difference_type >( y.idx );
   }
 
   template< typename TContainer >
-  inline RandomAccessConstIterator< TContainer >
-  operator+( typename RandomAccessConstIterator< TContainer >::difference_type n,
-             RandomAccessConstIterator< TContainer > const& it )
+  inline RandomAccessIterator< TContainer >
+  operator+( typename RandomAccessIterator< TContainer >::difference_type n,
+             RandomAccessIterator< TContainer > const& it )
   {
     return it + n;
   }
+  /* --- end of RandomAccessIterator interface functions --- */
+
+  /**
+   *  @brief  Generic random-'const'-access iterator
+   *
+   *  NOTE: Defining an iterator constant does not prevent modification of the
+   *  underlying container just like const pointers. However, immutability is guarnteed
+   *  when `TContainer` has const qualifier. `RandomAccessConstIterator` type alias adds
+   *  const quilifier to the given container.
+   */
+  template< typename TContainer >
+  using RandomAccessConstIterator = RandomAccessIterator< std::add_const_t< TContainer > >;
 
   template< typename TContainer, typename TValue >
   class RandomAccessProxyContainer {

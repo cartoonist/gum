@@ -194,6 +194,7 @@ add_test(NAME TestIOUtils COMMAND gum-tests "[ioutils]")
 add_test(NAME TestAlphabet COMMAND gum-tests "[alphabet]")
 add_test(NAME TestStringSet COMMAND gum-tests "[stringset]")
 add_test(NAME TestTypes COMMAND gum-tests "[types]")
+add_test(NAME TestIterators COMMAND gum-tests "[iterators]")
 
 # Packaging configuration
 set(CPACK_PACKAGE_NAME "gum")
