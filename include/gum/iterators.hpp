@@ -22,6 +22,8 @@
 #include <iterator>
 #include <type_traits>
 
+#include "basic_types.hpp"
+
 
 namespace gum {
   /**
@@ -203,34 +205,54 @@ namespace gum {
   template< typename TContainer >
   using RandomAccessConstIterator = RandomAccessIterator< std::add_const_t< TContainer > >;
 
-  template< typename TContainer, typename TValue >
+  /**
+   *  @brief  Generic random-access proxy container
+   *
+   *  NOTE: A const proxy container only exposes const references to elements (in case
+   *  `TContainer` return references via indexing -- i.e. `operator[]` ). This is
+   *  independent of `TContainer` const-ness.
+   */
+  template< typename TContainer, typename TFunction >
   class RandomAccessProxyContainer {
   public:
     /* === TYPEDEFS === */
     using container_type = TContainer;
-    using value_type = TValue;
+    using function_type = TFunction;
     using size_type = typename container_type::size_type;
     using difference_type = typename container_type::difference_type;
-    using proxy_type = typename container_type::value_type;
-    using function_type = std::function< value_type( proxy_type const& ) >;
-    using const_reference = value_type const;
+    using proxy_type = decltype( std::declval< TContainer >()[ std::declval< size_type >() ] );
+    using reference = decltype( std::declval< TFunction& >()( std::declval< proxy_type >() ) );
+    using value_type = std::decay_t< reference >;
+    using const_reference = add_const_east_t< reference >;
+    using iterator = RandomAccessIterator< RandomAccessProxyContainer >;
     using const_iterator = RandomAccessConstIterator< RandomAccessProxyContainer >;
-
     /* === LIFECYCLE === */
     RandomAccessProxyContainer( )
-      : ptr( nullptr ), f( []( proxy_type const& x ) -> value_type { return x; } ) { }
-    RandomAccessProxyContainer( container_type const* _ptr, function_type _f )
-      : ptr( _ptr ), f( _f ) { }
+      : ptr( nullptr ), f( []( proxy_type x ) -> proxy_type { return x; } ) { }
 
+    RandomAccessProxyContainer( container_type * _ptr, function_type _f )
+      : ptr( _ptr ), f( _f ) { }
     /* === OPERATORS === */
-    inline value_type
-    operator[]( size_type i ) const
+    inline reference
+    operator[]( size_type i ) noexcept
     {
       return this->f( ( *this->ptr )[ i ] );
     }
 
+    inline const_reference
+    operator[]( size_type i ) const noexcept
+    {
+      return this->f( ( *this->ptr )[ i ] );
+    }
     /* === METHODS === */
-    inline value_type
+    inline reference
+    at( size_type i )
+    {
+      if ( i < 0 || i >= this->size() ) throw std::runtime_error( "index out of range" );
+      return ( *this )[ i ];
+    }
+
+    inline const_reference
     at( size_type i ) const
     {
       if ( i < 0 || i >= this->size() ) throw std::runtime_error( "index out of range" );
@@ -249,16 +271,34 @@ namespace gum {
       return this->size() == 0;
     }
 
+    inline iterator
+    begin( ) noexcept
+    {
+      return iterator( this, 0 );
+    }
+
     inline const_iterator
-    begin( ) const
+    begin( ) const noexcept
     {
       return const_iterator( this, 0 );
     }
 
+    inline iterator
+    end( ) noexcept
+    {
+      return iterator( this, this->size() );
+    }
+
     inline const_iterator
-    end( ) const
+    end( ) const noexcept
     {
       return const_iterator( this, this->size() );
+    }
+
+    inline reference
+    back( )
+    {
+      return *this->begin();
     }
 
     inline const_reference
@@ -267,15 +307,20 @@ namespace gum {
       return *this->begin();
     }
 
+    inline reference
+    front( )
+    {
+      return *( this->end() - 1 );
+    }
+
     inline const_reference
     front( ) const
     {
       return *( this->end() - 1 );
     }
-
   private:
     /* === DATA MEMBERS === */
-    container_type const* ptr;
+    container_type * ptr;
     function_type f;
   };  /* --- end of template class RandomAccessProxyContainer --- */
 

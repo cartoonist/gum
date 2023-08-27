@@ -174,6 +174,25 @@ namespace gum {
     constexpr static uint8_t value = 64;
   };
 
+  template< typename T, typename TEnable=void >
+  struct add_const_east;
+
+  template< typename T >
+  struct add_const_east< T, std::enable_if_t< !std::is_lvalue_reference< T >::value > > {
+    using type = std::add_const_t< T >;
+  };
+
+  template< typename T >
+  struct add_const_east< T, std::enable_if_t< std::is_lvalue_reference< T >::value > > {
+    private:
+      using const_t = std::add_const_t< std::remove_reference_t< T > >;
+    public:
+      using type = std::add_lvalue_reference_t< const_t >;
+  };
+
+  template< typename T >
+  using add_const_east_t = typename add_const_east< T >::type;
+
   /**
     *  @brief  A native date type wrapping a lambda useful for function overloading.
     */
