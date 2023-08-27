@@ -242,7 +242,6 @@ namespace gum {
       using id_type = typename graph_type::id_type;
       using mappings_type = std::decay_t< decltype( TVGPath().mapping() ) >;
       using mapping_rank_type = std::decay_t< decltype( TVGPath().mapping()[0].rank() ) >;
-      using orientations_type = RandomAccessProxyContainer< mappings_type, bool >;
 
       if ( !graph.has_path( pid ) ) {
         throw std::runtime_error( "extending a path with non-existent ID" );
@@ -281,10 +280,10 @@ namespace gum {
       util::permute( perm, nodes );
 
       auto get_orient =
-          []( auto const& m ) {
+          []( auto const& m ) -> bool {
             return m.position().is_reverse();
           };
-      orientations_type orients( &mappings, get_orient );
+      RandomAccessProxyContainer orients( &mappings, get_orient );
       graph.extend_path( pid, nodes.begin(), nodes.end(),
                          orients.begin(), orients.end() );
     }

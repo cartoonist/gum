@@ -328,7 +328,7 @@ namespace gum {
 
       auto [top_sort, dag] = topological_sort_order( graph, reverse );
       if ( dag || force ) {
-        RandomAccessProxyContainer< decltype( top_sort ), rank_type > perm(
+        RandomAccessProxyContainer perm(
           &top_sort,
           []( std::pair< rank_type, id_type > const& p ) -> rank_type { return p.first - 1; } );
         graph.sort_nodes( perm );

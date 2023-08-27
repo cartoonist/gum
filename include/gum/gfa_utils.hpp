@@ -324,17 +324,13 @@ namespace gum {
     {
       using graph_type = TGraph;
       using id_type = typename graph_type::id_type;
-      using elem_segments_type = std::decay_t< decltype( elem.segment_names ) >;
-      using elem_orients_type = std::decay_t< decltype( elem.orientations ) >;
-      using nodes_type = RandomAccessProxyContainer< elem_segments_type, id_type >;
-      using orientations_type = RandomAccessProxyContainer< elem_orients_type, bool >;
 
       if ( !graph.has_path( pid ) ) {
         throw std::runtime_error( "extending a path with non-existent ID" );
       }
 
       auto get_id =
-          [&graph, &coord, force]( std::string const& name ) {
+          [&graph, &coord, force]( std::string const& name ) -> id_type {
             id_type id = coord( name );
             if ( !graph.has_node( id ) ) {
               if ( force ) {
@@ -345,9 +341,9 @@ namespace gum {
             }
             return id;
           };
-      auto get_orient = []( bool fwd ) { return !fwd; };
-      nodes_type nodes( &elem.segment_names, get_id );
-      orientations_type orients( &elem.orientations, get_orient );
+      auto get_orient = []( bool fwd ) -> bool { return !fwd; };
+      RandomAccessProxyContainer nodes( &elem.segment_names, get_id );
+      RandomAccessProxyContainer orients( &elem.orientations, get_orient );
       graph.extend_path( pid, nodes.begin(), nodes.end(),
                          orients.begin(), orients.end() );
     }
