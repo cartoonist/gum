@@ -1776,12 +1776,14 @@ namespace gum {
     using size_type = typename trait_type::size_type;
     using const_reference = typename trait_type::const_reference;
     using const_iterator = typename trait_type::const_iterator;
-    using sequence_container_type =
-        typename trait_type::template sequence_proxy_container< NodeProperty >;
-    using name_container_type =
-        typename trait_type::template name_proxy_container< NodeProperty >;
-    using sequenceset_type = sequence_container_type;
-    using stringset_type = name_container_type;
+    using const_sequence_container_type =
+        typename trait_type::template const_sequence_proxy_container< NodeProperty >;
+    using const_name_container_type =
+        typename trait_type::template const_name_proxy_container< NodeProperty >;
+    using const_sequenceset_type = const_sequence_container_type;
+    using const_stringset_type = const_name_container_type;
+    using seq_const_reference = typename const_sequenceset_type::const_reference;
+    using seq_reference = typename const_sequenceset_type::reference;
     using succinct_type = NodeProperty< Succinct, TWidths... >;
     using dynamic_type = NodeProperty;
 
@@ -1891,16 +1893,16 @@ namespace gum {
       util::permute( perm, this->nodes );
     }
 
-    inline sequenceset_type
+    inline const_sequenceset_type
     sequences( ) const
     {
-      return sequenceset_type( this, this->nodes );
+      return const_sequenceset_type( this, &( this->nodes ) );
     }
 
-    inline stringset_type
+    inline const_stringset_type
     names( ) const
     {
-      return stringset_type( this, this->nodes );
+      return const_stringset_type( this, &( this->nodes ) );
     }
 
     inline void

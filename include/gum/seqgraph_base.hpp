@@ -911,70 +911,94 @@ namespace gum {
   template< typename TSpec, uint8_t ...TWidths >
   class NodePropertyTrait;
 
-  template< typename TNodeProp, typename TContainer, typename TValue >
+  template< typename TContainer >
+  struct SequenceProxyFunctor {
+    using container_type = TContainer;
+    using size_type = typename container_type::size_type;
+    using proxy_type = decltype( std::declval< container_type >()[ std::declval< size_type >() ] );
+
+    inline decltype(auto)
+    operator()( proxy_type node ) const noexcept
+    {
+      return node.sequence;
+    }
+  };
+
+  template< typename TNodeProp, typename TContainer >
   class SequenceProxyContainer
-    : public RandomAccessProxyContainer< TContainer, TValue > {
+    : public RandomAccessProxyContainer< TContainer, SequenceProxyFunctor< TContainer > > {
   public:
     using node_prop_type = TNodeProp;
     using container_type = TContainer;
-    using value_type = TValue;
-    using base_type = RandomAccessProxyContainer< container_type, value_type >;
+    using function_type = SequenceProxyFunctor< container_type >;
+    using base_type = RandomAccessProxyContainer< container_type, function_type >;
     using typename base_type::size_type;
     using typename base_type::difference_type;
+    using typename base_type::value_type;
     using typename base_type::proxy_type;
-    using typename base_type::function_type;
+    using typename base_type::iterator;
     using typename base_type::const_iterator;
+    using typename base_type::reference;
     using typename base_type::const_reference;
 
-    SequenceProxyContainer( node_prop_type const* npt,
-                            container_type const& cnt )
-      : base_type( &cnt,
-                   []( proxy_type const& node ) -> value_type {
-                     return node.sequence;
-                   } ),
+    SequenceProxyContainer( node_prop_type * npt,
+                            container_type * cnt_ptr )
+      : base_type( cnt_ptr, function_type{} ),
         npt_ptr( npt )
     { }
 
-    inline typename value_type::size_type
+    inline typename value_type::size_type  // value_type == std::string
     length_sum( ) const
     {
       return this->npt_ptr->get_sequences_len_sum( );
     }
 
-    node_prop_type const* npt_ptr;
+    node_prop_type * npt_ptr;
   };  /* --- end of template class SequenceProxyContainer --- */
 
-  template< typename TNodeProp, typename TContainer, typename TValue >
+  template< typename TContainer >
+  struct NameProxyFunctor {
+    using container_type = TContainer;
+    using size_type = typename container_type::size_type;
+    using proxy_type = decltype( std::declval< container_type >()[ std::declval< size_type >() ] );
+
+    inline decltype(auto)
+    operator()( proxy_type node ) const noexcept
+    {
+      return node.name;
+    }
+  };
+
+  template< typename TNodeProp, typename TContainer >
   class NameProxyContainer
-    : public RandomAccessProxyContainer< TContainer, TValue > {
+    : public RandomAccessProxyContainer< TContainer, NameProxyFunctor< TContainer > > {
   public:
     using node_prop_type = TNodeProp;
     using container_type = TContainer;
-    using value_type = TValue;
-    using base_type = RandomAccessProxyContainer< container_type, value_type >;
+    using function_type = NameProxyFunctor< container_type >;
+    using base_type = RandomAccessProxyContainer< container_type, function_type >;
     using typename base_type::size_type;
     using typename base_type::difference_type;
+    using typename base_type::value_type;
     using typename base_type::proxy_type;
-    using typename base_type::function_type;
+    using typename base_type::iterator;
     using typename base_type::const_iterator;
+    using typename base_type::reference;
     using typename base_type::const_reference;
 
-    NameProxyContainer( node_prop_type const* npt,
-                        container_type const& cnt )
-      : base_type( &cnt,
-                   []( proxy_type const& node ) -> value_type {
-                     return node.name;
-                   } ),
+    NameProxyContainer( node_prop_type * npt,
+                        container_type * cnt_ptr )
+      : base_type( cnt_ptr, function_type{} ),
         npt_ptr( npt )
     { }
 
-    inline typename value_type::size_type
+    inline typename value_type::size_type  // value_type == std::string
     length_sum( ) const
     {
       return this->npt_ptr->get_names_len_sum( );
     }
 
-    node_prop_type const* npt_ptr;
+    node_prop_type * npt_ptr;
   };  /* --- end of template class NameProxyContainer --- */
 
   template< uint8_t ...TWidths >
@@ -991,17 +1015,16 @@ namespace gum {
     using node_type = Node< sequence_type, string_type >;
     using value_type = node_type;
     using container_type = std::vector< value_type >;
+    using const_container_type = const std::vector< value_type >;
     using size_type = typename container_type::size_type;
     using const_reference = typename container_type::const_reference;
     using const_iterator = typename container_type::const_iterator;
 
     template< typename TNodeProp >
-    using sequence_proxy_container =
-        SequenceProxyContainer< TNodeProp, container_type, sequence_type >;
+    using const_sequence_proxy_container = SequenceProxyContainer< std::add_const_t< TNodeProp >, const_container_type >;
 
     template< typename TNodeProp >
-    using name_proxy_container =
-        NameProxyContainer< TNodeProp, container_type, string_type >;
+    using const_name_proxy_container = NameProxyContainer< std::add_const_t< TNodeProp >, const_container_type >;
   };  /* --- end of template class NodePropertyTrait --- */
 
   template< uint8_t ...TWidths >
