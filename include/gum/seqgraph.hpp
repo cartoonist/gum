@@ -2846,6 +2846,8 @@ namespace gum {
     using typename base_type::coordinate_type;
     using node_type = typename node_prop_type::node_type;
     using sequence_type = typename node_prop_type::sequence_type;
+    using seq_const_reference = typename node_prop_type::seq_const_reference;
+    using seq_reference = typename node_prop_type::seq_reference;
     using edge_type = typename edge_prop_type::edge_type;
     using path_type = typename graph_prop_type::path_type;
 
@@ -3032,7 +3034,7 @@ namespace gum {
       return this->graph_prop.for_each_path( callback, s_rank );
     }
 
-    inline sequence_type
+    inline seq_const_reference
     node_sequence( id_type id ) const
     {
       rank_type rank = base_type::id_to_rank( id );
