@@ -26,3 +26,16 @@ target_link_libraries(gstats
   PRIVATE cxxopts::cxxopts)
 # Install targets
 install(TARGETS gstats DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+# Defining target 'gbenchmark': Graph benchmarking tool
+set(GBENCHMARK_SOURCES "src/gbenchmark.cpp")
+add_executable(gbenchmark ${GBENCHMARK_SOURCES})
+target_compile_options(gbenchmark PRIVATE -g -Wall -Wpedantic -Werror -Wno-deprecated-declarations)
+target_include_directories(gbenchmark
+  PRIVATE gum::gum
+  PRIVATE cxxopts::cxxopts)
+target_link_libraries(gbenchmark
+  PRIVATE gum::gum
+  PRIVATE cxxopts::cxxopts)
+# Install targets
+install(TARGETS gbenchmark DESTINATION ${CMAKE_INSTALL_BINDIR})
