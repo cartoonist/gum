@@ -24,6 +24,24 @@
 
 
 namespace gum {
+  template< typename TAlphabet1, typename TAlphabet2 >
+  struct is_superset {
+    constexpr static bool value = false;
+    /* // Requires C++20
+     * constexpr static bool value = std::equal(
+     *  TAlphabet1::alphabets.begin(), TAlphabet1::alphabets.end(),
+     *  TAlphabet2::alphabets.begin(),
+     *  []( auto const& l, auto const& r ) {
+     *    return l >= r;
+     *  } );
+     */
+  };
+
+  template< typename TAlphabet >
+  struct is_superset< TAlphabet, TAlphabet > {
+    constexpr static bool value = true;
+  };
+
   template< uint8_t TWidth >
   class Alphabet {
   public:
@@ -45,6 +63,9 @@ namespace gum {
 
   class DNA : public Alphabet< 2 > {
   public:
+    template< typename TAlphabet1, typename TAlphabet2 >
+    friend struct is_superset;
+
     using base_type = Alphabet< 2 >;
     using typename base_type::value_type;
     using typename base_type::char_type;
@@ -82,6 +103,9 @@ namespace gum {
 
   class DNA5 : public Alphabet< 3 > {
   public:
+    template< typename TAlphabet1, typename TAlphabet2 >
+    friend struct is_superset;
+
     using base_type = Alphabet< 3 >;
     using typename base_type::value_type;
     using typename base_type::char_type;
@@ -117,6 +141,11 @@ namespace gum {
     }
   };  /* --- end of class DNA5 --- */
 
+  template<>
+  struct is_superset< DNA5, DNA > {
+    constexpr static bool value = true;
+  };
+
   class Char : public Alphabet< 8 > {
   public:
     using base_type = Alphabet< 8 >;
@@ -135,6 +164,11 @@ namespace gum {
       return static_cast< char_type >( v );
     }
   };  /* --- end of class Char --- */
+
+  template< typename TAlphabet >
+  struct is_superset< Char, TAlphabet > {
+    constexpr static bool value = true;
+  };
 }  /* --- end of namespace gum --- */
 
 #endif /* --- ifndef GUM_ALPHABET_HPP__ --- */

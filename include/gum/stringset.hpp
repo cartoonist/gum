@@ -18,8 +18,10 @@
 #ifndef GUM_STRINGSET_HPP__
 #define GUM_STRINGSET_HPP__
 
+#include <algorithm>
 #include <sdsl/int_vector.hpp>
 #include <sdsl/bit_vectors.hpp>
+#include <type_traits>
 
 #include "alphabet.hpp"
 #include "iterators.hpp"
@@ -28,11 +30,12 @@
 
 
 namespace gum {
+  /* === Forward Declarations === */
   template< typename TAlphabet >
-  using String = sdsl::int_vector< TAlphabet::width >;
+  class String;
 
-  template< typename TAlphabet >
-  class StringSet;
+  template< typename TString >
+  class StringView;
 
   namespace util {
     template< typename TAlphabet, typename TInputIt, typename TOutputIt >
@@ -63,20 +66,96 @@ namespace gum {
       return std::copy( first, last, d_first );
     }
 
-    template< typename TAlphabet >
-    inline void
-    assign( std::string& first, String< TAlphabet > const& second, TAlphabet /* tag */ )
+    template< typename TAlphabet1, typename TAlphabet2, typename TInputIt, typename TOutputIt,
+              typename=std::enable_if_t< !std::is_same< TAlphabet1, TAlphabet2 >::value > >
+    inline TOutputIt
+    convert( TInputIt first, TInputIt last, TOutputIt d_first, TAlphabet1, TAlphabet2 )
     {
-      first.resize( second.size() );
-      decode( second.begin(), second.end(), first.begin(), TAlphabet() );
+      static_assert( is_superset< TAlphabet2, TAlphabet1 >::value, "incompatible alphabets" );
+
+      return std::transform( first, last, d_first,
+                             []( auto elem ) {
+                               auto c = TAlphabet1::comp2char( elem );
+                               return TAlphabet2::char2comp( c );
+                             } );
+    }
+
+    template< typename TAlphabet, typename TInputIt, typename TOutputIt >
+    inline TOutputIt
+    convert( TInputIt first, TInputIt last, TOutputIt d_first, TAlphabet, TAlphabet )
+    {
+      return std::copy( first, last, d_first );
+    }
+
+    template< typename TAlphabet, typename TInputIt, typename TOutputIt,
+              typename=std::enable_if_t< !std::is_same< TAlphabet, Char >::value > >
+    inline TOutputIt
+    convert( TInputIt first, TInputIt last, TOutputIt d_first, Char, TAlphabet tag )
+    {
+      return encode( first, last, d_first, tag );
+    }
+
+    template< typename TAlphabet, typename TInputIt, typename TOutputIt,
+              typename=std::enable_if_t< !std::is_same< TAlphabet, Char >::value > >
+    inline TOutputIt
+    convert( TInputIt first, TInputIt last, TOutputIt d_first, TAlphabet tag, Char )
+    {
+      return decode( first, last, d_first, tag );
     }
 
     template< typename TAlphabet >
     inline void
-    assign( String< TAlphabet >& first, std::string const& second, TAlphabet /* tag */ )
+    assign( std::string& first, String< TAlphabet > const& second, TAlphabet tag={} )
     {
       first.resize( second.size() );
-      encode( second.begin(), second.end(), first.begin(), TAlphabet() );
+      decode( second.begin(), second.end(), first.begin(), tag );
+    }
+
+    template< typename TAlphabet >
+    inline void
+    assign( String< TAlphabet >& first, std::string const& second, TAlphabet tag={} )
+    {
+      first.resize( second.size() );
+      encode( second.begin(), second.end(), first.begin(), tag );
+    }
+
+    template< typename TAlphabet1, typename TAlphabet2 >
+    inline void
+    assign( String< TAlphabet1 >& first, String< TAlphabet2 > const& second,
+            TAlphabet1 tag1={}, TAlphabet2 tag2={} )
+    {
+      first.resize( second.size() );
+      convert( second.begin(), second.end(), first.begin(), tag2, tag1 );
+    }
+
+    template< typename TAlphabet1, typename TAlphabet2 >
+    inline void
+    assign( String< TAlphabet1 >& str,
+            StringView< String< TAlphabet2 > > const& view,
+            TAlphabet1 tag1={}, TAlphabet2={} )
+    {
+      str.resize( view.size() );
+      encode( view.begin(), view.end(), str.begin(),
+              tag1 );  // `StringView` is a `char` view
+    }
+
+    template< typename TAlphabet >
+    inline void
+    assign( String< TAlphabet >& str,
+            StringView< String< TAlphabet > > const& view, TAlphabet tag={} )
+    {
+      str.resize( view.size() );
+      str.assign( view.base(), view.base() + view.size() );
+    }
+
+    template< typename TAlphabet >
+    inline void
+    assign( std::string& str, StringView< String< TAlphabet > > const& view,
+            TAlphabet tag={} )
+    {
+      str.resize( view.size() );
+      std::copy( view.begin(), view.end(),
+                 str.begin() );  // `StringView` is a `char` view
     }
 
     template< typename TIter >
@@ -95,6 +174,232 @@ namespace gum {
       return strset.length_sum( );
     }
   }  /* --- end of namespace util --- */
+
+  template< typename TAlphabet >
+  class String
+    : public sdsl::int_vector< TAlphabet::width > {
+    public:
+      /* === TYPE MEMBERS === */
+      using alphabet_type = TAlphabet;
+      using base_type = sdsl::int_vector<alphabet_type::width>;
+      using typename base_type::const_iterator;
+      using typename base_type::const_pointer;
+      using typename base_type::const_reference;
+      using typename base_type::difference_type;
+      using typename base_type::index_category;
+      using typename base_type::int_width_type;
+      using typename base_type::iterator;
+      using typename base_type::pointer;
+      using typename base_type::rank_0_type;
+      using typename base_type::rank_1_type;
+      using typename base_type::reference;
+      using typename base_type::select_0_type;
+      using typename base_type::select_1_type;
+      using typename base_type::size_type;
+      using typename base_type::value_type;
+      /* === LIFECYCLE === */
+      using base_type::base_type;
+      /* === OPERATORS === */
+      template< typename TStringOrView >
+      inline String&
+      operator=( TStringOrView const& other )
+      {
+        util::assign( *this, other );
+        return *this;
+      }
+
+      template< typename TString >
+      inline operator TString() const
+      {
+        TString str;
+        util::assign( str, *this );
+        return str;
+      }
+
+      inline bool
+      operator==( String const& other ) const
+      {
+        return base_type::operator==( other );
+      }
+
+      inline bool
+      operator==( StringView< String > const& view ) const
+      {
+        return std::equal( view.base(), view.base() + view.size(),
+                           this->begin() );
+      }
+
+      inline bool
+      operator==( std::string const& str ) const
+      {
+        return std::equal( str.begin(), str.end(), this->begin(),
+                           []( auto const& l, auto const& r ) {
+                             return l == alphabet_type::comp2char( r );
+                           } );
+      }
+
+      inline bool
+      operator==( const char* cstr ) const
+      {
+        std::string_view str( cstr );
+        return std::equal( str.begin(), str.end(), this->begin(),
+                           []( auto const& l, auto const& r ) {
+                             return l == alphabet_type::comp2char( r );
+                           } );
+      }
+  };
+
+  template< typename TAlphabet >
+  inline bool
+  operator==( std::string const& left, String< TAlphabet > const& right )
+  {
+    return right == left;
+  }
+
+  template< typename TAlphabet >
+  inline bool
+  operator==( const char* left, String< TAlphabet > const& right )
+  {
+    return right == left;
+  }
+
+  /**
+   *   @brief  A constant (char) view over `String< TAlphabet >`
+   *
+   *   NOTE: Underlying string is always immutable.
+   */
+  template< typename TString >
+  class StringView {
+    public:
+      /* === TYPE MEMBERS === */
+      using string_type = TString;
+      using alphabet_type = typename string_type::alphabet_type;
+      using iterator = RandomAccessIterator< StringView >;
+      using const_iterator = RandomAccessConstIterator< StringView >;
+      using const_base_iterator = typename string_type::const_iterator;
+      using reference = char;
+      using const_reference = char;
+      using value_type = char;
+      using size_type = typename string_type::size_type;
+      using difference_type = typename string_type::difference_type;
+      /* === LIFECYCLE === */
+      StringView( const string_type& str, size_type b, size_type l )
+        : m_begin( str.begin() + b ), m_size( std::min( l, str.size() - b ) )
+      {
+        assert( b < str.size() );
+      }
+
+      StringView( const string_type& str, size_type b=0 )
+        : m_begin( str.begin() + b ), m_size( str.size() - b )
+      {
+        assert( b < str.size() );
+      }
+      /* === OPERATORS === */
+      inline const_reference
+      operator[]( size_type i ) const noexcept
+      {
+        return alphabet_type::comp2char( *( this->m_begin + i ) );
+      }
+
+      inline bool
+      operator==( string_type const& encoded_str ) const noexcept
+      {
+        if ( encoded_str.size() != this->size() ) return false;
+        return std::equal( this->base(), this->base() + this->size(), encoded_str.begin() );
+      }
+
+      inline bool
+      operator==( StringView const& view ) const noexcept
+      {
+        if ( view.size() != this->size() ) return false;
+        return std::equal( this->base(), this->base() + this->size(), view.base() );
+      }
+
+      template< typename TContainer >
+      inline bool
+      operator==( TContainer const& str ) const noexcept
+      {
+        if ( str.size() != this->size() ) return false;
+        return std::equal( this->begin(), this->end(), str.begin() );
+      }
+
+      inline bool
+      operator==( const char* cstr ) const noexcept
+      {
+        std::string_view str( cstr );
+        if ( str.size() != this->size() ) return false;
+        return std::equal( this->begin(), this->end(), str.begin() );
+      }
+
+      template< typename _TString >
+      inline operator _TString() const
+      {
+        _TString str;
+        util::assign( str, *this );
+        return str;
+      }
+      /* === METHODS === */
+      inline const_reference
+      at( size_type i ) const
+      {
+        if ( i < 0 or i >= this->size() ) throw std::runtime_error( "index out of range" );
+        return ( *this )[ i ];
+      }
+
+      inline const_iterator
+      begin() const noexcept
+      {
+        return const_iterator( this, 0 );
+      }
+
+      inline const_iterator
+      end() const noexcept
+      {
+        return const_iterator( this, this->m_size );
+      }
+
+      inline const_reference
+      front() const noexcept
+      {
+        return *( this->begin() );
+      }
+
+      inline const_reference
+      back() const noexcept
+      {
+        return *( this->end() - 1 );
+      }
+
+      inline size_type
+      size() const noexcept
+      {
+        return this->m_size;
+      }
+
+      inline const_base_iterator
+      base() const noexcept
+      {
+        return this->m_begin;
+      }
+    protected:
+      /* === DATA MEMBERS === */
+      const_base_iterator m_begin;
+      size_type m_size;
+  };
+
+  template< typename TString >
+  inline bool
+  operator==( std::string const& left, StringView< TString > const& right )
+  {
+    return right == left;
+  }
+
+  template< typename TString >
+  inline bool
+  operator==( const char* left, StringView< TString > const& right )
+  {
+    return right == left;
+  }
 
   template< typename TAlphabet >
   class StringSetTrait {
