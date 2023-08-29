@@ -1040,6 +1040,8 @@ namespace gum {
     using sequenceset_type = StringSet< alphabet_type >;
     using stringset_type = StringSet< Char >;
     using sequence_type = typename sequenceset_type::value_type;
+    using seq_const_reference = typename sequenceset_type::const_reference;
+    using seq_reference = typename sequenceset_type::reference;
     using string_type = typename trait_type::string_type;
     using char_type = typename alphabet_type::char_type;
     using node_type = Node< sequence_type, string_type >;

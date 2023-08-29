@@ -1943,6 +1943,8 @@ namespace gum {
     using alphabet_type = typename trait_type::alphabet_type;
     using sequenceset_type = typename trait_type::sequenceset_type;
     using stringset_type = typename trait_type::stringset_type;
+    using seq_const_reference = typename trait_type::seq_const_reference;
+    using seq_reference = typename trait_type::seq_reference;
     using sequence_type = typename trait_type::sequence_type;
     using string_type = typename trait_type::string_type;
     using char_type = typename trait_type::char_type;
@@ -1950,7 +1952,7 @@ namespace gum {
     using value_type = typename trait_type::value_type;
     using container_type = NodeProperty;
     using size_type = std::size_t;
-    using const_reference = value_type;
+    using const_reference = value_type;  // returned by value since the object is always an rvalue
     using const_iterator = RandomAccessConstIterator< container_type >;
     using dynamic_type = NodeProperty< Dynamic, TWidths... >;
     using succinct_type = NodeProperty;
@@ -3176,6 +3178,8 @@ namespace gum {
     using typename base_type::coordinate_type;
     using node_type = typename node_prop_type::node_type;
     using sequence_type = typename node_prop_type::sequence_type;
+    using seq_const_reference = typename node_prop_type::seq_const_reference;
+    using seq_reference = typename node_prop_type::seq_reference;
     using edge_type = void;  // For compatibility with `SeqGraph< Dynamic >`
     using path_type = typename graph_prop_type::path_type;
 
@@ -3285,7 +3289,7 @@ namespace gum {
       return this->graph_prop.for_each_path( callback, s_rank );
     }
 
-    inline sequence_type
+    inline seq_const_reference
     node_sequence( id_type id ) const
     {
       size_type spos = this->get_np_value( id, SeqGraph::NP_SEQSTART_OFFSET );

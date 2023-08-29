@@ -408,6 +408,8 @@ namespace gum {
   public:
     using value_type = std::string;
     using container_type = String< alphabet_type >;
+    using reference = StringView< container_type >;
+    using const_reference = StringView< container_type >;
     using size_type = typename container_type::size_type;
     using bv_type = sdsl::bit_vector;
     using rs_type = typename bv_type::rank_1_type;
@@ -423,12 +425,13 @@ namespace gum {
     using trait_type = StringSetTrait< alphabet_type >;
     using value_type = typename trait_type::value_type;
     using container_type = typename trait_type::container_type;
+    using reference = typename trait_type::reference;
+    using const_reference = typename trait_type::const_reference;
     using size_type = typename trait_type::size_type;
     using bv_type = typename trait_type::bv_type;
     using rs_type = typename trait_type::rs_type;
     using ss_type = typename trait_type::ss_type;
     using difference_type = std::ptrdiff_t;
-    using const_reference = value_type;
     using const_iterator = RandomAccessConstIterator< StringSet >;
 
     /* === LIFECYCLE === */
@@ -504,16 +507,18 @@ namespace gum {
       return *this;
     }
 
-    inline value_type
+    inline const_reference
     operator()( size_type pos, size_type len ) const
     {
-      return this->extract( pos, pos + len );
+      return const_reference( this->strset, pos, len );
     }
 
     inline const_reference
     operator[]( size_type i ) const
     {
-      return this->extract( this->start_position( i ), this->end_position( i ) );
+      auto sp = this->start_position( i );
+      auto len = this->end_position( i ) - sp;
+      return const_reference( this->strset, sp, len );
     }
 
     /* === METHODS === */
@@ -607,6 +612,16 @@ namespace gum {
     {
       auto len_sum = util::length_sum( begin, end );
       this->_extend( begin, end, len_sum );
+    }
+
+    inline value_type
+    extract( size_type begin_pos, size_type end_pos ) const
+    {
+      auto biter = this->strset.begin() + begin_pos;
+      auto eiter = this->strset.begin() + end_pos;
+      value_type elem( end_pos - begin_pos, '\0' );
+      util::decode( biter, eiter, elem.begin(), alphabet_type() );
+      return elem;
     }
 
     inline void
@@ -711,16 +726,6 @@ namespace gum {
       this->breaks[ pos - 1 ] = 1;  // mark delimiter
       ++this->count;
       return pos;
-    }
-
-    inline value_type
-    extract( size_type begin_pos, size_type end_pos ) const
-    {
-      auto biter = this->strset.begin() + begin_pos;
-      auto eiter = this->strset.begin() + end_pos;
-      value_type elem( end_pos - begin_pos, '\0' );
-      util::decode( biter, eiter, elem.begin(), alphabet_type() );
-      return elem;
     }
   };  /* --- end of template class StringSet --- */
 }  /* --- end of namespace gum --- */
