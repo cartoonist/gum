@@ -19,8 +19,10 @@
 #define GUM_STRINGSET_HPP__
 
 #include <algorithm>
+#include <limits>
 #include <sdsl/int_vector.hpp>
 #include <sdsl/bit_vectors.hpp>
+#include <stdexcept>
 #include <type_traits>
 
 #include "alphabet.hpp"
@@ -381,10 +383,29 @@ namespace gum {
       {
         return this->m_begin;
       }
+
+      inline StringView
+      substr( size_type pos=0,
+              size_type len=std::numeric_limits< size_type >::max() ) const
+      {
+        if ( pos > this->size() )
+          throw std::out_of_range( "substring position is out of range" );
+        len = std::min( len, this->size() - pos );
+
+        StringView newview;
+        newview.m_begin = this->m_begin + pos;
+        newview.m_size = len;
+        return newview;
+      }
+
     protected:
       /* === DATA MEMBERS === */
       const_base_iterator m_begin;
       size_type m_size;
+
+    private:
+      /* === LIFECYCLE === */
+      StringView() {}
   };
 
   template< typename TString >

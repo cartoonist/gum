@@ -452,6 +452,82 @@ TEMPLATE_SCENARIO_SIG( "String and StringView conversions and assignments", "[st
           REQUIRE( std::equal( view.begin(), view.end(), seq.begin() ) );
         }
       }
+
+      WHEN( "A substring of a the view is requested with no argument" )
+      {
+        auto new_view = view.substr( );
+
+        THEN( "Both views should contain the same content" )
+        {
+          REQUIRE( new_view.size() != 0 );
+          REQUIRE( new_view.size() == view.size() );
+          REQUIRE( new_view == view );
+        }
+      }
+
+      WHEN( "A substring of a the view is requested with `pos` argument" )
+      {
+        auto nbegin = 6;
+        auto new_view = view.substr( nbegin );
+
+        THEN( "The second view should contain the correct suffix of the original string" )
+        {
+          REQUIRE( new_view.size() != 0 );
+          REQUIRE( new_view.size() == view.size() - nbegin );
+          REQUIRE( std::equal( cseq1.begin() + (begin + nbegin), cseq1.end(),
+                               new_view.base() ) );
+        }
+      }
+
+      WHEN( "A substring of a the view is requested with `pos` and 'len' arguments" )
+      {
+        auto nbegin = 6;
+        auto nlen = 4;
+        auto new_view = view.substr( nbegin, nlen );
+
+        THEN( "The second view should contain the correct suffix of the original string" )
+        {
+          auto substr_begin = cseq1.begin() + begin + nbegin;
+          auto substr_end = substr_begin + nlen;
+
+          REQUIRE( new_view.size() != 0 );
+          REQUIRE( new_view.size() == nlen );
+          REQUIRE( std::equal( substr_begin, substr_end, new_view.base() ) );
+        }
+      }
+
+      WHEN( "A substring of a the view is requested with `pos` larger than its size" )
+      {
+        THEN( "It should throw `std::out_of_range` exception" )
+        {
+          REQUIRE_THROWS( view.substr( view.size() + 1 ) );
+        }
+      }
+
+      WHEN( "A substring of a the view is requested with `pos` as exactly its size" )
+      {
+        auto new_view = view.substr( view.size() );
+
+        THEN( "The new view should be an empty range" )
+        {
+          REQUIRE( new_view.size() == 0 );
+          REQUIRE( new_view.begin() == new_view.end() );
+        }
+      }
+
+      WHEN( "A substring of a the view is requested with `len` exceeding the view" )
+      {
+        auto nbegin = 5;
+        auto new_view = view.substr( 5, view.size() - nbegin + 1 );
+
+        THEN( "The second view should contain the correct suffix of the original string" )
+        {
+          REQUIRE( new_view.size() != 0 );
+          REQUIRE( new_view.size() == view.size() - nbegin );
+          REQUIRE( std::equal( cseq1.begin() + begin + nbegin, cseq1.end(),
+                               new_view.base() ) );
+        }
+      }
     }
   }
 }
