@@ -237,11 +237,10 @@ namespace gum {
     extend_vg( TGraph& graph, std::istream& in, TArgs&&... args )
     {
       vg::Graph merged;
-      std::function< void( vg::Graph& ) > handle_chunks =
-          [&]( vg::Graph& other ) {
-            merge_vg( merged, static_cast< vg::Graph const& >( other ) );
-          };
-      vg::io::for_each( in, handle_chunks );
+      auto handle_chunks = [&merged]( vg::Graph& other ) {
+        merge_vg( merged, static_cast< vg::Graph const& >( other ) );
+      };
+      vg::io::for_each< vg::Graph >( in, handle_chunks );
       extend( graph, merged, std::forward< TArgs >( args )... );
     }
   }  /* --- end of namespace util --- */
