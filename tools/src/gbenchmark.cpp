@@ -128,16 +128,16 @@ main( int argc, char* argv[] )
         auto timer = timer_type( "load-dynamic" );
 
         if ( format == "gfa" ) {
-          gum::util::load_gfa( d_graph, graph_path, false );
+          gum::util::load_gfa( d_graph, graph_path, true );
         }
         else if ( format == "vg" ) {
-          gum::util::load_vg( d_graph, graph_path, false );
+          gum::util::load_vg( d_graph, graph_path, true );
         }
         else if ( format == "hg" ) {
-          gum::util::load_hg( d_graph, graph_path, false );
+          gum::util::load_hg( d_graph, graph_path, true );
         }
         else if ( format == "" ) {
-          gum::util::load( d_graph, graph_path, false );
+          gum::util::load( d_graph, graph_path, true );
         }
         else throw std::runtime_error( "unknown file format '" + format + "'" );
       }

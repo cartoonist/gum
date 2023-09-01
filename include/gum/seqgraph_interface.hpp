@@ -265,9 +265,11 @@ namespace gum {
       do {
         while ( !stack.empty() ) {
           const auto& node = stack.back();
-          if ( visited[ node.first * 2 ] ) {
-            visited[ node.first * 2 - 1 ] = 1;
-            std::invoke( on_finishing, node.first, node.second );
+          if ( visited[ node.first * 2 ] ) {         // discovered
+            if ( !visited[ node.first * 2 - 1 ] ) {  // not finished
+              visited[ node.first * 2 - 1 ] = 1;     // finish it!
+              std::invoke( on_finishing, node.first, node.second );
+            }
             stack.pop_back();
             continue;
           }
