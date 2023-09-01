@@ -26,6 +26,9 @@ build
 .envrc
 .ignore
 
+# Cache (created by clangd)
+.cache
+
 ## GitHub defaults ##
 # Compiled Object files
 *.slo
