@@ -422,6 +422,18 @@ namespace gum {
     return right == left;
   }
 
+  template< typename TString >
+  inline std::string&
+  operator+=( std::string& str, StringView< TString > const& view )
+  {
+    auto n = str.size();
+    if ( view.size() != 0 ) {
+      str.resize( n + view.size() );
+      std::copy( view.begin(), view.end(), str.begin() + n );
+    }
+    return str;
+  }
+
   template< typename TAlphabet >
   class StringSetTrait {
   private:
