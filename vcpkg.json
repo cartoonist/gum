@@ -1,7 +1,7 @@
 {
     "name": "gum",
     "description": "A header-only library for representation of sequence graphs",
-    "version-string": "0.1.1",
+    "version-string": "2.0.1",
     "supports": "(linux & osx)",
     "dependencies": [
         "zlib"

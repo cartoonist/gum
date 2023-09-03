@@ -52,7 +52,7 @@ if(GUM_USE_VCPKG)
 endif(GUM_USE_VCPKG)
 
 # Defining the project
-project(gum VERSION 2.0.0 LANGUAGES CXX)
+project(gum VERSION 2.0.1 LANGUAGES CXX)
 
 # Include external modules
 include(GNUInstallDirs)
