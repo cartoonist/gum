@@ -3,7 +3,7 @@ include(GNUInstallDirs)
 include(ExternalProject)
 
 # Include GFAKluge in the source code
-if(NOT EXISTS ${PROJECT_SOURCE_DIR}/include/gum/internal/gfakluge.hpp)
+if(NOT EXISTS ${PROJECT_SOURCE_DIR}/include/gum/internal/gfakluge.hpp OR GUM_ALWAYS_FETCH_HEADERS)
   message(STATUS "Embedding GFAKluge library")
   file(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/include/gum/internal)
   set(GFAKluge_SOURCE_DIR ${PROJECT_SOURCE_DIR}/ext/gfakluge)
@@ -18,7 +18,7 @@ if(NOT EXISTS ${PROJECT_SOURCE_DIR}/include/gum/internal/gfakluge.hpp)
 endif()
 
 # Include `xxsds/sdsl-lite` in the source code
-if(NOT EXISTS ${PROJECT_SOURCE_DIR}/include/gum/internal/sdsl/config.hpp)
+if(NOT EXISTS ${PROJECT_SOURCE_DIR}/include/gum/internal/sdsl/config.hpp OR GUM_ALWAYS_FETCH_HEADERS)
   message(STATUS "Embedding sdsl-lite library")
   file(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/include/gum/internal/sdsl)
   set(SDSL_SOURCE_DIR ${PROJECT_SOURCE_DIR}/ext/sdsl-lite)
@@ -31,7 +31,7 @@ if(NOT EXISTS ${PROJECT_SOURCE_DIR}/include/gum/internal/sdsl/config.hpp)
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${SDSL_SOURCE_DIR}/include/sdsl/ ${PROJECT_SOURCE_DIR}/include/gum/internal/sdsl)
 endif()
 
-if(NOT EXISTS ${PROJECT_SOURCE_DIR}/include/gum/internal/parallel_hashmap/phmap.h)
+if(NOT EXISTS ${PROJECT_SOURCE_DIR}/include/gum/internal/parallel_hashmap/phmap.h OR GUM_ALWAYS_FETCH_HEADERS)
   message(STATUS "Embedding Parallel Hashmap library")
   file(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/include/gum/internal/parallel_hashmap)
   set(ParallelHashmap_SOURCE_DIR ${PROJECT_SOURCE_DIR}/ext/parallel-hashmap)

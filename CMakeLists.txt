@@ -11,6 +11,7 @@ option(GUM_WITH_HG "With HashGraph loading support" ON)
 option(GUM_WITH_VGIO "With io support for vg files" OFF)
 option(GUM_WITH_BDSG "With io support for HashGraph files" OFF)
 option(GUM_USE_VCPKG "Use vcpkg for installing dependencies" OFF)
+option(GUM_ALWAYS_FETCH_HEADERS "Always fetch embedded header-only libraries" ON)
 option(PROTOBUF_AS_DEFAULT_VG "Consider Protobuf vg as the default format for 'vg' files" ON)
 
 # Processing options
