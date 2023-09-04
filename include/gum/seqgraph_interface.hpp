@@ -242,7 +242,7 @@ namespace gum {
       using rank_type = typename TGraph::rank_type;
       using linktype_type = typename TGraph::linktype_type;
       using nodes_type = std::vector< std::pair< rank_type, id_type > >;
-      using map_type = typename sdsl::bit_vector;
+      using map_type = sdsl::bit_vector;
 
       static_assert( std::is_invocable_v< TCallback1, rank_type, id_type >, "received a non-invocable as callback" );
       static_assert( std::is_invocable_v< TCallback2, rank_type, id_type >, "received a non-invocable as callback" );
