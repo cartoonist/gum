@@ -249,7 +249,7 @@ TEMPLATE_SCENARIO_SIG( "String and StringView conversions and assignments", "[st
     AND_GIVEN( "A StringView over it" )
     {
       auto begin = 4;
-      auto length = 5;
+      auto length = 5u;
       gum::StringView< gum::String< alphabet_1_type > > view( cseq1, begin, length );
 
       THEN( "The view should yeild the content of the pointed substring" )
@@ -482,7 +482,7 @@ TEMPLATE_SCENARIO_SIG( "String and StringView conversions and assignments", "[st
       WHEN( "A substring of a the view is requested with `pos` and 'len' arguments" )
       {
         auto nbegin = 6;
-        auto nlen = 4;
+        auto nlen = 4u;
         auto new_view = view.substr( nbegin, nlen );
 
         THEN( "The second view should contain the correct suffix of the original string" )
