@@ -14,10 +14,15 @@ if(NOT TARGET cxxopts::cxxopts)
   add_subdirectory(${CXXOPTS_SOURCE_DIR} EXCLUDE_FROM_ALL)
 endif()
 
+set(GUM_TOOLS_DEFAULT_CXXOPS -g -Wall -Wpedantic -Wno-deprecated-declarations)
+if (GUM_STRICT_ON_WARNS)
+  list(APPEND GUM_TOOLS_DEFAULT_CXXOPS -Werror)
+endif (GUM_STRICT_ON_WARNS)
+
 # Defining target 'gstats': Graph statistics tool
 set(GSTATS_SOURCES "src/gstats.cpp")
 add_executable(gstats ${GSTATS_SOURCES})
-target_compile_options(gstats PRIVATE -g -Wall -Wpedantic -Werror -Wno-deprecated-declarations)
+target_compile_options(gstats PRIVATE ${GUM_TOOLS_DEFAULT_CXXOPS})
 target_include_directories(gstats
   PRIVATE gum::gum
   PRIVATE cxxopts::cxxopts)
@@ -30,7 +35,7 @@ install(TARGETS gstats DESTINATION ${CMAKE_INSTALL_BINDIR})
 # Defining target 'gbenchmark': Graph benchmarking tool
 set(GBENCHMARK_SOURCES "src/gbenchmark.cpp")
 add_executable(gbenchmark ${GBENCHMARK_SOURCES})
-target_compile_options(gbenchmark PRIVATE -g -Wall -Wpedantic -Werror -Wno-deprecated-declarations)
+target_compile_options(gbenchmark PRIVATE ${GUM_TOOLS_DEFAULT_CXXOPS})
 target_include_directories(gbenchmark
   PRIVATE gum::gum
   PRIVATE cxxopts::cxxopts)

@@ -12,11 +12,16 @@ endif()
 # Defining the configure header file
 configure_file(src/test_config.hpp.in ${PROJECT_BINARY_DIR}/test/src/test_config.hpp @ONLY)
 
+set(GUM_TESTS_DEFAULT_CXXOPS -g -Wall -Wpedantic -Wno-deprecated-declarations)
+if (GUM_STRICT_ON_WARNS)
+  list(APPEND GUM_TESTS_DEFAULT_CXXOPS -Werror)
+endif(GUM_STRICT_ON_WARNS)
+
 # Defining target gum-tests
 file(GLOB TEST_SOURCES "src/*.cpp")
 add_executable(gum-tests ${TEST_SOURCES})
 
-target_compile_options(gum-tests PRIVATE -g -Wall -Wpedantic -Werror -Wno-deprecated-declarations)
+target_compile_options(gum-tests PRIVATE ${GUM_TESTS_DEFAULT_CXXOPS})
 target_include_directories(gum-tests
   PRIVATE ${PROJECT_BINARY_DIR}/test/src
   PRIVATE gum::gum)

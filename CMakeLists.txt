@@ -6,6 +6,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
 # Options
 option(BUILD_TESTING "Build test programs" OFF)
 option(BUILD_GUM_AUX_TOOLS "Build GUM auxiliary tools" OFF)
+option(GUM_STRICT_ON_WARNS "Pass '-Werror' flag to compiler" ON)
 option(GUM_WITH_VG "With vg graph loading support" ON)
 option(GUM_WITH_HG "With HashGraph loading support" ON)
 option(GUM_WITH_VGIO "With io support for vg files" OFF)
@@ -13,6 +14,10 @@ option(GUM_WITH_BDSG "With io support for HashGraph files" OFF)
 option(GUM_USE_VCPKG "Use vcpkg for installing dependencies" OFF)
 option(GUM_ALWAYS_FETCH_HEADERS "Always fetch embedded header-only libraries" ON)
 option(PROTOBUF_AS_DEFAULT_VG "Consider Protobuf vg as the default format for 'vg' files" ON)
+
+if (CMAKE_BUILD_TYPE MATCHES Release)
+  set(GUM_STRICT_ON_WARNS OFF)
+endif()
 
 # Processing options
 if(GUM_WITH_VGIO)
