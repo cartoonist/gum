@@ -13,7 +13,6 @@
  *  See LICENSE file for more information.
  */
 
-#include <__config>
 #include <cstdlib>
 #include <ios>
 #include <iostream>
