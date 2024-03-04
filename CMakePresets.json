@@ -1,0 +1,100 @@
+{
+    "version": 3,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 21,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "base-headers",
+            "displayName": "Base configuration (headers)",
+            "description": "Base configuration for header-only library",
+            "cacheVariables": {
+                "CMAKE_CXX_STANDARD": "17"
+            }
+        },
+        {
+            "name": "base-all",
+            "displayName": "Base configuration (all)",
+            "description": "Base configuration including all targets",
+            "inherits": "base-headers",
+            "cacheVariables": {
+                "GUM_USE_VCPKG": true,
+                "BUILD_TESTING": true,
+                "BUILD_GUM_AUX_TOOLS": true,
+                "GUM_WITH_VGIO": true,
+                "GUM_WITH_BDSG": true
+            }
+        },
+        {
+            "name": "default-debug-all",
+            "displayName": "Debug configuration (all)",
+            "description": "Debug build for all targets using default generator",
+            "inherits": "base-all",
+            "binaryDir": "${sourceDir}/build/Debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": true
+            }
+        },
+        {
+            "name": "ninja-debug-all",
+            "displayName": "Debug configuration (all/Ninja)",
+            "description": "Debug build for all targets using Ninja generator",
+            "inherits": "default-debug-all",
+            "generator": "Ninja"
+        },
+        {
+            "name": "default-release-all",
+            "displayName": "Release configuration (all)",
+            "description": "Release build for all targets using default generator",
+            "inherits": "base-all",
+            "binaryDir": "${sourceDir}/build/Release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "ninja-release-all",
+            "displayName": "Release configuration (all/Ninja)",
+            "description": "Release build for all targets using Ninja generator",
+            "inherits": "default-release-all",
+            "generator": "Ninja"
+        },
+        {
+            "name": "default-debug-headers",
+            "displayName": "Debug configuration (headers)",
+            "description": "Debug build for header-only library using default generator",
+            "inherits": "base-headers",
+            "binaryDir": "${sourceDir}/build/DebugHeaders",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "ninja-debug-headers",
+            "displayName": "Debug configuration (headers/Ninja)",
+            "description": "Debug build for header-only library using Ninja generator",
+            "inherits": "default-debug-headers",
+            "generator": "Ninja"
+        },
+        {
+            "name": "default-release-headers",
+            "displayName": "Release configuration (headers)",
+            "description": "Release build for header-only library using default generator",
+            "inherits": "base-headers",
+            "binaryDir": "${sourceDir}/build/ReleaseHeaders",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "ninja-release-headers",
+            "displayName": "Release configuration (headers/Ninja)",
+            "description": "Release build for header-only library using Ninja generator",
+            "inherits": "default-release-headers",
+            "generator": "Ninja"
+        }
+    ]
+}
