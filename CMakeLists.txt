@@ -181,6 +181,9 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/gum-config.cmake"
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/gum)
 # Install custom find modules
 file(GLOB GUM_FIND_MODULE_FILES "${PROJECT_SOURCE_DIR}/cmake/modules/Find*.cmake")
+if(NOT GUM_WITH_BDSG)
+  list(REMOVE_ITEM GUM_FIND_MODULE_FILES "${PROJECT_SOURCE_DIR}/cmake/modules/Findlibbdsg.cmake")
+endif(NOT GUM_WITH_BDSG)
 install(FILES ${GUM_FIND_MODULE_FILES} DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/gum)
 
 # Adding test submodule.
