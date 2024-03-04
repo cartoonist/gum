@@ -97,7 +97,7 @@ C++17 compliant compiler first. It has been tested for these compilers:
 ### Required dependencies
 
 - Zlib
-- CMake >=3.19 (for configuration only)
+- CMake >=3.16 (for configuration only; recommended version >=3.19)
 
 The core library only depends on zlib which is usually installed on most
 systems. If not, both zlib and CMake are available in most package repositories:
@@ -105,6 +105,9 @@ systems. If not, both zlib and CMake are available in most package repositories:
 ```bash
 $ sudo apt install zlib1g-dev cmake  # on Debian-based operating systems
 ```
+
+**Note:** Although build scripts employ some workaround to extend the support
+for older versions of CMake, we strongly recommend using CMake >=3.19.
 
 *⤷ If you are using the core library (i.e. without vg support), proceed to
 [Configuration section](#configuration).*

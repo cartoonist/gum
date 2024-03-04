@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.19)
+# Recommended CMake version 3.19
+cmake_minimum_required(VERSION 3.16)
 
 # Adding CMake module path.
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
