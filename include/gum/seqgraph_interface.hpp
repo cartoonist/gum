@@ -29,6 +29,25 @@
 
 namespace gum {
   namespace util {
+    template< class TGraph >
+    inline typename TGraph::offset_type
+    max_node_len( TGraph const& graph )
+    {
+      typedef TGraph graph_type;
+      typedef typename graph_type::id_type id_type;
+      typedef typename graph_type::rank_type rank_type;
+      typedef typename graph_type::offset_type offset_type;
+
+      offset_type max = 1;
+      graph.for_each_node(
+          [&graph, &max]( rank_type rank , id_type id ) {
+            auto len = graph.node_length( id );
+            if ( max < len ) max = len;
+            return true;
+          } );
+      return max;
+    }
+
     /**
      *  @brief  Compute total number of loci in the subgraph indicated by node ranks
      *          [lower, upper).
