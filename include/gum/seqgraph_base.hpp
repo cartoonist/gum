@@ -365,7 +365,7 @@ namespace gum {
     constexpr static inline bool
     is_valid( linktype_type type )
     {
-      return 0 <= type && type <= 3;
+      return 0 <= ( int )( type ) && type <= 3;
     }
 
     constexpr static inline bool
