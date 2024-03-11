@@ -6,7 +6,7 @@
 	url = https://github.com/cartoonist/gfakluge.git
 [submodule "ext/parallel-hashmap"]
 	path = ext/parallel-hashmap
-	url = https://github.com/greg7mdp/parallel-hashmap.git
+	url = https://github.com/cartoonist/parallel-hashmap.git
 [submodule "tools/ext/cxxopts"]
 	path = tools/ext/cxxopts
 	url = https://github.com/jarro2783/cxxopts.git
