@@ -23,6 +23,7 @@
 #include <iterator>
 #include <numeric>
 #include <vector>
+#include <cassert>
 
 #include "basic_types.hpp"
 

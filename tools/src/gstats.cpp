@@ -24,6 +24,7 @@
 #include <gum/graph.hpp>
 #include <gum/io_utils.hpp>
 #include <gum/utils.hpp>
+#include <gum/basic_utils.hpp>
 
 
 using namespace gum;
@@ -69,6 +70,8 @@ parse_opts( cxxopts::Options& options, int& argc, char**& argv )
   int
 main( int argc, char* argv[] )
 {
+  using graph_type = SeqGraph< Succinct >;
+
   cxxopts::Options options( argv[0], LONG_DESC );
   config_parser( options );
 
@@ -77,7 +80,7 @@ main( int argc, char* argv[] )
 
     std::string graph_path = res[ "graph" ].as< std::string >();
     std::string format = res[ "format" ].as< std::string >();
-    SeqGraph< Succinct > graph;
+    graph_type graph;
 
     if ( format == "gfa" ) {
       util::load_gfa( graph, graph_path, true );
@@ -97,10 +100,33 @@ main( int argc, char* argv[] )
     std::cout << "Input graph node IDs are " << sort_status << "in topological sort order."
               << std::endl;
 
+    std::vector< graph_type::rank_type > comp_ranks;
+    std::vector< graph_type::offset_type > comp_sizes;
+    gum::util::for_each_start_side( graph, [&]( auto rank, auto ) {
+      if ( !comp_ranks.empty() ) {
+        comp_sizes.push_back( rank - comp_ranks.back() );
+      }
+      comp_ranks.push_back( rank );
+      return true;
+    } );
+    comp_sizes.push_back( graph.get_node_count() - comp_ranks.back() + 1 );
+
     std::cout << "Number of nodes: " << graph.get_node_count() << std::endl;
     std::cout << "Number of edges: " << graph.get_edge_count() << std::endl;
     std::cout << "Number of paths: " << graph.get_path_count() << std::endl;
-    std::cout << "Total number of characters: " << util::total_nof_loci( graph ) << std::endl;
+    std::cout << "Total node lengths: " << util::total_nof_loci( graph ) << std::endl;
+    std::cout << "Max node length: " << util::max_node_len( graph ) << std::endl;
+
+    const auto& cgraph = graph;
+    std::cout << "Number of components: " << comp_ranks.size() << std::endl;
+    for ( auto cr = 0u; cr < comp_ranks.size(); ++cr ) {
+      auto nr = comp_ranks[ cr ];
+      auto nid = graph.rank_to_id( nr );
+      auto name = cgraph.get_node_prop( nr ).name;
+      std::cout << "- Component " << cr + 1 << " with size "
+                << comp_sizes[ cr ] << " starts with node\t" << name
+                << " (id: " << nid << "\trank: " << nr << ")" << std::endl;
+    }
   }
   catch ( const cxxopts::OptionException& e ) {
     std::cerr << "Error: " << e.what() << std::endl;
