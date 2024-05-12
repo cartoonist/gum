@@ -273,7 +273,7 @@ namespace gum {
       map_type visited( 2*n+1, 0 );  // visited[rank*2] <- discovered | visited[rank*2-1] <- finished
       visited[0] = 1;  // dummy
 
-      for_each_start_node(
+      for_each_start_side(
           graph,
           [&stack]( auto rank, auto id ) -> bool {
             stack.push_back( { rank, id } );
