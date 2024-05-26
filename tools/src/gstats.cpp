@@ -140,9 +140,20 @@ main( int argc, char* argv[] )
       auto nr = comp_ranks[ cr ];
       auto nid = graph.rank_to_id( nr );
       auto name = cgraph.get_node_prop( nr ).name;
-      std::cout << "- Component " << cr + 1 << " with size "
-                << comp_sizes[ cr ] << " starts with node\t" << name
-                << " (id: " << nid << "\trank: " << nr << ")" << std::endl;
+      auto nof_edges = 0u;
+      auto last_rank = nr + comp_sizes[ cr ];
+      graph.for_each_node(
+          [ &graph, &nof_edges, last_rank ]( auto rank, auto id ) {
+            if ( rank >= last_rank ) return false;
+            nof_edges += graph.outdegree( id );
+            return true;
+          },
+          nr );
+
+      std::cout << "- Component " << cr + 1 << " with " << comp_sizes[ cr ]
+                << " nodes and " << nof_edges << " edges "
+                << " starts with node\t" << name << " (id: " << nid
+                << "\trank: " << nr << ")" << std::endl;
     }
   }
   catch ( const cxxopts::OptionException& e ) {
