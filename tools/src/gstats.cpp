@@ -126,6 +126,7 @@ main( int argc, char* argv[] )
       comp_ranks.push_back( rank );
       return true;
     } );
+    if ( comp_ranks.empty() ) comp_ranks.push_back( 1 );
     comp_sizes.push_back( graph.get_node_count() - comp_ranks.back() + 1 );
 
     std::cout << "Number of nodes: " << graph.get_node_count() << std::endl;
