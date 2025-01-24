@@ -47,7 +47,7 @@ endfunction()
 function (vcpkg_download)
     vcpkg_setroot()
     set(vcpkg_download_contents [===[
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(vcpkg-download)
 
 include(ExternalProject)
