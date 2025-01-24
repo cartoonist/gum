@@ -22,7 +22,6 @@
 
 #include <gum/iterators.hpp>
 
-#include "catch2/catch.hpp"
 #include "test_base.hpp"
 
 

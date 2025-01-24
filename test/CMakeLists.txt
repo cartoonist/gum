@@ -14,7 +14,7 @@ configure_file(src/test_config.hpp.in ${PROJECT_BINARY_DIR}/test/src/test_config
 
 set(GUM_TESTS_DEFAULT_CXXOPS -g -Wall -Wpedantic -Wno-deprecated-declarations)
 if (GUM_STRICT_ON_WARNS)
-  list(APPEND GUM_TESTS_DEFAULT_CXXOPS -Werror)
+  list(APPEND GUM_TESTS_DEFAULT_CXXOPS -Werror -Wno-c++20-extensions)
 endif(GUM_STRICT_ON_WARNS)
 
 # Defining target gum-tests
@@ -26,5 +26,5 @@ target_include_directories(gum-tests
   PRIVATE ${PROJECT_BINARY_DIR}/test/src
   PRIVATE gum::gum)
 target_link_libraries(gum-tests
-  PRIVATE Catch2::Catch2
+  PRIVATE Catch2::Catch2WithMain
   PRIVATE gum::gum)
