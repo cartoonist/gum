@@ -10,7 +10,8 @@
         "vgio": {
             "description": "Support for libvgio helper functions",
             "dependencies": [
-                "vgio"
+                "vgio",
+                "libdeflate"
             ]
         },
         "bdsg": {
