@@ -20,6 +20,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <queue>
 
 #include <sdsl/bit_vectors.hpp>
 
@@ -356,6 +357,102 @@ namespace gum {
       }
 
       return dag;
+    }
+
+    template< typename TGraph, typename TCallback1,
+              typename TCompare = bool(*)( std::pair< typename TGraph::rank_type, typename TGraph::id_type >, std::pair< typename TGraph::rank_type, typename TGraph::id_type > ),
+              typename TCallback2 = void(*)( typename TGraph::rank_type, typename TGraph::id_type, typename TGraph::rank_type ) >
+    inline void
+    bfs_traverse( TGraph const& graph,
+                  TCallback1 on_finishing,
+                  TCompare degree_cmp = [](auto a, auto b) -> bool { return a.first > b.first; },
+                  TCallback2 on_discovery = []( auto, auto, auto ) {} )
+    {
+      using id_type = typename TGraph::id_type;
+      using rank_type = typename TGraph::rank_type;
+      using value_type = std::pair< rank_type, id_type >;
+      using nodes_type = std::vector< value_type >;
+      using map_type = sdsl::bit_vector;
+
+      static_assert( std::is_invocable_v< TCallback1, rank_type, id_type >, "received a non-invocable as callback" );
+      static_assert( std::is_invocable_v< TCompare, value_type, value_type >, "received a non-invocable as callback" );
+      static_assert( std::is_invocable_v< TCallback2, rank_type, id_type, rank_type >, "received a non-invocable as callback" );
+
+      auto n = graph.get_node_count();
+
+      std::priority_queue< value_type, nodes_type, decltype(degree_cmp) > queue{ degree_cmp };
+      map_type visited( n + 1, 0 );
+      visited[ 0 ] = 1;  // dummy
+
+      for_each_start_side(
+          graph,
+          [&]( auto rank, auto id ) -> bool {
+            rank_type level = 0;
+            queue.push( { level, id } );
+            visited[ rank ] = 1;
+            while ( !queue.empty() ) {
+              std::tie( level, id ) = queue.top();
+              level += 1;
+              rank = graph.id_to_rank( id );
+              queue.pop();
+
+              std::invoke( on_finishing, rank, id );
+
+              graph.for_each_edges_out(
+                  id, [&]( auto to, auto ) -> bool {
+                    auto rank = graph.id_to_rank( to );
+                    if ( !visited[ rank ] ) {
+                      std::invoke( on_discovery, rank, id, level );
+                      queue.push( { level, to } );
+                      visited[ rank ] = 1;
+                    }
+                    return true;
+                  } );
+            }
+            return true;
+          } );
+    }
+
+    template< typename TGraph >
+    inline std::vector< std::pair< typename TGraph::rank_type, typename TGraph::id_type > >
+    cuthill_mckee_order( TGraph& graph, bool reverse=true )
+    {
+      using id_type = typename TGraph::id_type;
+      using rank_type = typename TGraph::rank_type;
+      using value_type = std::pair< rank_type, id_type >;
+      using nodes_type = std::vector< value_type >;
+
+      nodes_type result;
+      result.reserve( graph.get_node_count() );
+
+      auto on_finishing = [&result]( rank_type rank, id_type id ) {
+        result.push_back( { rank, id } );
+      };
+
+      auto degree_cmp = [&graph]( const auto& a, const auto& b ) {
+        return graph.outdegree( a.second ) > graph.outdegree( b.second );
+      };
+
+      bfs_traverse( graph, on_finishing, degree_cmp );
+      if ( reverse ) std::reverse( result.begin(), result.end() );
+
+      return result;
+    }
+
+    template< typename TGraph,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
+    inline void
+    cuthill_mckee_sort( TGraph& graph, bool reverse=true ) {
+      using graph_type = TGraph;
+      using rank_type = typename graph_type::rank_type;
+      using id_type = typename graph_type::id_type;
+
+      auto rcm = cuthill_mckee_order( graph, reverse );
+      RandomAccessProxyContainer perm(
+          &rcm, []( std::pair< rank_type, id_type > const& p ) -> rank_type {
+            return p.first - 1;
+          } );
+      graph.sort_nodes( perm );
     }
   }  /* --- end of namespace util --- */
 }  /* --- end of namespace gum --- */
