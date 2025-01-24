@@ -968,8 +968,8 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
           if ( check_name ) {
             REQUIRE( graph.get_node_prop( 1 ).name == "1" );
             REQUIRE( graph.get_node_prop( 2 ).name == "2" );
-            REQUIRE( graph.get_node_prop( 3 ).name == "3" );
-            REQUIRE( graph.get_node_prop( 4 ).name == "4" );
+            REQUIRE( graph.get_node_prop( 3 ).name == "4" );
+            REQUIRE( graph.get_node_prop( 4 ).name == "3" );
             REQUIRE( graph.get_node_prop( 5 ).name == "5" );
             REQUIRE( graph.get_node_prop( 6 ).name == "6" );
             REQUIRE( graph.get_node_prop( 7 ).name == "7" );
@@ -1050,10 +1050,10 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
           REQUIRE( gum::util::position_to_id( graph, 8 ) == ibyc( 1 ) );
           REQUIRE( gum::util::position_to_id( graph, 9 ) == ibyc( 2 ) );
           REQUIRE( gum::util::position_to_id( graph, 10 ) == ibyc( 2 ) );
-          REQUIRE( gum::util::position_to_id( graph, 11 ) == ibyc( 3 ) );
+          REQUIRE( gum::util::position_to_id( graph, 11 ) == ibyc( 4 ) );
+          REQUIRE( gum::util::position_to_id( graph, 13 ) == ibyc( 3 ) );
           REQUIRE( gum::util::position_to_id( graph, 14 ) == ibyc( 3 ) );
-          REQUIRE( gum::util::position_to_id( graph, 15 ) == ibyc( 4 ) );
-          REQUIRE( gum::util::position_to_id( graph, 16 ) == ibyc( 4 ) );
+          REQUIRE( gum::util::position_to_id( graph, 15 ) == ibyc( 3 ) );
           REQUIRE( gum::util::position_to_id( graph, 17 ) == ibyc( 5 ) );
           REQUIRE( gum::util::position_to_id( graph, 23 ) == ibyc( 5 ) );
           REQUIRE( gum::util::position_to_id( graph, 24 ) == ibyc( 6 ) );
@@ -1067,9 +1067,9 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
           REQUIRE( gum::util::position_to_offset( graph, 9 ) == 0 );
           REQUIRE( gum::util::position_to_offset( graph, 10 ) == 1 );
           REQUIRE( gum::util::position_to_offset( graph, 11 ) == 0 );
-          REQUIRE( gum::util::position_to_offset( graph, 14 ) == 3 );
-          REQUIRE( gum::util::position_to_offset( graph, 15 ) == 0 );
-          REQUIRE( gum::util::position_to_offset( graph, 16 ) == 1 );
+          REQUIRE( gum::util::position_to_offset( graph, 13 ) == 0 );
+          REQUIRE( gum::util::position_to_offset( graph, 14 ) == 1 );
+          REQUIRE( gum::util::position_to_offset( graph, 15 ) == 2 );
           REQUIRE( gum::util::position_to_offset( graph, 17 ) == 0 );
           REQUIRE( gum::util::position_to_offset( graph, 23 ) == 6 );
           REQUIRE( gum::util::position_to_offset( graph, 24 ) == 0 );
@@ -1080,16 +1080,16 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
           REQUIRE( gum::util::position_to_offset( graph, 38 ) == 4 );
           REQUIRE( gum::util::id_to_position( graph, ibyc( 1 ) ) == 0 );
           REQUIRE( gum::util::id_to_position( graph, ibyc( 2 ) ) == 9 );
-          REQUIRE( gum::util::id_to_position( graph, ibyc( 3 ) ) == 11 );
-          REQUIRE( gum::util::id_to_position( graph, ibyc( 4 ) ) == 15 );
+          REQUIRE( gum::util::id_to_position( graph, ibyc( 3 ) ) == 13 );
+          REQUIRE( gum::util::id_to_position( graph, ibyc( 4 ) ) == 11 );
           REQUIRE( gum::util::id_to_position( graph, ibyc( 5 ) ) == 17 );
           REQUIRE( gum::util::id_to_position( graph, ibyc( 6 ) ) == 24 );
           REQUIRE( gum::util::id_to_position( graph, ibyc( 7 ) ) == 28 );
           REQUIRE( gum::util::id_to_position( graph, ibyc( 8 ) ) == 34 );
           REQUIRE( gum::util::id_to_charorder( graph, ibyc( 1 ) ) == 0 );
           REQUIRE( gum::util::id_to_charorder( graph, ibyc( 2 ) ) == 8 );
-          REQUIRE( gum::util::id_to_charorder( graph, ibyc( 3 ) ) == 9 );
-          REQUIRE( gum::util::id_to_charorder( graph, ibyc( 4 ) ) == 12 );
+          REQUIRE( gum::util::id_to_charorder( graph, ibyc( 3 ) ) == 10 );
+          REQUIRE( gum::util::id_to_charorder( graph, ibyc( 4 ) ) == 9 );
           REQUIRE( gum::util::id_to_charorder( graph, ibyc( 5 ) ) == 13 );
           REQUIRE( gum::util::id_to_charorder( graph, ibyc( 6 ) ) == 19 );
           REQUIRE( gum::util::id_to_charorder( graph, ibyc( 7 ) ) == 22 );
