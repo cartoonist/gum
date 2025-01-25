@@ -388,8 +388,10 @@ namespace gum {
           graph,
           [&]( auto rank, auto id ) -> bool {
             rank_type level = 0;
-            queue.push( { level, id } );
-            visited[ rank ] = 1;
+            if ( !visited[ rank ] ) {
+              queue.push( { level, id } );
+              visited[ rank ] = 1;
+            }
             while ( !queue.empty() ) {
               std::tie( level, id ) = queue.top();
               level += 1;
