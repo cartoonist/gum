@@ -18,6 +18,7 @@
 #ifndef  GUM_SEQGRAPH_INTERFACE_HPP__
 #define  GUM_SEQGRAPH_INTERFACE_HPP__
 
+#include <cstddef>
 #include <vector>
 #include <algorithm>
 #include <queue>
@@ -456,6 +457,90 @@ namespace gum {
           } );
       graph.sort_nodes( perm );
     }
+
+    template< typename TGraph >
+    inline typename TGraph::offset_type
+    _chargraph_bandwidth( TGraph const& graph, Dynamic )
+    {
+      using rank_type = typename TGraph::rank_type;
+      using id_type = typename TGraph::id_type;
+      using offset_type = typename TGraph::offset_type;
+
+      std::vector< offset_type > char_orders( graph.get_node_count() + 1 );
+      char_orders[ 0 ] = 0;  // dummy
+      graph.for_each_node(
+          [&]( rank_type rank, id_type id ) {
+            char_orders[ rank ] = char_orders[ 0 ];
+            char_orders[ 0 ] += graph.node_length( id );
+            return true;
+          } );
+
+      offset_type bw = 0;
+      graph.for_each_node(
+          [&]( rank_type rank, id_type id ) {
+            offset_type width = 0;
+            auto from_order = char_orders[ rank ];
+            from_order += graph.node_length( id ) - 1;
+            graph.for_each_edges_out(
+                id,
+                [&]( id_type to, auto ) {
+                  auto to_rank = graph.id_to_rank( to );
+                  auto to_order = char_orders[ to_rank ];
+                  auto diff = std::abs(
+                      static_cast< ptrdiff_t >( to_order - from_order ) );
+                  if ( width < diff ) width = diff;
+                  return true;
+                } );
+            if ( bw < width ) bw = width;
+            return true;
+          } );
+
+      return bw;
+    }
+
+    template< typename TGraph >
+    inline typename TGraph::offset_type
+    _chargraph_bandwidth( TGraph const& graph, Succinct )
+    {
+      using rank_type = typename TGraph::rank_type;
+      using id_type = typename TGraph::id_type;
+      using offset_type = typename TGraph::offset_type;
+
+      offset_type bw = 0;
+      graph.for_each_node( [&]( rank_type rank, id_type id ) {
+        offset_type width = 0;
+        auto from_order = id_to_charorder( graph, id );
+        from_order += graph.node_length( id ) - 1;
+        graph.for_each_edges_out( id, [&]( id_type to, auto ) {
+          auto to_order = id_to_charorder( graph, to );
+          auto diff
+              = std::abs( static_cast< ptrdiff_t >( to_order - from_order ) );
+          if ( width < diff ) width = diff;
+          return true;
+        } );
+        if ( bw < width ) bw = width;
+        return true;
+      } );
+
+      return bw;
+    }
+
+    /**
+     * @brief Compute the character graph bandwidth of the given sequence graph
+     *
+     * NOTE: The bandwidth is NOT computed directly from the adjacency matrix.
+     *
+     * @param graph The input graph.
+     *
+     * @return The bandwidth of the adjacency matrix.
+     */
+    template< typename TGraph >
+    inline typename TGraph::offset_type
+    chargraph_bandwidth( TGraph const& graph )
+    {
+      return _chargraph_bandwidth( graph, typename TGraph::spec_type() );
+    }
+
   }  /* --- end of namespace util --- */
 }  /* --- end of namespace gum --- */
 
