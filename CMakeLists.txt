@@ -105,7 +105,7 @@ target_include_directories(gum
 
 if(GUM_WITH_VGIO)
   target_include_directories(gum
-    INTERFACE $<TARGET_PROPERTY:VGio::VGio,INTERFACE_INCLUDE_DIRECTORIES>)
+    INTERFACE $<TARGET_PROPERTY:VGio::VGio_static,INTERFACE_INCLUDE_DIRECTORIES>)
 endif(GUM_WITH_VGIO)
 if(GUM_WITH_BDSG)
   target_include_directories(gum
@@ -116,7 +116,7 @@ target_link_libraries(gum
   INTERFACE $<BUILD_INTERFACE:OpenMP::OpenMP_CXX>;$<INSTALL_INTERFACE:OpenMP::OpenMP_CXX>)
 if(GUM_WITH_VGIO)
   target_link_libraries(gum
-    INTERFACE $<BUILD_INTERFACE:VGio::VGio>;$<INSTALL_INTERFACE:VGio::VGio>)
+    INTERFACE $<BUILD_INTERFACE:VGio::VGio_static>;$<INSTALL_INTERFACE:VGio::VGio_static>)
 endif(GUM_WITH_VGIO)
 if(GUM_WITH_BDSG)
   target_link_libraries(gum
