@@ -1579,3 +1579,148 @@ SCENARIO( "Topological sort", "[seqgraph]" )
     }
   }
 }
+
+SCENARIO( "BFS Traversal", "[seqgraph]" )
+{
+  using graph_type = gum::SeqGraph< gum::Dynamic >;
+  using id_type = typename graph_type::id_type;
+
+  GIVEN( "A DAG" )
+  {
+    std::string filepath = test_data_dir + "/dfs_dag_v2.gfa";
+    graph_type graph;
+    gum::util::load( graph, filepath );
+
+    WHEN( "It is traversed by BFS algorithm" )
+    {
+      std::vector< id_type > ordered_nodes;
+      auto on_finishing = [&ordered_nodes]( auto, auto id ) {
+        ordered_nodes.push_back( id );
+      };
+      gum::util::bfs_traverse( graph, on_finishing );
+
+      THEN( "It should enumerate all nodes" )
+      {
+        REQUIRE( ordered_nodes.size() == graph.get_node_count() );
+      }
+
+      THEN( "The ordering should be breadth-first" )
+      {
+        std::deque< id_type > q;
+        std::unordered_set< id_type > visited;
+        q.push_front( ordered_nodes.front() );
+        visited.insert( q.front() );
+        for ( auto const& nid : ordered_nodes ) {
+          auto itr = std::find( q.rbegin(), q.rend(), nid );
+          REQUIRE( itr != q.rend() );
+          q.erase( std::next( itr ).base() );
+          graph.for_each_edges_out( nid, [&]( auto to, auto ) {
+            if ( visited.find( to ) == visited.end() ) {
+              q.push_front( to );
+              visited.insert( to );
+            }
+            return true;
+          } );
+        }
+      }
+    }
+  }
+}
+
+SCENARIO( "Cuthill-McKee permutation", "[seqgraph]" )
+{
+  using graph_type = gum::SeqGraph< gum::Dynamic >;
+  std::string basename
+      = GENERATE( "/complex_v2.gfa", "/dfs_dag_v2.gfa", "/tiny.gfa",
+                  "/graph_simple_v2.gfa", "/dfs_cyclic_v2.gfa" );
+
+  GIVEN( "Variation graph: " + basename )
+  {
+    std::string filepath = test_data_dir + basename;
+    graph_type graph;
+    gum::util::load( graph, filepath, true );
+    auto init_bw = gum::util::chargraph_bandwidth( graph );
+
+    WHEN( "Computing bandwidth on Succinct graph" )
+    {
+      typename graph_type::succinct_type suc_graph( graph );
+      auto suc_bw = gum::util::chargraph_bandwidth( suc_graph );
+
+      THEN( "The value should be the same with the one computed on the "
+            "Dynamic counterpart" )
+      {
+        REQUIRE( suc_bw == init_bw );
+      }
+    }
+
+    WHEN( "Cuthill-McKee nodes order is computed" )
+    {
+      auto ordered_nodes = gum::util::cuthill_mckee_order( graph, false );
+
+      THEN( "It should define a total order" )
+      {
+        REQUIRE( ordered_nodes.size() == graph.get_node_count() );
+      }
+
+      AND_WHEN( "The nodes are reordered by Cuthill-McKee algorithm" )
+      {
+        gum::util::cuthill_mckee_sort( graph );
+        auto bw = gum::util::chargraph_bandwidth( graph );
+        //auto tolerate = 2;
+
+        AND_WHEN( "Computing bandwidth on Succinct graph" )
+        {
+          typename graph_type::succinct_type suc_graph( graph );
+          auto suc_bw = gum::util::chargraph_bandwidth( suc_graph );
+
+          THEN( "The value should be the same with the one computed on the "
+                "Dynamic counterpart" )
+          {
+            REQUIRE( suc_bw == bw );
+          }
+        }
+
+        //THEN( "The bandwidth should be reduced by "
+        //      + std::to_string( tolerate ) + " toleration" )
+        //{
+        //  REQUIRE( bw <= init_bw + tolerate );
+        //}
+      }
+    }
+
+    WHEN( "Reverse Cuthill-McKee nodes order is computed" )
+    {
+      auto ordered_nodes = gum::util::cuthill_mckee_order( graph, true );
+
+      THEN( "It should define a total order" )
+      {
+        REQUIRE( ordered_nodes.size() == graph.get_node_count() );
+      }
+
+      AND_WHEN( "The nodes are reordered by Reverse Cuthill-McKee algorithm" )
+      {
+        gum::util::cuthill_mckee_sort( graph, true );
+        auto bw = gum::util::chargraph_bandwidth( graph );
+        //auto tolerate = 2;
+
+        AND_WHEN( "Computing bandwidth on Succinct graph" )
+        {
+          typename graph_type::succinct_type suc_graph( graph );
+          auto suc_bw = gum::util::chargraph_bandwidth( suc_graph );
+
+          THEN( "The value should be the same with the one computed on the "
+                "Dynamic counterpart" )
+          {
+            REQUIRE( suc_bw == bw );
+          }
+        }
+
+        //THEN( "The bandwidth should be reduced by "
+        //      + std::to_string( tolerate ) + " toleration" )
+        //{
+        //  REQUIRE( bw <= init_bw + tolerate );
+        //}
+      }
+    }
+  }
+}
