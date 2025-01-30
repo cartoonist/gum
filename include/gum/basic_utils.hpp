@@ -23,9 +23,12 @@
 #include <iterator>
 #include <numeric>
 #include <vector>
+#include <list>
+#include <map>
 #include <cassert>
 
 #include "basic_types.hpp"
+#include "iterators.hpp"
 
 
 namespace gum {
@@ -306,6 +309,78 @@ namespace gum {
       sort_zip_c( []( auto const& a, auto const& b ) { return a < b; }, first,
                   std::forward< TContainers >( rest )... );
     }
+
+    /**
+     *  @brief  Least Recently Used (LRU) cache.
+     *
+     *  NOTE: NEEDS REVIEW and TEST.
+     *  NOTE: API is not consistent with STL containers.
+     */
+    template< typename TKey, typename TValue >
+    class LRUCache {
+    public:
+      using key_type = TKey;
+      using value_type = TValue;
+      using container_type = std::list< std::pair< TKey, TValue > >;
+      using iterator_type = typename container_type::iterator;
+      using map_type = std::map< key_type, iterator_type >;
+
+      LRUCache() : m_capacity( 0 ) {}
+      LRUCache( std::size_t capacity )
+      {
+        this->m_capacity = capacity;
+        this->m_c.reserve( capacity );
+      }
+
+      inline iterator_type
+      find( key_type const& key )
+      {
+        auto it = this->m_c.find( key );
+        if ( it == this->m_c.end() ) { return this->end(); }
+        this->m_h.splice( this->m_h.begin(), this->m_h, it->second );
+        return it->second;
+      }
+
+      inline iterator_type
+      begin()
+      {
+        return this->m_h.begin();
+      }
+
+      inline iterator_type
+      end()
+      {
+        return this->m_h.end();
+      }
+
+      inline auto
+      map() const
+      {
+        auto skip_list = []( auto const& pair ) { return pair.second; };
+        RandomAccessProxyContainer map_proxy( &this->m_c, skip_list );
+        return map_proxy;
+      }
+
+      inline value_type&
+      operator[]( key_type const& key )
+      {
+        auto it = this->m_c.find( key );
+        if ( it != this->m_c.end() ) { this->m_h.erase( it->second ); }
+        this->m_h.push_front( { key, value_type{} } );
+        this->m_c[ key ] = this->m_h.begin();
+        if ( this->m_h.size() > this->m_capacity ) {
+          auto last = this->m_h.back();
+          this->m_c.erase( last.first );
+          this->m_h.pop_back();
+        }
+        return this->m_h.front().second;
+      }
+
+    private:
+      std::size_t m_capacity;
+      map_type m_c;
+      container_type m_h;
+    };
   }  /* --- end of namespace util --- */
 }  /* --- end of namespace gum --- */
 
