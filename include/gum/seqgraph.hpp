@@ -254,13 +254,15 @@ namespace gum {
     template< typename TCallback >
     inline bool
     for_each_node( TCallback callback,
-                   rank_type s_rank=1 ) const
+                   rank_type rank=1 ) const
     {
       static_assert( std::is_invocable_r_v< bool, TCallback, rank_type, id_type >, "received a non-invocable as callback" );
 
-      rank_type rank = 1;
-      for ( id_type id : this->nodes ) {
-        if ( rank >= s_rank && !callback( rank, id ) ) return false;
+      if ( rank > this->get_node_count() ) return true;
+
+      for ( auto itr = this->nodes.begin() + rank - 1;
+            itr != this->nodes.end(); ++itr ) {
+        if ( !callback( rank, *itr ) ) return false;
         ++rank;
       }
       return true;
@@ -1060,14 +1062,13 @@ namespace gum {
     template < typename TCallback >
     inline bool
     for_each_node( TCallback callback,
-                   rank_type s_rank=1 ) const
+                   rank_type rank=1 ) const
     {
       static_assert( std::is_invocable_r_v< bool, TCallback, rank_type, id_type >, "received a non-invocable as callback" );
 
-      id_type id = ( this->get_node_count() != 0 ) ? 1 : 0;
-      rank_type rank = 1;
+      id_type id = ( this->get_node_count() < rank ) ? 0 : this->rank_to_id( rank );
       while ( id != 0 ) {
-        if ( rank >= s_rank && !callback( rank, id ) ) return false;
+        if ( !callback( rank, id ) ) return false;
         id = this->successor_id( id );
         ++rank;
       }
@@ -2320,13 +2321,15 @@ namespace gum {
     template< typename TCallback >
     inline bool
     for_each_path( TCallback callback,
-                   rank_type s_rank=1 ) const
+                   rank_type rank=1 ) const
     {
       static_assert( std::is_invocable_r_v< bool, TCallback, rank_type, id_type >, "received a non-invocable as callback" );
 
-      rank_type rank = 1;
-      for ( auto const& path : this->paths ) {
-        if ( rank >= s_rank && !callback( rank, path.get_id() ) ) return false;
+      if ( rank > this->get_path_count() ) return true;
+
+      for ( auto itr = this->paths.begin() + rank - 1;
+            itr != this->paths.end(); ++itr ) {
+        if ( !callback( rank, itr->get_id() ) ) return false;
         ++rank;
       }
       return true;
@@ -2647,14 +2650,13 @@ namespace gum {
     template< typename TCallback >
     inline bool
     for_each_path( TCallback callback,
-                   rank_type s_rank=1 ) const
+                   rank_type rank=1 ) const
     {
       static_assert( std::is_invocable_r_v< bool, TCallback, rank_type, id_type >, "received a non-invocable as callback" );
 
-      id_type id = ( this->get_path_count() != 0 ) ? 1 : 0;
-      rank_type rank = 1;
+      id_type id = ( this->get_path_count() < rank ) ? 0 : this->rank_to_id( rank );
       while ( id != 0 ) {
-        if ( rank >= s_rank && !callback( rank, id ) ) return false;
+        if ( !callback( rank, id ) ) return false;
         id = this->successor_id( id );
         ++rank;
       }
@@ -3027,11 +3029,11 @@ namespace gum {
     template< typename TCallback >
     inline bool
     for_each_path( TCallback callback,
-                   rank_type s_rank=1 ) const
+                   rank_type rank=1 ) const
     {
       static_assert( std::is_invocable_r_v< bool, TCallback, rank_type, id_type >, "received a non-invocable as callback" );
 
-      return this->graph_prop.for_each_path( callback, s_rank );
+      return this->graph_prop.for_each_path( callback, rank );
     }
 
     inline seq_const_reference
@@ -3284,11 +3286,11 @@ namespace gum {
     template< typename TCallback >
     inline bool
     for_each_path( TCallback callback,
-                   rank_type s_rank=1 ) const
+                   rank_type rank=1 ) const
     {
       static_assert( std::is_invocable_r_v< bool, TCallback, rank_type, id_type >, "received a non-invocable as callback" );
 
-      return this->graph_prop.for_each_path( callback, s_rank );
+      return this->graph_prop.for_each_path( callback, rank );
     }
 
     inline seq_const_reference
