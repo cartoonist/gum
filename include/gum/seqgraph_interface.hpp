@@ -458,6 +458,85 @@ namespace gum {
       graph.sort_nodes( perm );
     }
 
+    /**
+     *  @brief  Compute a total order minimizing breaks in sibling node indices.
+     *
+     * This algorithm is based on BFS traversal with a slight modification
+     * to minimise the number of breaks in the node indices of sibling nodes.
+     * A break corresponding to each node is a discontinuity in the
+     * sorted node indices of its children.
+     *
+     * NOTE: This algorithm assumes that the nodes are first sorted in topological
+     * order.
+     *
+     *  @param[in]  graph The input graph.
+     *  @param[in]  reverse If true, the ordering will be reversed.
+     */
+    template< typename TGraph >
+    inline std::vector< std::pair< typename TGraph::rank_type, typename TGraph::id_type > >
+    min_breaks_order( TGraph& graph, bool reverse=false )
+    {
+      using id_type = typename TGraph::id_type;
+      using rank_type = typename TGraph::rank_type;
+      using value_type = std::pair< rank_type, id_type >;
+      using nodes_type = std::vector< value_type >;
+
+      nodes_type result;
+      result.reserve( graph.get_node_count() );
+
+      auto on_finishing = [&result]( rank_type rank, id_type id ) {
+        result.push_back( { rank, id } );
+      };
+
+      auto degree_cmp = [ &graph ]( const auto& a, const auto& b ) {
+        auto min_parent_rank = [ &graph ]( auto const& id ) {
+          if ( graph.indegree( id ) == 0 ) return graph.id_to_rank( id );
+
+          rank_type min_rank = std::numeric_limits< rank_type >::max();
+          graph.for_each_edges_in(
+              id,
+              [&]( id_type from, auto ) {
+                auto rank = graph.id_to_rank( from );
+                if ( min_rank > rank ) min_rank = rank;
+                return true;
+              } );
+          return min_rank;
+        };
+
+        return min_parent_rank( a.second ) > min_parent_rank( b.second );
+      };
+
+      bfs_traverse( graph, on_finishing, degree_cmp );
+      if ( reverse ) std::reverse( result.begin(), result.end() );
+
+      return result;
+    }
+
+    /**
+     *  @brief  Sort the nodes of the graph in a total order minimizing breaks in sibling node indices.
+     *
+     *  NOTE: This algorithm assumes that the nodes are first sorted in
+     *  topological order.
+     *
+     *  @param[in]  graph The input graph.
+     *  @param[in]  reverse If true, the ordering will be reversed.
+     */
+    template< typename TGraph,
+              typename=std::enable_if_t< std::is_same< typename TGraph::spec_type, Dynamic >::value > >
+    inline void
+    min_breaks_sort( TGraph& graph, bool reverse=false ) {
+      using graph_type = TGraph;
+      using rank_type = typename graph_type::rank_type;
+      using id_type = typename graph_type::id_type;
+
+      auto mbr = min_breaks_order( graph, reverse );
+      RandomAccessProxyContainer perm(
+          &mbr, []( std::pair< rank_type, id_type > const& p ) -> rank_type {
+            return p.first - 1;
+          } );
+      graph.sort_nodes( perm );
+    }
+
     template< typename TGraph >
     inline typename TGraph::offset_type
     _chargraph_bandwidth( TGraph const& graph, Dynamic )
