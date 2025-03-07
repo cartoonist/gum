@@ -1724,3 +1724,106 @@ SCENARIO( "Cuthill-McKee permutation", "[seqgraph]" )
     }
   }
 }
+
+SCENARIO( "Minimal Breaks Ordering", "[seqgraph]" )
+{
+  using graph_type = gum::SeqGraph< gum::Dynamic >;
+  using id_type = typename graph_type::id_type;
+
+  GIVEN( "A DAG" )
+  {
+    std::string filepath = test_data_dir + "/dfs_dag_v2.gfa";
+    graph_type graph;
+    gum::util::load( graph, filepath, true );
+
+    WHEN( "The nodes are ordered by minimal breaks ordering algorithm" )
+    {
+      auto ordered_nodes = gum::util::min_breaks_order( graph, false );
+
+      THEN( "It should enumerate all nodes" )
+      {
+        REQUIRE( ordered_nodes.size() == graph.get_node_count() );
+      }
+
+      THEN( "The ordering should be breadth-first" )
+      {
+        std::deque< id_type > q;
+        std::unordered_set< id_type > visited;
+        q.push_front( ordered_nodes.front().second );
+        visited.insert( q.front() );
+        for ( auto const& elem : ordered_nodes ) {
+          auto nid = elem.second;
+          auto itr = std::find( q.rbegin(), q.rend(), nid );
+          REQUIRE( itr != q.rend() );
+          q.erase( std::next( itr ).base() );
+          graph.for_each_edges_out( nid, [&]( auto to, auto ) {
+            if ( visited.find( to ) == visited.end() ) {
+              q.push_front( to );
+              visited.insert( to );
+            }
+            return true;
+          } );
+        }
+      }
+    }
+  }
+
+  std::string basename
+      = GENERATE( "/complex_v2.gfa", "/dfs_dag_v2.gfa", "/tiny.gfa",
+                  "/graph_simple_v2.gfa" );
+
+  GIVEN( "Variation graph: " + basename )
+  {
+    std::string filepath = test_data_dir + basename;
+    graph_type graph;
+    gum::util::load( graph, filepath, true );
+    auto init_bw = gum::util::chargraph_bandwidth( graph );
+
+    WHEN( "Computing bandwidth on Succinct graph" )
+    {
+      typename graph_type::succinct_type suc_graph( graph );
+      auto suc_bw = gum::util::chargraph_bandwidth( suc_graph );
+
+      THEN( "The value should be the same with the one computed on the "
+            "Dynamic counterpart" )
+      {
+        REQUIRE( suc_bw == init_bw );
+      }
+    }
+
+    WHEN( "Minimal breaks nodes order is computed" )
+    {
+      auto ordered_nodes = gum::util::min_breaks_order( graph, false );
+
+      THEN( "It should define a total order" )
+      {
+        REQUIRE( ordered_nodes.size() == graph.get_node_count() );
+      }
+
+      AND_WHEN( "The nodes are reordered by minimal breaks algorithm" )
+      {
+        gum::util::min_breaks_sort( graph );
+        auto bw = gum::util::chargraph_bandwidth( graph );
+        auto tolerate = 0;
+
+        AND_WHEN( "Computing bandwidth on Succinct graph" )
+        {
+          typename graph_type::succinct_type suc_graph( graph );
+          auto suc_bw = gum::util::chargraph_bandwidth( suc_graph );
+
+          THEN( "The value should be the same with the one computed on the "
+                "Dynamic counterpart" )
+          {
+            REQUIRE( suc_bw == bw );
+          }
+        }
+
+        THEN( "The bandwidth should be reduced by "
+              + std::to_string( tolerate ) + " toleration" )
+        {
+          REQUIRE( bw <= init_bw + tolerate );
+        }
+      }
+    }
+  }
+}
