@@ -565,7 +565,7 @@ namespace gum {
                 [&]( id_type to, auto ) {
                   auto to_rank = graph.id_to_rank( to );
                   auto to_order = char_orders[ to_rank ];
-                  auto diff = std::abs(
+                  offset_type diff = std::abs(
                       static_cast< ptrdiff_t >( to_order - from_order ) );
                   if ( width < diff ) width = diff;
                   return true;
@@ -592,7 +592,7 @@ namespace gum {
         from_order += graph.node_length( id ) - 1;
         graph.for_each_edges_out( id, [&]( id_type to, auto ) {
           auto to_order = id_to_charorder( graph, to );
-          auto diff
+          offset_type diff
               = std::abs( static_cast< ptrdiff_t >( to_order - from_order ) );
           if ( width < diff ) width = diff;
           return true;
