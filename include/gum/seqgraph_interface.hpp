@@ -619,7 +619,6 @@ namespace gum {
     {
       return _chargraph_bandwidth( graph, typename TGraph::spec_type() );
     }
-
   }  /* --- end of namespace util --- */
 }  /* --- end of namespace gum --- */
 

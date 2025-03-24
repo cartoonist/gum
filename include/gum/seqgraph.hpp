@@ -768,6 +768,7 @@ namespace gum {
     reset_ranks()
     {
       rank_type rank = 0;
+      this->node_rank.clear();
       for ( auto const& n : this->nodes ) this->node_rank[ n ] = ++rank;
     }
 
