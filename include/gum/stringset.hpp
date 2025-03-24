@@ -27,7 +27,7 @@
 
 #include "alphabet.hpp"
 #include "iterators.hpp"
-#include "basic_utils.hpp"
+#include "utils.hpp"
 #include "basic_types.hpp"
 
 

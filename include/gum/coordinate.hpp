@@ -27,7 +27,7 @@
 #include <parallel_hashmap/phmap.h>
 #include <sdsl/int_vector.hpp>
 
-#include "basic_utils.hpp"
+#include "utils.hpp"
 
 
 namespace gum {

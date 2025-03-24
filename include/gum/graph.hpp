@@ -20,6 +20,7 @@
 #define  GUM_GRAPH_HPP__
 
 #include "seqgraph.hpp"
+#include "diseqgraph.hpp"
 #include "seqgraph_interface.hpp"
 
 #endif  /* --- #ifndef GUM_GRAPH_HPP__ --- */
