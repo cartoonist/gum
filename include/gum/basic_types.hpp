@@ -18,18 +18,13 @@
 #ifndef  GUM_BASIC_TYPES_HPP__
 #define  GUM_BASIC_TYPES_HPP__
 
-#include <cinttypes>
+#include <cstdint>
 #include <algorithm>
 #include <istream>
 #include <functional>
 
 
 namespace gum {
-  /* Dynamic specialization tag. */
-  struct Dynamic {};
-  /* Succinct specialization tag. */
-  struct Succinct {};
-
   /**
    *  @brief  Wrap signed integer type of width TWidth.
    */
