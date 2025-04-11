@@ -17,6 +17,8 @@
 #ifndef GUM_ALPHABET_HPP__
 #define GUM_ALPHABET_HPP__
 
+#include <cassert>
+
 #include <sdsl/int_vector.hpp>
 #include <sdsl/bit_vectors.hpp>
 
@@ -99,6 +101,19 @@ namespace gum {
     {
       return DNA::select( v + 1 );
     }
+
+    inline static value_type
+    complement( value_type v )
+    {
+      switch( v ) {
+        case 0: return 3;
+        case 1: return 2;
+        case 2: return 1;
+        case 3: return 0;
+        default: assert( false );
+      }
+      return v;
+    }
   };  /* --- end of class DNA --- */
 
   class DNA5 : public Alphabet< 3 > {
@@ -139,6 +154,20 @@ namespace gum {
     {
       return DNA5::select( v + 1 );
     }
+
+    inline static value_type
+    complement( value_type v )
+    {
+      switch( v ) {
+        case 0: return 3;
+        case 1: return 2;
+        case 2: return 1;
+        case 3: return 0;
+        case 4: return 4;
+        default: assert( false );
+      }
+      return v;
+    }
   };  /* --- end of class DNA5 --- */
 
   template<>
@@ -162,6 +191,20 @@ namespace gum {
     comp2char( value_type v )
     {
       return static_cast< char_type >( v );
+    }
+
+    inline static value_type
+    complement( value_type v )
+    {
+      switch ( v ) {
+        case 'A': return 'T';
+        case 'C': return 'G';
+        case 'G': return 'C';
+        case 'T': return 'A';
+        case 'N': return 'N';
+        default: assert( false );
+      }
+      return v;
     }
   };  /* --- end of class Char --- */
 

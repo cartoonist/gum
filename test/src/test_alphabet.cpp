@@ -34,11 +34,11 @@ TEMPLATE_SCENARIO( "Symbol to compressed value conversion and vice versa", "[alp
   auto get_symbols =
       []( ) {
         using return_type = std::vector< char_type >;
-        if ( std::is_same< alphabet_type, gum::DNA >::value )
+        if constexpr ( std::is_same< alphabet_type, gum::DNA >::value )
           return return_type( { 'A', 'C', 'G', 'T' } );
-        if ( std::is_same< alphabet_type, gum::DNA5 >::value )
+        if constexpr ( std::is_same< alphabet_type, gum::DNA5 >::value )
           return return_type( { 'A', 'C', 'G', 'N', 'T' } );
-        if ( std::is_same< alphabet_type, gum::Char >::value )
+        if constexpr ( std::is_same< alphabet_type, gum::Char >::value )
           return return_type( { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
                                 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' } );
       };
@@ -46,11 +46,11 @@ TEMPLATE_SCENARIO( "Symbol to compressed value conversion and vice versa", "[alp
   auto get_values =
       []( ) {
         using return_type = std::vector< value_type >;
-        if ( std::is_same< alphabet_type, gum::DNA >::value )
+        if constexpr ( std::is_same< alphabet_type, gum::DNA >::value )
           return return_type( { 0, 1, 2, 3 } );
-        if ( std::is_same< alphabet_type, gum::DNA5 >::value )
+        if constexpr ( std::is_same< alphabet_type, gum::DNA5 >::value )
           return return_type( { 0, 1, 2, 3, 4 } );
-        if ( std::is_same< alphabet_type, gum::Char >::value )
+        if constexpr ( std::is_same< alphabet_type, gum::Char >::value )
           return return_type( { 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77,
                                 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90 } );
       };
@@ -87,6 +87,54 @@ TEMPLATE_SCENARIO( "Symbol to compressed value conversion and vice versa", "[alp
       {
         REQUIRE( symbols.size() == truth.size() );
         REQUIRE( std::equal( symbols.begin(), symbols.end(), truth.begin() ) );
+      }
+    }
+  }
+}
+
+TEMPLATE_SCENARIO( "Translation of alphabet characters to their complements", "[alphabet]",
+                   ( gum::DNA ),
+                   ( gum::DNA5 ),
+                   ( gum::Char ) )
+{
+  using alphabet_type = TestType;
+  using value_type = typename alphabet_type::value_type;
+
+  auto get_chars =
+      []( ) {
+        using return_type = std::vector< value_type >;
+        if constexpr ( std::is_same< alphabet_type, gum::DNA >::value )
+          return return_type( { 0, 1, 2, 3 } );
+        if constexpr ( std::is_same< alphabet_type, gum::DNA5 >::value )
+          return return_type( { 0, 1, 2, 3, 4 } );
+        if constexpr ( std::is_same< alphabet_type, gum::Char >::value )
+          return return_type( { 65, 67, 71, 78, 84 } );
+      };
+
+  auto get_complements =
+      []( ) {
+        using return_type = std::vector< value_type >;
+        if constexpr ( std::is_same< alphabet_type, gum::DNA >::value )
+          return return_type( { 3, 2, 1, 0 } );
+        if constexpr ( std::is_same< alphabet_type, gum::DNA5 >::value )
+          return return_type( { 3, 2, 1, 0, 4 } );
+        if constexpr ( std::is_same< alphabet_type, gum::Char >::value )
+          return return_type( { 84, 71, 67, 78, 65 } );
+      };
+
+  GIVEN( "Any symbols in the given alphabet" )
+  {
+    std::vector< value_type > values = get_chars();
+    std::vector< value_type > truth = get_complements();
+    WHEN( "Translated to its complement" )
+    {
+      std::vector< value_type > complements;
+      std::transform( values.begin(), values.end(), std::back_inserter( complements ),
+                      alphabet_type::complement );
+      THEN( "They should be translated to the correct value" )
+      {
+        REQUIRE( complements.size() == truth.size() );
+        REQUIRE( std::equal( complements.begin(), complements.end(), truth.begin() ) );
       }
     }
   }
