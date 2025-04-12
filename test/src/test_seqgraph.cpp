@@ -218,8 +218,7 @@ TEMPLATE_SCENARIO( "Generic functionality of DirectedGraph", "[seqgraph][templat
 
     WHEN( "Node are added by specifying random external IDs" )
     {
-      std::random_device rd;     // Will be used to obtain a seed for the random number engine.
-      std::mt19937 gen( rd() );  // Standard mersenne_twister_engine seeded with rd().
+      auto gen = rnd::get_rgn();
       std::uniform_int_distribution< id_type > dis( 1 );
       std::size_t node_count = 200;
       std::vector< id_type > ids;
@@ -256,8 +255,7 @@ TEMPLATE_SCENARIO( "Generic functionality of DirectedGraph", "[seqgraph][templat
 
     WHEN( "Node are added by mixed ID specification approach" )
     {
-      std::random_device rd;     // Will be used to obtain a seed for the random number engine.
-      std::mt19937 gen( rd() );  // Standard mersenne_twister_engine seeded with rd().
+      auto gen = rnd::get_rgn();
       std::uniform_int_distribution< id_type > dis( 1 );
       std::size_t node_count = 200;
       std::vector< id_type > ids;

@@ -19,10 +19,15 @@
 #define  GUM_TEST_BASE_HPP__
 
 #include <string>
+#include <random>
+#include <iostream>
 
 #include "catch2/catch_test_macros.hpp"
 #include "catch2/catch_template_test_macros.hpp"
 #include "catch2/generators/catch_generators.hpp"
+#include "catch2/catch_get_random_seed.hpp"
+#include "catch2/reporters/catch_reporter_event_listener.hpp"
+#include "catch2/reporters/catch_reporter_registrars.hpp"
 
 #include "test_config.hpp"
 
@@ -32,6 +37,60 @@
 #ifndef TEST_DATA_DIR
 #define TEST_DATA_DIR PROJECT_SOURCE_DIR "/test/data"
 #endif
+
+namespace rnd {
+  inline std::random_device&
+  get_rd()
+  {
+    thread_local static std::random_device rd;
+    return rd;
+  }
+
+  inline unsigned int&
+  get_iseed()
+  {
+    thread_local static unsigned int iseed = get_rd()();
+    return iseed;
+  }
+
+  inline std::mt19937&
+  get_rgn()
+  {
+    thread_local static std::mt19937 rgn( get_iseed() );
+    return rgn;
+  }
+
+  inline void
+  set_seed( unsigned int seed )
+  {
+    if ( seed != 0 ) {
+      get_iseed() = seed;
+      get_rgn().seed( seed );
+    }
+  }
+}  /* ---  end of namespace rnd  --- */
+
+class MyEventListener : public Catch::EventListenerBase {
+public:
+    using Catch::EventListenerBase::EventListenerBase;
+
+    void
+    set_rnd_seed()
+    {
+      auto seed = Catch::getSeed();
+      if ( seed != 0 ) {
+        rnd::set_seed( seed );
+      }
+    }
+
+    void
+    testRunStarting( Catch::TestRunInfo const& ) override
+    {
+      this->set_rnd_seed();
+    }
+};
+
+CATCH_REGISTER_LISTENER( MyEventListener )
 
 static const std::string test_data_dir( TEST_DATA_DIR );
 

@@ -15,12 +15,10 @@
  *  See LICENSE file for more information.
  */
 
-
 #include <gum/basic_types.hpp>
 #include <type_traits>
 
 #include "test_base.hpp"
-
 
 using namespace gum;
 
@@ -31,11 +29,14 @@ TEMPLATE_SCENARIO_SIG( "Determine the bitwise width of an integer", "[types]",
                        ( int, 32 ),
                        ( int, 64 ) )
 {
-  GIVEN ( "The integer width in bits" ) {
+  GIVEN( "The integer width in bits" )
+  {
     int width = W;
 
-    WHEN ( "Using integer<> meta functions" ) {
-      THEN ( "It gets the corresponding integer types" ) {
+    WHEN( "Using integer<> meta functions" )
+    {
+      THEN( "It gets the corresponding integer types" )
+      {
         REQUIRE( gum::widthof< typename gum::integer< W >::type >::value == width );
         REQUIRE( gum::widthof< typename gum::uinteger< W >::type >::value == width );
         REQUIRE( gum::widthof< gum::integer_t< W > >::value == width );
