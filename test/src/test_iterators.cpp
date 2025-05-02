@@ -48,6 +48,15 @@ TEMPLATE_SCENARIO_SIG( "Random access iterator non-modifying usage", "[iterators
       THEN( "The iterator should points to the first element" )
       {
         REQUIRE( *itr == 1 );
+        REQUIRE( itr[ 0 ] == 1 );
+      }
+
+      THEN( "Indexing iterator should work the same" )
+      {
+        auto gen = rnd::get_rgn();
+        std::uniform_int_distribution< value_type > dist( 0, vec.size() - 1 );
+        auto idx = dist( gen );
+        REQUIRE( itr[ idx ] == idx + 1 );
       }
     }
 
@@ -248,6 +257,43 @@ TEMPLATE_SCENARIO_SIG( "Random access iterator modifying usage", "[iterators]",
         THEN( "It should be equal to 'end'" )
         {
           REQUIRE( itr == end );
+        }
+      }
+    }
+  }
+}
+
+TEMPLATE_SCENARIO_SIG( "Modifying container using random access iterator", "[iterators]",
+                       ( ( typename T, typename U, int W ), T, U, W ),  // NOTE: Requirement: W >= 200
+                       ( std::vector< int >, ( gum::RandomAccessIterator< std::vector< int > >, 3141 ) ) )
+{
+  using container_type = T;
+  using iterator_type = U;
+  using size_type = typename container_type::size_type;
+  using value_type = typename container_type::value_type;
+
+  size_type size = W;
+
+  GIVEN( "A non-empty standard container of a POD type" )
+  {
+    container_type vec( size, 0 );
+    std::iota( vec.begin(), vec.end(), 1 );
+
+    AND_GIVEN( "An iterator over it" )
+    {
+      auto gen = rnd::get_rgn();
+      std::uniform_int_distribution< value_type > dist( 0, vec.size() - 1 );
+      auto offset = dist( gen );
+      iterator_type begin( &vec, 0 );
+      iterator_type itr = offset + begin;
+
+      WHEN( "Modifying the underlying container using the iterator" )
+      {
+        *itr = W * 2;
+
+        THEN( "The element should equals to the set value" )
+        {
+          REQUIRE( *itr == W * 2 );
         }
       }
     }
