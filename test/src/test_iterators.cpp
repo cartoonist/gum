@@ -254,6 +254,287 @@ TEMPLATE_SCENARIO_SIG( "Random access iterator modifying usage", "[iterators]",
   }
 }
 
+TEMPLATE_SCENARIO_SIG( "Random access REVERSE iterator non-modifying usage", "[iterators]",
+                       ( ( typename T, typename U, int W ), T, U, W ),  // NOTE: Requirement: W >= 200
+                       ( std::vector< int >, ( gum::RandomAccessReverseIterator< std::vector< int > >, 3141 ) ),
+                       ( std::vector< int >, ( const gum::RandomAccessReverseIterator< std::vector< int > >, 3141 ) ),
+                       ( std::vector< int >, ( gum::RandomAccessConstReverseIterator< std::vector< int > >, 3141 ) ),
+                       ( std::vector< int >, ( const gum::RandomAccessConstReverseIterator< std::vector< int > >, 3141 ) ) )
+{
+  using container_type = T;
+  using iterator_type = U;
+  using size_type = typename container_type::size_type;
+  using value_type = typename container_type::value_type;
+
+  size_type size = W;
+
+  GIVEN( "A non-empty standard container of a POD type" )
+  {
+    container_type vec( size, 0 );
+    std::iota( vec.begin(), vec.end(), 1 );
+
+    WHEN( "An iterator is constructed by passing the container without offset" )
+    {
+      iterator_type itr( &vec );
+
+      THEN( "The iterator should points to the last element" )
+      {
+        REQUIRE( *itr == W );
+        REQUIRE( itr[ 0 ] == W );
+      }
+
+      THEN( "Indexing iterator should work in reverse" )
+      {
+        auto gen = rnd::get_rgn();
+        std::uniform_int_distribution< value_type > dist( 0, vec.size() - 1 );
+        auto idx = dist( gen );
+        REQUIRE( itr[ idx ] == W - idx );
+      }
+    }
+
+    WHEN( "An iterator is constructed by passing the container and offset" )
+    {
+      auto gen = rnd::get_rgn();
+      std::uniform_int_distribution< value_type > dist( 1, vec.size() );
+      auto offset = dist( gen );
+      iterator_type itr( &vec, offset );
+
+      THEN( "The iterator should point to the first element" )
+      {
+        REQUIRE( *itr == offset );
+      }
+    }
+
+    AND_GIVEN( "An iterator over it" )
+    {
+      auto gen = rnd::get_rgn();
+      std::uniform_int_distribution< size_type > dist( 1, vec.size() );
+      auto offset = dist( gen );
+      iterator_type itr( &vec, offset );
+      iterator_type rbegin( &vec, vec.size() );
+      iterator_type rend( &vec, 0 );
+
+      WHEN( "A non-'end' iterator is compared with the 'end' one" )
+      {
+        THEN( "The former should be always less than the latter" )
+        {
+          REQUIRE( itr < rend );
+          REQUIRE( itr <= rend );
+          REQUIRE( itr != rend );
+          REQUIRE( !( itr > rend ) );
+          REQUIRE( !( itr >= rend ) );
+          REQUIRE( rend > itr );
+          REQUIRE( rend >= itr );
+          REQUIRE( rend != itr );
+          REQUIRE( !( rend < itr ) );
+          REQUIRE( !( rend <= itr ) );
+        }
+      }
+
+      WHEN( "The iterator is added by an offset more than 2" )
+      {
+        value_type buffer = size / 100;
+        std::uniform_int_distribution< value_type > dist(
+            buffer + 1, vec.size() - buffer );
+        iterator_type itr2( &vec, dist( gen ) );
+        auto base_itr = itr2;
+        auto base = *itr2;
+
+        THEN( "It should point to the forward element with the distance of "
+              "'offset'" )
+        {
+          REQUIRE( *( itr2 + buffer ) == base - buffer );
+          REQUIRE( ( itr2 + buffer ) > base_itr );
+        }
+      }
+
+      WHEN( "The iterator is subtracted by an offset more than 2" )
+      {
+        value_type buffer = size / 100;
+        std::uniform_int_distribution< value_type > dist(
+            buffer + 1, vec.size() - buffer );
+        iterator_type itr2( &vec, dist( gen ) );
+        auto base_itr = itr2;
+        auto base = *itr2;
+
+        THEN( "It should point to the backward element with the distance of "
+              "'offset'" )
+        {
+          REQUIRE( *( itr2 - buffer ) == base + buffer );
+          REQUIRE( ( itr2 - buffer ) < base_itr );
+        }
+      }
+
+      WHEN( "An iterator is exhausted" )
+      {
+        THEN( "It should be equal to 'end'" )
+        {
+          REQUIRE( ( itr + ( rend - itr ) ) == rend );
+        }
+      }
+
+      WHEN( "Constructing another container using the itrator" )
+      {
+        container_type copy_vec;
+        std::copy( rbegin, rend, std::back_inserter( copy_vec ) );
+        THEN( "Two containers should contain identical elements" )
+        {
+          auto vec_itr = vec.rbegin();
+          REQUIRE( std::all_of(
+              copy_vec.begin(), copy_vec.end(),
+              [ &vec_itr ]( auto elem ) { return elem == *vec_itr++; } ) );
+        }
+      }
+    }
+  }
+
+  GIVEN( "An empty standard container of a POD type" )
+  {
+    container_type vec;
+
+    WHEN( "An iterator is constructed by passing the container and offset" )
+    {
+      iterator_type itr( &vec );
+      iterator_type rend( &vec, 0 );
+      iterator_type rbegin( &vec, vec.size() );
+
+      THEN( "It should be equal to 'end'" )
+      {
+        REQUIRE( itr == rend );
+        REQUIRE( itr == rbegin );
+      }
+    }
+  }
+}
+
+TEMPLATE_SCENARIO_SIG( "Random access REVERSE iterator modifying usage", "[iterators]",
+                       ( ( typename T, typename U, int W ), T, U, W ),  // NOTE: Requirement: W >= 200
+                       ( std::vector< int >, ( gum::RandomAccessReverseIterator< std::vector< int > >, 3141 ) ),
+                       ( std::vector< int >, ( gum::RandomAccessConstReverseIterator< std::vector< int > >, 3141 ) ) )
+{
+  using container_type = T;
+  using iterator_type = U;
+  using size_type = typename container_type::size_type;
+  using value_type = typename container_type::value_type;
+
+  size_type size = W;
+
+  GIVEN( "A non-empty standard container of a POD type" )
+  {
+    container_type vec( size, 0 );
+    std::iota( vec.begin(), vec.end(), 1 );
+
+    AND_GIVEN( "An iterator over it" )
+    {
+      auto gen = rnd::get_rgn();
+      std::uniform_int_distribution< value_type > dist( 1, vec.size() );
+      auto offset = dist( gen );
+      iterator_type itr( &vec, offset );
+      iterator_type rbegin( &vec, vec.size() );
+      iterator_type rend( &vec, 0 );
+
+      WHEN( "Pre-incrementing the iterator" )
+      {
+        ++itr;
+
+        THEN( "It should point to the next element" )
+        {
+          REQUIRE( ( itr == rend || *itr == offset - 1 ) );
+        }
+      }
+
+      WHEN( "Post-incrementing the iterator" )
+      {
+        itr++;
+
+        THEN( "It should point to the next element" )
+        {
+          REQUIRE( ( itr == rend || *itr == offset - 1 ) );
+        }
+      }
+
+      WHEN( "The iterator is added by an offset more than 2" )
+      {
+        value_type buffer = size / 100;
+        std::uniform_int_distribution< value_type > dist(
+            buffer + 1, vec.size() - buffer );
+        itr = iterator_type( &vec, dist( gen ) );
+        auto base_itr = itr;
+        auto base = *itr;
+        itr += buffer;
+
+        THEN( "It should point to the forward element with the distance of "
+              "'offset'" )
+        {
+          REQUIRE( *itr == base - buffer );
+          REQUIRE( itr > base_itr );
+        }
+      }
+
+      WHEN( "The iterator is subtracted by an offset more than 2" )
+      {
+        value_type buffer = size / 100;
+        std::uniform_int_distribution< value_type > dist(
+            buffer + 1, vec.size() - buffer );
+        itr = rbegin + dist( gen );
+        auto base_itr = itr;
+        auto base = *itr;
+        itr -= buffer;
+
+        THEN( "It should point to the backward element with the distance of "
+              "'offset'" )
+        {
+          REQUIRE( *itr == base + buffer );
+          REQUIRE( itr < base_itr );
+        }
+      }
+
+      WHEN( "An iterator is exhausted" )
+      {
+        itr += ( rend - itr );
+        THEN( "It should be equal to 'end'" ) { REQUIRE( itr == rend ); }
+      }
+    }
+  }
+}
+
+TEMPLATE_SCENARIO_SIG( "Modifying container using REVERSE random access iterator", "[iterators]",
+                       ( ( typename T, typename U, int W ), T, U, W ),  // NOTE: Requirement: W >= 200
+                       ( std::vector< int >, ( gum::RandomAccessReverseIterator< std::vector< int > >, 3141 ) ) )
+{
+  using container_type = T;
+  using iterator_type = U;
+  using size_type = typename container_type::size_type;
+  using value_type = typename container_type::value_type;
+
+  size_type size = W;
+
+  GIVEN( "A non-empty standard container of a POD type" )
+  {
+    container_type vec( size, 0 );
+    std::iota( vec.begin(), vec.end(), 1 );
+
+    AND_GIVEN( "An iterator over it" )
+    {
+      auto gen = rnd::get_rgn();
+      std::uniform_int_distribution< value_type > dist( 0, vec.size() - 1 );
+      auto offset = dist( gen );
+      iterator_type begin( &vec );
+      iterator_type itr = offset + begin;
+
+      WHEN( "Modifying the underlying container using the iterator" )
+      {
+        *itr = W * 2;
+
+        THEN( "The element should equals to the set value" )
+        {
+          REQUIRE( *itr == W * 2 );
+        }
+      }
+    }
+  }
+}
+
 template< typename T >
 constexpr bool
 is_const( T& )

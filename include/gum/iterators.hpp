@@ -38,8 +38,7 @@ namespace gum {
    *  const quilifier to the given container.
    */
   template< typename TContainer >
-  class RandomAccessIterator
-  {
+  class RandomAccessIterator {
   public:
     /* === FRIENDSHIP === */
     template< typename TContainer2 >
@@ -206,6 +205,191 @@ namespace gum {
   using RandomAccessConstIterator = RandomAccessIterator< std::add_const_t< TContainer > >;
 
   /**
+   *  @brief  Generic random-access reverse iterator
+   *
+   *  It defines a generic reverse iterator over a container whose type is
+   *  determined by the template type parameter `TContainer`.
+   *
+   *  NOTE: Defining an iterator constant does not prevent modification of the
+   *  underlying container just like const pointers. However, immutability is guarnteed
+   *  when `TContainer` has const qualifier. `RandomAccessConstIterator` type alias adds
+   *  const quilifier to the given container.
+   */
+  template< typename TContainer >
+  class RandomAccessReverseIterator {
+  public:
+    /* === FRIENDSHIP === */
+    template< typename TContainer2 >
+    friend typename RandomAccessReverseIterator< TContainer2 >::difference_type
+    operator-( const RandomAccessReverseIterator< TContainer2 >& x,
+               const RandomAccessReverseIterator< TContainer2 >& y );
+    /* === TYPEDEFS === */
+    using container_type = TContainer;
+    using iterator = RandomAccessReverseIterator;
+    using iterator_category = std::random_access_iterator_tag;
+    using value_type = typename container_type::value_type;
+    using difference_type = typename container_type::difference_type;
+    using pointer = typename container_type::value_type*;
+    using reference = typename container_type::reference;
+    using const_reference = typename container_type::const_reference;
+    using size_type = typename container_type::size_type;
+    /* === LIFECYCLE === */
+    RandomAccessReverseIterator( ) : ptr( nullptr ), idx( 0 ) { }
+
+    RandomAccessReverseIterator( TContainer * _ptr )
+      : ptr( _ptr ), idx( _ptr->size() ) { }
+
+    // NOTE: Similar to the standard library, reversed iterators store the index
+    // of the next element (on the right) that it actually refers to. So, a
+    // reverse iterator constructed from an iterator pointing to the element at
+    // index `idx` refers to the element at `idx - 1`.
+    RandomAccessReverseIterator( TContainer * _ptr, size_type _idx )
+      : ptr( _ptr ), idx( _idx ) { }
+    /* === OPERATORS === */
+    inline decltype(auto)
+    operator*( ) const
+    {
+      return ( *this->ptr )[ this->idx - 1 ];
+    }
+
+    inline iterator&
+    operator++( )
+    {
+      --this->idx;
+      return *this;
+    }
+
+    inline iterator
+    operator++( int )
+    {
+      iterator it = *this;
+      ++( *this );
+      return it;
+    }
+
+    inline iterator&
+    operator--( )
+    {
+      ++this->idx;
+      return *this;
+    }
+
+    inline iterator
+    operator--( int )
+    {
+      iterator it = *this;
+      --( *this );
+      return it;
+    }
+
+    inline iterator&
+    operator+=( difference_type i )
+    {
+      if ( i < 0 ) return *this -= ( -i );
+      this->idx -= i;
+      return *this;
+    }
+
+    inline iterator&
+    operator-=( difference_type i )
+    {
+      if ( i < 0 ) return *this += ( -i );
+      this->idx += i;
+      return *this;
+    }
+
+    inline iterator
+    operator+( difference_type i ) const
+    {
+      iterator it = *this;
+      return it += i;
+    }
+
+    inline iterator
+    operator-( difference_type i ) const
+    {
+      iterator it = *this;
+      return it -= i;
+    }
+
+    inline const_reference
+    operator[]( difference_type i ) const
+    {
+      return *( *this + i );
+    }
+
+    inline bool
+    operator==( iterator const& it ) const
+    {
+      return it.ptr == this->ptr && it.idx == this->idx;
+    }
+
+    inline bool
+    operator!=( iterator const& it ) const
+    {
+      return !( *this==it );
+    }
+
+    inline bool
+    operator<( const iterator& it ) const
+    {
+      return this->idx > it.idx;
+    }
+
+    inline bool
+    operator>( iterator const& it ) const
+    {
+      return this->idx < it.idx;
+    }
+
+    inline bool
+    operator>=( iterator const& it ) const
+    {
+      return !( *this < it );
+    }
+
+    inline bool
+    operator<=( const iterator& it ) const
+    {
+      return !( *this > it );
+    }
+  protected:
+    /* === DATA MEMBERS === */
+    container_type * ptr;
+    size_type idx;
+  };  /* --- end of template class RandomAccessReverseIterator --- */
+
+  /* --- RandomAccessReverseIterator interface functions --- */
+  template< typename TContainer >
+  inline typename RandomAccessReverseIterator< TContainer >::difference_type
+  operator-( const RandomAccessReverseIterator< TContainer >& x,
+             const RandomAccessReverseIterator< TContainer >& y )
+  {
+    using difference_type = typename RandomAccessReverseIterator< TContainer >::difference_type;
+    return static_cast< difference_type >( y.idx ) - static_cast< difference_type >( x.idx );
+  }
+
+  template< typename TContainer >
+  inline RandomAccessReverseIterator< TContainer >
+  operator+( typename RandomAccessReverseIterator< TContainer >::difference_type n,
+             RandomAccessReverseIterator< TContainer > const& it )
+  {
+    return it + n;
+  }
+  /* --- end of RandomAccessReverseIterator interface functions --- */
+
+  /**
+   *  @brief  Generic random-'const'-access iterator
+   *
+   *  NOTE: Defining an iterator constant does not prevent modification of the
+   *  underlying container just like const pointers. However, immutability is guarnteed
+   *  when `TContainer` has const qualifier. `RandomAccessConstIterator` type alias adds
+   *  const quilifier to the given container.
+   */
+  template< typename TContainer >
+  using RandomAccessConstReverseIterator = RandomAccessReverseIterator< std::add_const_t< TContainer > >;
+
+  /**
    *  @brief  Generic random-access proxy container
    *
    *  NOTE: A const proxy container only exposes const references to elements (in case
@@ -226,6 +410,8 @@ namespace gum {
     using const_reference = add_const_east_t< reference >;
     using iterator = RandomAccessIterator< RandomAccessProxyContainer >;
     using const_iterator = RandomAccessConstIterator< RandomAccessProxyContainer >;
+    using reverse_iterator = RandomAccessReverseIterator< RandomAccessProxyContainer >;
+    using const_reverse_iterator = RandomAccessConstReverseIterator< RandomAccessProxyContainer >;
     /* === LIFECYCLE === */
     RandomAccessProxyContainer( )
       : ptr( nullptr ), f( []( proxy_type x ) -> proxy_type { return x; } ) { }
@@ -293,6 +479,30 @@ namespace gum {
     end( ) const noexcept
     {
       return const_iterator( this, this->size() );
+    }
+
+    inline reverse_iterator
+    rbegin(  ) noexcept
+    {
+      return reverse_iterator( this, this->size() );
+    }
+
+    inline const_reverse_iterator
+    rbegin(  ) const noexcept
+    {
+      return const_reverse_iterator( this, this->size() );
+    }
+
+    inline reverse_iterator
+    rend(  ) noexcept
+    {
+      return reverse_iterator( this, 0 );
+    }
+
+    inline const_reverse_iterator
+    rend(  ) const noexcept
+    {
+      return const_reverse_iterator( this, 0 );
     }
 
     inline reference
