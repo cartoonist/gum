@@ -32,7 +32,6 @@ TEMPLATE_SCENARIO_SIG( "Random access iterator non-modifying usage", "[iterators
   using container_type = T;
   using iterator_type = U;
   using size_type = typename container_type::size_type;
-  using value_type = typename container_type::value_type;
 
   size_type size = W;
 
@@ -54,7 +53,7 @@ TEMPLATE_SCENARIO_SIG( "Random access iterator non-modifying usage", "[iterators
       THEN( "Indexing iterator should work the same" )
       {
         auto gen = rnd::get_rgn();
-        std::uniform_int_distribution< value_type > dist( 0, vec.size() - 1 );
+        std::uniform_int_distribution< size_type > dist( 0, vec.size() - 1 );
         auto idx = dist( gen );
         REQUIRE( itr[ idx ] == idx + 1 );
       }
@@ -63,7 +62,7 @@ TEMPLATE_SCENARIO_SIG( "Random access iterator non-modifying usage", "[iterators
     WHEN( "An iterator is constructed by passing the container and offset" )
     {
       auto gen = rnd::get_rgn();
-      std::uniform_int_distribution< value_type > dist( 0, vec.size() - 1 );
+      std::uniform_int_distribution< size_type > dist( 0, vec.size() - 1 );
       auto offset = dist( gen );
       iterator_type itr( &vec, offset );
 
@@ -101,8 +100,8 @@ TEMPLATE_SCENARIO_SIG( "Random access iterator non-modifying usage", "[iterators
 
       WHEN( "The iterator is added by an offset more than 2" )
       {
-        value_type buffer = size / 100;
-        std::uniform_int_distribution< value_type > dist(
+        size_type buffer = size / 100;
+        std::uniform_int_distribution< size_type > dist(
             buffer, vec.size() - buffer - 1 );
         iterator_type itr2( &vec, dist( gen ) );
         auto base_itr = itr2;
@@ -117,8 +116,8 @@ TEMPLATE_SCENARIO_SIG( "Random access iterator non-modifying usage", "[iterators
 
       WHEN( "The iterator is subtracted by an offset more than 2" )
       {
-        value_type buffer = size / 100;
-        std::uniform_int_distribution< value_type > dist(
+        size_type buffer = size / 100;
+        std::uniform_int_distribution< size_type > dist(
             buffer, vec.size() - buffer - 1 );
         iterator_type itr2( &vec, dist( gen ) );
         auto base_itr = itr2;
@@ -179,7 +178,6 @@ TEMPLATE_SCENARIO_SIG( "Random access iterator modifying usage", "[iterators]",
   using container_type = T;
   using iterator_type = U;
   using size_type = typename container_type::size_type;
-  using value_type = typename container_type::value_type;
 
   size_type size = W;
 
@@ -191,7 +189,7 @@ TEMPLATE_SCENARIO_SIG( "Random access iterator modifying usage", "[iterators]",
     AND_GIVEN( "An iterator over it" )
     {
       auto gen = rnd::get_rgn();
-      std::uniform_int_distribution< value_type > dist( 0, vec.size() - 1 );
+      std::uniform_int_distribution< size_type > dist( 0, vec.size() - 1 );
       auto offset = dist( gen );
       iterator_type itr( &vec, offset );
       iterator_type begin( &vec, 0 );
@@ -219,8 +217,8 @@ TEMPLATE_SCENARIO_SIG( "Random access iterator modifying usage", "[iterators]",
 
       WHEN( "The iterator is added by an offset more than 2" )
       {
-        value_type buffer = size / 100;
-        std::uniform_int_distribution< value_type > dist(
+        size_type buffer = size / 100;
+        std::uniform_int_distribution< size_type > dist(
             buffer, vec.size() - buffer - 1 );
         itr = iterator_type( &vec, dist( gen ) );
         auto base_itr = itr;
@@ -236,8 +234,8 @@ TEMPLATE_SCENARIO_SIG( "Random access iterator modifying usage", "[iterators]",
 
       WHEN( "The iterator is subtracted by an offset more than 2" )
       {
-        value_type buffer = size / 100;
-        std::uniform_int_distribution< value_type > dist(
+        size_type buffer = size / 100;
+        std::uniform_int_distribution< size_type > dist(
             buffer, vec.size() - buffer - 1 );
         itr = begin + dist( gen );
         auto base_itr = itr;
@@ -270,7 +268,6 @@ TEMPLATE_SCENARIO_SIG( "Modifying container using random access iterator", "[ite
   using container_type = T;
   using iterator_type = U;
   using size_type = typename container_type::size_type;
-  using value_type = typename container_type::value_type;
 
   size_type size = W;
 
@@ -282,7 +279,7 @@ TEMPLATE_SCENARIO_SIG( "Modifying container using random access iterator", "[ite
     AND_GIVEN( "An iterator over it" )
     {
       auto gen = rnd::get_rgn();
-      std::uniform_int_distribution< value_type > dist( 0, vec.size() - 1 );
+      std::uniform_int_distribution< size_type > dist( 0, vec.size() - 1 );
       auto offset = dist( gen );
       iterator_type begin( &vec, 0 );
       iterator_type itr = offset + begin;
@@ -310,7 +307,6 @@ TEMPLATE_SCENARIO_SIG( "Random access REVERSE iterator non-modifying usage", "[i
   using container_type = T;
   using iterator_type = U;
   using size_type = typename container_type::size_type;
-  using value_type = typename container_type::value_type;
 
   size_type size = W;
 
@@ -332,7 +328,7 @@ TEMPLATE_SCENARIO_SIG( "Random access REVERSE iterator non-modifying usage", "[i
       THEN( "Indexing iterator should work in reverse" )
       {
         auto gen = rnd::get_rgn();
-        std::uniform_int_distribution< value_type > dist( 0, vec.size() - 1 );
+        std::uniform_int_distribution< size_type > dist( 0, vec.size() - 1 );
         auto idx = dist( gen );
         REQUIRE( itr[ idx ] == W - idx );
       }
@@ -341,7 +337,7 @@ TEMPLATE_SCENARIO_SIG( "Random access REVERSE iterator non-modifying usage", "[i
     WHEN( "An iterator is constructed by passing the container and offset" )
     {
       auto gen = rnd::get_rgn();
-      std::uniform_int_distribution< value_type > dist( 1, vec.size() );
+      std::uniform_int_distribution< size_type > dist( 1, vec.size() );
       auto offset = dist( gen );
       iterator_type itr( &vec, offset );
 
@@ -379,8 +375,8 @@ TEMPLATE_SCENARIO_SIG( "Random access REVERSE iterator non-modifying usage", "[i
 
       WHEN( "The iterator is added by an offset more than 2" )
       {
-        value_type buffer = size / 100;
-        std::uniform_int_distribution< value_type > dist(
+        size_type buffer = size / 100;
+        std::uniform_int_distribution< size_type > dist(
             buffer + 1, vec.size() - buffer );
         iterator_type itr2( &vec, dist( gen ) );
         auto base_itr = itr2;
@@ -396,8 +392,8 @@ TEMPLATE_SCENARIO_SIG( "Random access REVERSE iterator non-modifying usage", "[i
 
       WHEN( "The iterator is subtracted by an offset more than 2" )
       {
-        value_type buffer = size / 100;
-        std::uniform_int_distribution< value_type > dist(
+        size_type buffer = size / 100;
+        std::uniform_int_distribution< size_type > dist(
             buffer + 1, vec.size() - buffer );
         iterator_type itr2( &vec, dist( gen ) );
         auto base_itr = itr2;
@@ -461,7 +457,6 @@ TEMPLATE_SCENARIO_SIG( "Random access REVERSE iterator modifying usage", "[itera
   using container_type = T;
   using iterator_type = U;
   using size_type = typename container_type::size_type;
-  using value_type = typename container_type::value_type;
 
   size_type size = W;
 
@@ -473,7 +468,7 @@ TEMPLATE_SCENARIO_SIG( "Random access REVERSE iterator modifying usage", "[itera
     AND_GIVEN( "An iterator over it" )
     {
       auto gen = rnd::get_rgn();
-      std::uniform_int_distribution< value_type > dist( 1, vec.size() );
+      std::uniform_int_distribution< size_type > dist( 1, vec.size() );
       auto offset = dist( gen );
       iterator_type itr( &vec, offset );
       iterator_type rbegin( &vec, vec.size() );
@@ -501,8 +496,8 @@ TEMPLATE_SCENARIO_SIG( "Random access REVERSE iterator modifying usage", "[itera
 
       WHEN( "The iterator is added by an offset more than 2" )
       {
-        value_type buffer = size / 100;
-        std::uniform_int_distribution< value_type > dist(
+        size_type buffer = size / 100;
+        std::uniform_int_distribution< size_type > dist(
             buffer + 1, vec.size() - buffer );
         itr = iterator_type( &vec, dist( gen ) );
         auto base_itr = itr;
@@ -519,8 +514,8 @@ TEMPLATE_SCENARIO_SIG( "Random access REVERSE iterator modifying usage", "[itera
 
       WHEN( "The iterator is subtracted by an offset more than 2" )
       {
-        value_type buffer = size / 100;
-        std::uniform_int_distribution< value_type > dist(
+        size_type buffer = size / 100;
+        std::uniform_int_distribution< size_type > dist(
             buffer + 1, vec.size() - buffer );
         itr = rbegin + dist( gen );
         auto base_itr = itr;
@@ -551,7 +546,6 @@ TEMPLATE_SCENARIO_SIG( "Modifying container using REVERSE random access iterator
   using container_type = T;
   using iterator_type = U;
   using size_type = typename container_type::size_type;
-  using value_type = typename container_type::value_type;
 
   size_type size = W;
 
@@ -563,7 +557,7 @@ TEMPLATE_SCENARIO_SIG( "Modifying container using REVERSE random access iterator
     AND_GIVEN( "An iterator over it" )
     {
       auto gen = rnd::get_rgn();
-      std::uniform_int_distribution< value_type > dist( 0, vec.size() - 1 );
+      std::uniform_int_distribution< size_type > dist( 0, vec.size() - 1 );
       auto offset = dist( gen );
       iterator_type begin( &vec );
       iterator_type itr = offset + begin;
