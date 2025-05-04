@@ -390,6 +390,216 @@ namespace gum {
   using RandomAccessConstReverseIterator = RandomAccessReverseIterator< std::add_const_t< TContainer > >;
 
   /**
+   *  @brief  Generic random-access bidirected iterator
+   *
+   *  It defines a generic bidirected iterator over a container whose type is
+   *  determined by the template type parameter `TContainer`.
+   *
+   *  NOTE: Defining an iterator constant does not prevent modification of the
+   *  underlying container just like const pointers. However, immutability is guarnteed
+   *  when `TContainer` has const qualifier. `RandomAccessConstIterator` type alias adds
+   *  const quilifier to the given container.
+   */
+  template< typename TContainer >
+  class RandomAccessBidiIterator {
+  public:
+    /* === FRIENDSHIP === */
+    template< typename TContainer2 >
+    friend typename RandomAccessBidiIterator< TContainer2 >::difference_type
+    operator-( const RandomAccessBidiIterator< TContainer2 >& x,
+               const RandomAccessBidiIterator< TContainer2 >& y );
+    /* === TYPEDEFS === */
+    using container_type = TContainer;
+    using iterator = RandomAccessBidiIterator;
+    using iterator_category = std::random_access_iterator_tag;
+    using value_type = typename container_type::value_type;
+    using difference_type = typename container_type::difference_type;
+    using pointer = typename container_type::value_type*;
+    using reference = typename container_type::reference;
+    using const_reference = typename container_type::const_reference;
+    using size_type = typename container_type::size_type;
+    /* === LIFECYCLE === */
+    RandomAccessBidiIterator( ) : ptr( nullptr ), idx( 0 ) { }
+
+    RandomAccessBidiIterator( TContainer* _ptr )
+        : ptr( _ptr ), idx( 0 ), step( 1 ) { }
+
+    RandomAccessBidiIterator( TContainer* _ptr, bool fwd )
+        : ptr( _ptr ), idx( fwd ? 0 : _ptr->size() ), step( fwd ? 1 : -1 ) { }
+
+    // NOTE that in case of reverse iterator, setting index to `idx` means that
+    // the iterator points to the element at `idx - 1`.
+    RandomAccessBidiIterator( TContainer* _ptr, size_type idx,
+                              bool fwd = true )
+        : ptr( _ptr ), idx( idx ), step( fwd ? 1 : -1 ) { }
+    /* === OPERATORS === */
+    inline decltype(auto)
+    operator*( ) const
+    {
+      auto r = this->idx;
+      if ( this->is_reverse() ) --r;
+      return ( *this->ptr )[ r ];
+    }
+
+    inline iterator&
+    operator++( )
+    {
+      this->idx += this->step;
+      return *this;
+    }
+
+    inline iterator
+    operator++( int )
+    {
+      iterator it = *this;
+      ++( *this );
+      return it;
+    }
+
+    inline iterator&
+    operator--( )
+    {
+      this->idx -= this->step;
+      return *this;
+    }
+
+    inline iterator
+    operator--( int )
+    {
+      iterator it = *this;
+      --( *this );
+      return it;
+    }
+
+    inline iterator&
+    operator+=( difference_type i )
+    {
+      if ( i < 0 ) return *this -= ( -i );
+      this->idx += i * this->step;
+      return *this;
+    }
+
+    inline iterator&
+    operator-=( difference_type i )
+    {
+      if ( i < 0 ) return *this += ( -i );
+      this->idx -= i * this->step;
+      return *this;
+    }
+
+    inline iterator
+    operator+( difference_type i ) const
+    {
+      iterator it = *this;
+      return it += i;
+    }
+
+    inline iterator
+    operator-( difference_type i ) const
+    {
+      iterator it = *this;
+      return it -= i;
+    }
+
+    inline const_reference
+    operator[]( difference_type i ) const
+    {
+      return *( *this + i );
+    }
+
+    inline bool
+    operator==( iterator const& it ) const
+    {
+      return it.ptr == this->ptr && it.idx == this->idx
+             && it.step == this->step;
+    }
+
+    inline bool
+    operator!=( iterator const& it ) const
+    {
+      return !( *this==it );
+    }
+
+    inline bool
+    operator<( const iterator& it ) const
+    {
+      if ( this->is_forward() ) return this->idx < it.idx;
+      else return this->idx > it.idx;
+    }
+
+    inline bool
+    operator>( iterator const& it ) const
+    {
+      if ( this->is_forward() ) return this->idx > it.idx;
+      else return this->idx < it.idx;
+    }
+
+    inline bool
+    operator>=( iterator const& it ) const
+    {
+      return !( *this < it );
+    }
+
+    inline bool
+    operator<=( const iterator& it ) const
+    {
+      return !( *this > it );
+    }
+
+    /* === METHODS === */
+    inline bool
+    is_forward( ) const
+    {
+      return this->step > 0;
+    }
+
+    inline bool
+    is_reverse( ) const
+    {
+      return this->step < 0;
+    }
+
+  private:
+    /* === DATA MEMBERS === */
+    container_type* ptr;
+    size_type idx;
+    int8_t step;
+  }; /* --- end of template class RandomAccessBidiIterator --- */
+
+  /* --- RandomAccessBidiIterator interface functions --- */
+  template< typename TContainer >
+  inline typename RandomAccessBidiIterator< TContainer >::difference_type
+  operator-( const RandomAccessBidiIterator< TContainer >& x,
+             const RandomAccessBidiIterator< TContainer >& y )
+  {
+    using difference_type = typename RandomAccessBidiIterator< TContainer >::difference_type;
+    if ( x.is_forward() ) {
+      return static_cast< difference_type >( x.idx ) - static_cast< difference_type >( y.idx );
+    }
+    return static_cast< difference_type >( y.idx ) - static_cast< difference_type >( x.idx );
+  }
+
+  template< typename TContainer >
+  inline RandomAccessBidiIterator< TContainer >
+  operator+( typename RandomAccessBidiIterator< TContainer >::difference_type n,
+             RandomAccessBidiIterator< TContainer > const& it )
+  {
+    return it + n;
+  }
+  /* --- end of RandomAccessBidiIterator interface functions --- */
+
+  /**
+   *  @brief  Generic random-'const'-access iterator
+   *
+   *  NOTE: Defining an iterator constant does not prevent modification of the
+   *  underlying container just like const pointers. However, immutability is guarnteed
+   *  when `TContainer` has const qualifier. `RandomAccessConstIterator` type alias adds
+   *  const quilifier to the given container.
+   */
+  template< typename TContainer >
+  using RandomAccessConstBidiIterator = RandomAccessBidiIterator< std::add_const_t< TContainer > >;
+
+  /**
    *  @brief  Generic random-access proxy container
    *
    *  NOTE: A const proxy container only exposes const references to elements (in case
