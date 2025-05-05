@@ -249,6 +249,36 @@ namespace gum {
                              return l == alphabet_type::comp2char( r );
                            } );
       }
+      /* === METHODS === */
+      inline void
+      reverse()
+      {
+        std::reverse( this->begin(), this->end() );
+      }
+
+      inline void
+      complement()
+      {
+        std::transform( this->begin(), this->end(), this->begin(),
+                        []( auto c ) {
+                          return alphabet_type::complement( c );
+                        } );
+      }
+
+      inline void
+      reverse_complement()
+      {
+        auto l_itr = this->begin();
+        auto r_itr = this->end();
+        if ( l_itr == r_itr ) return;
+
+        for ( --r_itr; l_itr < r_itr; ( void )++l_itr, --r_itr ) {
+          value_type l_tmp = *l_itr;
+          *l_itr = alphabet_type::complement( *r_itr );
+          *r_itr = alphabet_type::complement( l_tmp );
+        }
+        if ( l_itr == r_itr ) *l_itr = alphabet_type::complement( *l_itr );
+      }
   };
 
   template< typename TAlphabet >
