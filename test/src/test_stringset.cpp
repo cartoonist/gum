@@ -62,16 +62,24 @@ TEMPLATE_SCENARIO( "Conversion between standard and compressed string for sequen
 }
 
 TEMPLATE_SCENARIO_SIG( "String and StringView conversions and assignments", "[stringset]",
-                       ( ( typename T, typename U, int W /*dummy*/ ), T, U, W ),
-                       ( gum::Char, gum::Char, 0 ),
-                       ( gum::DNA5, gum::Char, 0 ),
-                       ( gum::DNA5, gum::DNA5, 0 ),
-                       ( gum::DNA, gum::Char, 0 ),
-                       ( gum::DNA, gum::DNA5, 0 ),
-                       ( gum::DNA, gum::DNA, 0 ) )
+                       ( ( typename T, typename U, typename V, int W /*dummy*/ ), T, U, V, W ),
+                       ( gum::Char, gum::Char, void, 0 ),
+                       ( gum::DNA5, gum::Char, void, 0 ),
+                       ( gum::DNA5, gum::DNA5, void, 0 ),
+                       ( gum::DNA, gum::Char, void, 0 ),
+                       ( gum::DNA, gum::DNA5, void, 0 ),
+                       ( gum::DNA, gum::DNA, void, 0 ),
+                       ( gum::Char, gum::Char, gum::str::Bidirectional, 0 ),
+                       ( gum::DNA5, gum::Char, gum::str::Bidirectional, 0 ),
+                       ( gum::DNA5, gum::DNA5, gum::str::Bidirectional, 0 ),
+                       ( gum::DNA, gum::Char, gum::str::Bidirectional, 0 ),
+                       ( gum::DNA, gum::DNA5, gum::str::Bidirectional, 0 ),
+                       ( gum::DNA, gum::DNA, gum::str::Bidirectional, 0 ) )
 {
   using alphabet_1_type = T;
   using alphabet_2_type = U;
+  using view_spec_type = V;
+  using string_view_type = gum::StringView< gum::String< alphabet_1_type >, view_spec_type >;
 
   auto get_decoding_map = []( auto alpha ) {
     using alphabet_type = decltype( alpha );
@@ -248,9 +256,9 @@ TEMPLATE_SCENARIO_SIG( "String and StringView conversions and assignments", "[st
 
     AND_GIVEN( "A StringView over it" )
     {
-      auto begin = 4;
-      auto length = 5u;
-      gum::StringView< gum::String< alphabet_1_type > > view( cseq1, begin, length );
+      auto begin = 4ul;
+      auto length = 5ul;
+      string_view_type view( cseq1, begin, length );
 
       THEN( "The view should yeild the content of the pointed substring" )
       {
@@ -314,7 +322,7 @@ TEMPLATE_SCENARIO_SIG( "String and StringView conversions and assignments", "[st
 
         AND_WHEN( "Another instance of the same view is constructed" )
         {
-          gum::StringView view2 ( cseq1, begin, length );
+          string_view_type view2 ( cseq1, begin, length );
           THEN( "Both views should be equal" ) {
             REQUIRE( view == view2 );
           }
@@ -391,7 +399,7 @@ TEMPLATE_SCENARIO_SIG( "String and StringView conversions and assignments", "[st
 
     AND_GIVEN( "A StringView over all of the string" )
     {
-      gum::StringView view( cseq1 );
+      string_view_type view( cseq1 );
 
       THEN( "Both view and string should have the same size" )
       {
@@ -434,7 +442,7 @@ TEMPLATE_SCENARIO_SIG( "String and StringView conversions and assignments", "[st
     AND_GIVEN( "A StringView over a suffix of it" )
     {
       auto begin = 4;
-      gum::StringView view( cseq1, begin );
+      string_view_type view( cseq1, begin );
 
       THEN( "The size of the view should be equal to the size of the suffix" )
       {
@@ -527,6 +535,133 @@ TEMPLATE_SCENARIO_SIG( "String and StringView conversions and assignments", "[st
           REQUIRE( std::equal( cseq1.begin() + begin + nbegin, cseq1.end(),
                                new_view.base() ) );
         }
+      }
+    }
+  }
+}
+
+TEMPLATE_SCENARIO_SIG( "String and Bidirectional StringView conversions and assignments", "[stringset]",
+                       ( ( typename T, typename U, int W /*dummy*/ ), T, U, W ),
+                       ( gum::DNA5, gum::str::Bidirectional, 0 ),
+                       ( gum::DNA,  gum::str::Bidirectional, 0 ))
+{
+  using alphabet_1_type = T;
+  using view_spec_type = U;
+  using string_view_type = gum::StringView< gum::String< alphabet_1_type >, view_spec_type >;
+
+  auto get_decoding_map = []( auto alpha ) {
+    using alphabet_type = decltype( alpha );
+    using char_type = typename alphabet_type::char_type;
+
+    std::vector< char_type > map;
+    auto alpha_size = static_cast< std::size_t >(
+        alphabet_type::char2comp( std::numeric_limits< char_type >::max() ) );
+    map.resize( alpha_size );
+
+    while ( alpha_size-- > 0 )
+      map[ alpha_size ] = alphabet_type::comp2char( alpha_size );
+    return map;
+  };
+
+  auto get_seq = []( auto alpha ) {
+        if constexpr ( std::is_same< decltype( alpha ), gum::DNA >::value )
+          return "CACGTTATTAGGTGCTTGGCTAGCTGATC";
+        if constexpr ( std::is_same< decltype( alpha ), gum::DNA5 >::value )
+          return "NACGTTNNTANGTGNNNNNCTTGGCTAGCTNATC";
+        if constexpr ( std::is_same< decltype( alpha ), gum::Char >::value )
+          return "The quick brown fox jumps over the lazy dog";
+      };
+
+  auto gen = rnd::get_rgn();
+  auto min_len = 5ul;
+  auto map = get_decoding_map( alphabet_1_type{} );
+
+  GIVEN( "A char string of the given alphabet" )
+  {
+    std::string seq = get_seq( alphabet_1_type{} );
+    gum::String< alphabet_1_type > cseq;
+    cseq = seq;
+
+    std::uniform_int_distribution< std::size_t > dist( 0, seq.size() - min_len );
+    std::size_t begin = dist( gen );
+    std::size_t length = std::max( min_len, dist( gen ) % ( seq.size() - begin ) );
+
+    WHEN( "A forward StringView is constructed over the whole string" )
+    {
+      string_view_type view( cseq );
+
+      THEN( "The view should yield the content of the string" )
+      {
+        REQUIRE( view.size() == cseq.size() );
+        REQUIRE( std::equal( cseq.begin(), cseq.end(), view.begin(),
+                             [ &map ]( auto const& l, auto const& r ) {
+                               return map[ l ] == r;
+                             } ) );
+      }
+    }
+
+    WHEN( "A reversed StringView is constructed over a substring of it" )
+    {
+      string_view_type view( cseq, begin, length, false, false );
+
+      auto r_cseq = cseq;
+      r_cseq.reverse();
+
+      THEN( "The view should yield the content of the pointed substring" )
+      {
+        REQUIRE( view.size() == length );
+        REQUIRE( std::equal( r_cseq.begin() + begin,
+                             r_cseq.begin() + begin + length, view.begin(),
+                             [&map]( auto const& l, auto const& r ) {
+                               return map[ l ] == r;
+                             } ) );
+      }
+    }
+
+    WHEN( "A forward complement StringView is constructed over a subset of it" )
+    {
+      string_view_type view( cseq, begin, length, true, true );
+
+      auto c_cseq = cseq;
+      c_cseq.complement();
+
+      THEN( "The view should yield the content of the pointed substring" )
+      {
+        REQUIRE( view.size() == length );
+        REQUIRE( std::equal( c_cseq.begin() + begin,
+                             c_cseq.begin() + begin + length, view.begin(),
+                             [&map]( auto const& l, auto const& r ) {
+                               return map[ l ] == r;
+                             } ) );
+      }
+    }
+
+    WHEN( "A reverse complement StringView is constructed over a subset of it" )
+    {
+      string_view_type view1( cseq, begin, length, false );
+      string_view_type view2( cseq, begin, length, false, true );
+
+      auto rc_cseq = cseq;
+      rc_cseq.reverse_complement();
+
+      THEN( "The view should yield the content of the pointed substring" )
+      {
+        REQUIRE( view1.size() == length );
+        REQUIRE( std::equal( rc_cseq.begin() + begin,
+                             rc_cseq.begin() + begin + length, view1.begin(),
+                             [&map]( auto const& l, auto const& r ) {
+                               return map[ l ] == r;
+                             } ) );
+      }
+
+      THEN( "The view should yield the content of the pointed substring" )
+      {
+        REQUIRE( view2.size() == length );
+        REQUIRE( std::equal( rc_cseq.begin() + begin,
+                             rc_cseq.begin() + begin + length, view2.begin(),
+                             [&map]( auto const& l, auto const& r ) {
+                               return map[ l ] == r;
+                             } ) );
       }
     }
   }

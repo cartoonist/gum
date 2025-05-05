@@ -36,7 +36,11 @@ namespace gum {
   template< typename TAlphabet >
   class String;
 
-  template< typename TString >
+  namespace str {
+    struct Bidirectional {};
+  }
+
+  template< typename TString, typename TSpec >
   class StringView;
 
   namespace util {
@@ -130,10 +134,10 @@ namespace gum {
       convert( second.begin(), second.end(), first.begin(), tag2, tag1 );
     }
 
-    template< typename TAlphabet1, typename TAlphabet2 >
+    template< typename TAlphabet1, typename TAlphabet2, typename TSpec >
     inline void
     assign( String< TAlphabet1 >& str,
-            StringView< String< TAlphabet2 > > const& view,
+            StringView< String< TAlphabet2 >, TSpec > const& view,
             TAlphabet1 tag1={}, TAlphabet2={} )
     {
       str.resize( view.size() );
@@ -141,18 +145,18 @@ namespace gum {
               tag1 );  // `StringView` is a `char` view
     }
 
-    template< typename TAlphabet >
+    template< typename TAlphabet, typename TSpec >
     inline void
     assign( String< TAlphabet >& str,
-            StringView< String< TAlphabet > > const& view, TAlphabet tag={} )
+            StringView< String< TAlphabet >, TSpec > const& view, TAlphabet tag={} )
     {
       str.resize( view.size() );
       str.assign( view.base(), view.base() + view.size() );
     }
 
-    template< typename TAlphabet >
+    template< typename TAlphabet, typename TSpec >
     inline void
-    assign( std::string& str, StringView< String< TAlphabet > > const& view,
+    assign( std::string& str, StringView< String< TAlphabet >, TSpec > const& view,
             TAlphabet tag={} )
     {
       str.resize( view.size() );
@@ -224,8 +228,9 @@ namespace gum {
         return base_type::operator==( other );
       }
 
+      template< typename TSpec >
       inline bool
-      operator==( StringView< String > const& view ) const
+      operator==( StringView< String, TSpec > const& view ) const
       {
         return std::equal( view.base(), view.base() + view.size(),
                            this->begin() );
@@ -300,11 +305,12 @@ namespace gum {
    *
    *   NOTE: Underlying string is always immutable.
    */
-  template< typename TString >
+  template< typename TString, typename TSpec = void >
   class StringView {
     public:
       /* === TYPE MEMBERS === */
       using string_type = TString;
+      using spec_type = TSpec;
       using alphabet_type = typename string_type::alphabet_type;
       using iterator = RandomAccessIterator< StringView >;
       using const_iterator = RandomAccessConstIterator< StringView >;
@@ -340,8 +346,9 @@ namespace gum {
         return std::equal( this->base(), this->base() + this->size(), encoded_str.begin() );
       }
 
+      template< typename TSpec2 >
       inline bool
-      operator==( StringView const& view ) const noexcept
+      operator==( StringView< string_type, TSpec2 > const& view ) const noexcept
       {
         if ( view.size() != this->size() ) return false;
         return std::equal( this->base(), this->base() + this->size(), view.base() );
@@ -438,23 +445,190 @@ namespace gum {
       StringView() {}
   };
 
+  /**
+   *   @brief  A constant bidirectional (char) view over `String< TAlphabet >`
+   *
+   *   NOTE: Underlying string is always immutable.
+   */
   template< typename TString >
+  class StringView< TString, str::Bidirectional > {
+  public:
+    /* === TYPE MEMBERS === */
+    using string_type = TString;
+    using spec_type = str::Bidirectional;
+    using alphabet_type = typename string_type::alphabet_type;
+    using base_value_type = typename string_type::value_type;
+    using proxy_container_type = RandomAccessProxyContainer<
+        const string_type, std::function< base_value_type( base_value_type ) > >;
+    using iterator = RandomAccessBidiIterator< StringView >;
+    using const_iterator = RandomAccessConstBidiIterator< StringView >;
+    using const_base_iterator = RandomAccessConstBidiIterator< proxy_container_type >;
+    using reference = char;
+    using const_reference = char;
+    using value_type = char;
+    using size_type = typename string_type::size_type;
+    using difference_type = typename string_type::difference_type;
+    /* === LIFECYCLE === */
+    StringView( const string_type& str, size_type b, size_type l, bool fwd,
+                bool cmpl )
+        : m_proxy( &str, ( cmpl ? StringView::complement : StringView::identity ) ),
+          m_begin( &m_proxy, ( fwd ? b : str.size() - b ), fwd ),
+          m_size( std::min( l, str.size() - b ) )
+    {
+      assert( b < str.size() );
+    }
+
+    StringView( const string_type& str, size_type b, size_type l,
+                bool fwds = true  /* == forward starnd == !revcomp */ )
+        : StringView( str, b, l, fwds, !fwds )
+    { }
+
+    StringView( const string_type& str, size_type b = 0 )
+        : StringView( str, b, str.size() - b, true, false )
+    { }
+    /* === OPERATORS === */
+    inline const_reference
+    operator[]( size_type i ) const noexcept
+    {
+      return alphabet_type::comp2char( *( this->m_begin + i ) );
+    }
+
+    inline bool
+    operator==( string_type const& encoded_str ) const noexcept
+    {
+      if ( encoded_str.size() != this->size() ) return false;
+      return std::equal( this->base(), this->base() + this->size(), encoded_str.begin() );
+    }
+
+    template< typename TSpec2 >
+    inline bool
+    operator==( StringView< string_type, TSpec2 > const& view ) const noexcept
+    {
+      if ( view.size() != this->size() ) return false;
+      return std::equal( this->base(), this->base() + this->size(), view.base() );
+    }
+
+    template< typename TContainer >
+    inline bool
+    operator==( TContainer const& str ) const noexcept
+    {
+      if ( str.size() != this->size() ) return false;
+      return std::equal( this->begin(), this->end(), str.begin() );
+    }
+
+    inline bool
+    operator==( const char* cstr ) const noexcept
+    {
+      std::string_view str( cstr );
+      if ( str.size() != this->size() ) return false;
+      return std::equal( this->begin(), this->end(), str.begin() );
+    }
+
+    template< typename _TString >
+    inline operator _TString() const
+    {
+      _TString str;
+      util::assign( str, *this );
+      return str;
+    }
+    /* === METHODS === */
+    inline const_reference
+    at( size_type i ) const
+    {
+      if ( i < 0 or i >= this->size() ) throw std::runtime_error( "index out of range" );
+      return ( *this )[ i ];
+    }
+
+    inline const_iterator
+    begin() const noexcept
+    {
+      return const_iterator( this, 0ull );
+    }
+
+    inline const_iterator
+    end() const noexcept
+    {
+      return const_iterator( this, this->m_size );
+    }
+
+    inline const_reference
+    front() const noexcept
+    {
+      return *( this->begin() );
+    }
+
+    inline const_reference
+    back() const noexcept
+    {
+      return *( this->end() - 1 );
+    }
+
+    inline size_type
+    size() const noexcept
+    {
+      return this->m_size;
+    }
+
+    inline const_base_iterator
+    base() const noexcept
+    {
+      return this->m_begin;
+    }
+
+    inline StringView
+    substr( size_type pos=0,
+            size_type len=std::numeric_limits< size_type >::max() ) const
+    {
+      if ( pos > this->size() )
+        throw std::out_of_range( "substring position is out of range" );
+      len = std::min( len, this->size() - pos );
+
+      StringView newview{ *this };
+      newview.m_begin += pos;
+      newview.m_size = len;
+      return newview;
+    }
+
+  protected:
+    /* === DATA MEMBERS === */
+    proxy_container_type m_proxy;
+    const_base_iterator m_begin;
+    size_type m_size;
+    /* === METHODS === */
+    inline static constexpr base_value_type
+    identity( base_value_type x ) noexcept
+    {
+      return x;
+    }
+
+    inline static constexpr base_value_type
+    complement( base_value_type x ) noexcept
+    {
+      return alphabet_type::complement( x );
+    }
+
+  private:
+    /* === LIFECYCLE === */
+    StringView() {}
+  };
+
+  template< typename TString, typename TSpec >
   inline bool
-  operator==( std::string const& left, StringView< TString > const& right )
+  operator==( std::string const& left, StringView< TString, TSpec > const& right )
   {
     return right == left;
   }
 
-  template< typename TString >
+  template< typename TString, typename TSpec >
   inline bool
-  operator==( const char* left, StringView< TString > const& right )
+  operator==( const char* left, StringView< TString, TSpec > const& right )
   {
     return right == left;
   }
 
-  template< typename TString >
+  template< typename TString, typename TSpec >
   inline std::string&
-  operator+=( std::string& str, StringView< TString > const& view )
+  operator+=( std::string& str, StringView< TString, TSpec > const& view )
   {
     auto n = str.size();
     if ( view.size() != 0 ) {
