@@ -366,7 +366,7 @@ namespace gum {
     inline void
     bfs_traverse( TGraph const& graph,
                   TCallback1 on_finishing,
-                  TCompare degree_cmp = [](auto a, auto b) -> bool { return a.first > b.first; },
+                  TCompare compare = []( auto a, auto b ) -> bool { return a.first > b.first; },
                   TCallback2 on_discovery = []( auto, auto, auto ) {} )
     {
       using id_type = typename TGraph::id_type;
@@ -381,7 +381,7 @@ namespace gum {
 
       auto n = graph.get_node_count();
 
-      std::priority_queue< value_type, nodes_type, decltype(degree_cmp) > queue{ degree_cmp };
+      std::priority_queue< value_type, nodes_type, decltype( compare ) > queue{ compare };
       map_type visited( n + 1, 0 );
       visited[ 0 ] = 1;  // dummy
 
@@ -403,11 +403,11 @@ namespace gum {
 
               graph.for_each_edges_out(
                   id, [&]( auto to, auto ) -> bool {
-                    auto rank = graph.id_to_rank( to );
-                    if ( !visited[ rank ] ) {
-                      std::invoke( on_discovery, rank, id, level );
+                    auto to_rank = graph.id_to_rank( to );
+                    if ( !visited[ to_rank ] ) {
+                      std::invoke( on_discovery, to_rank, to, level );
                       queue.push( { level, to } );
-                      visited[ rank ] = 1;
+                      visited[ to_rank ] = 1;
                     }
                     return true;
                   } );
@@ -488,8 +488,8 @@ namespace gum {
         result.push_back( { rank, id } );
       };
 
-      auto degree_cmp = [ &graph ]( const auto& a, const auto& b ) {
-        auto min_parent_rank = [ &graph ]( auto const& id ) {
+      auto compare = [&graph]( const auto& a, const auto& b ) {
+        auto min_parent_rank = [&graph]( auto const& id ) {
           if ( graph.indegree( id ) == 0 ) return graph.id_to_rank( id );
 
           rank_type min_rank = std::numeric_limits< rank_type >::max();
@@ -506,7 +506,7 @@ namespace gum {
         return min_parent_rank( a.second ) > min_parent_rank( b.second );
       };
 
-      bfs_traverse( graph, on_finishing, degree_cmp );
+      bfs_traverse( graph, on_finishing, compare );
       if ( reverse ) std::reverse( result.begin(), result.end() );
 
       return result;
