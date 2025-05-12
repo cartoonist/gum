@@ -362,12 +362,12 @@ namespace gum {
 
     template< typename TGraph, typename TCallback1,
               typename TCompare = bool(*)( std::pair< typename TGraph::rank_type, typename TGraph::id_type >, std::pair< typename TGraph::rank_type, typename TGraph::id_type > ),
-              typename TCallback2 = void(*)( typename TGraph::rank_type, typename TGraph::id_type, typename TGraph::rank_type ) >
+              typename TCallback2 = void(*)( typename TGraph::rank_type, typename TGraph::id_type, typename TGraph::rank_type, typename TGraph::rank_type ) >
     inline void
     bfs_traverse( TGraph const& graph,
                   TCallback1 on_finishing,
                   TCompare compare = []( auto a, auto b ) -> bool { return a.first > b.first; },
-                  TCallback2 on_discovery = []( auto, auto, auto ) {} )
+                  TCallback2 on_discovery = []( auto, auto, auto, auto ) {} )
     {
       using id_type = typename TGraph::id_type;
       using rank_type = typename TGraph::rank_type;
@@ -377,7 +377,7 @@ namespace gum {
 
       static_assert( std::is_invocable_v< TCallback1, rank_type, id_type >, "received a non-invocable as callback" );
       static_assert( std::is_invocable_v< TCompare, value_type, value_type >, "received a non-invocable as callback" );
-      static_assert( std::is_invocable_v< TCallback2, rank_type, id_type, rank_type >, "received a non-invocable as callback" );
+      static_assert( std::is_invocable_v< TCallback2, rank_type, id_type, rank_type, rank_type >, "received a non-invocable as callback" );
 
       auto n = graph.get_node_count();
 
@@ -405,7 +405,7 @@ namespace gum {
                   id, [&]( auto to, auto ) -> bool {
                     auto to_rank = graph.id_to_rank( to );
                     if ( !visited[ to_rank ] ) {
-                      std::invoke( on_discovery, to_rank, to, level );
+                      std::invoke( on_discovery, to_rank, to, level, rank /*parent*/ );
                       queue.push( { level, to } );
                       visited[ to_rank ] = 1;
                     }
