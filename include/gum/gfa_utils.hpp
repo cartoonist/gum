@@ -33,7 +33,13 @@
 namespace gum {
   namespace util {
     struct GFAFormat {
+      /* === TYPE MEMBERS === */
+      union Version {
+        double m_d;
+      };
+      /* === STATIC MEMBERS === */
       inline static const std::string FILE_EXTENSION = ".gfa";
+      /* === TYPE MEMBERS === */
       /**
        *  NOTE: The default coordinate system for GFA graphs is
        *  `gum::coordinate::Stoid`; i.e. the node IDs in the coordinate system
@@ -42,7 +48,39 @@ namespace gum {
        */
       template< typename TGraph >
       using DefaultCoord = gum::CoordinateType< TGraph, gum::coordinate::Stoid >;
+      /* === LIFECYCLE === */
+      GFAFormat( Version ver={ 1.0 } ) : m_v( ver ) { }
+      /* === SETTERS === */
+      inline void
+      set_version( Version ver )
+      {
+        this->m_v = ver;
+      }
+
+      inline void
+      set_version( double ver )
+      {
+        this->m_v.m_d = ver;
+      }
+      /* === GETTERS === */
+      inline Version
+      version() const
+      {
+        return this->m_v;
+      }
+
+      inline double
+      version_d() const
+      {
+        return this->m_v.m_d;
+      }
+    private:
+      Version m_v;
     };
+
+    inline static const GFAFormat GFA1{ GFAFormat::Version{ 1.0 } };
+    inline static const GFAFormat GFA1_1{ GFAFormat::Version{ 1.1 } };
+    inline static const GFAFormat GFA2{ GFAFormat::Version{ 2.0 } };
 
     /**
      *  @brief  Update an exisiting node in the graph (GFA overload).
@@ -642,11 +680,19 @@ namespace gum {
 
     template< typename TGraph, typename ...TArgs >
     inline void
-    extend_gfa( TGraph& graph, std::istream& in, TArgs&&... args )
+    extend_gfa( TGraph& graph, std::istream& in, GFAFormat fmt, TArgs&&... args )
     {
       gfak::GFAKluge gg;
+      gg.set_version( fmt.version_d() );
       gg.parse_gfa_file( in );
       extend( graph, gg, std::forward< TArgs >( args )... );
+    }
+
+    template< typename TGraph, typename ...TArgs >
+    inline void
+    extend_gfa( TGraph& graph, std::istream& in, TArgs&&... args )
+    {
+      extend_gfa( graph, in, GFAFormat{}, std::forward< TArgs >( args )... );
     }
 
     template< typename TGraph, typename ...TArgs >
@@ -662,16 +708,16 @@ namespace gum {
 
     template< typename TGraph, typename ...TArgs >
     inline void
-    extend( TGraph& graph, std::istream& in, GFAFormat, TArgs&&... args )
+    extend( TGraph& graph, std::istream& in, GFAFormat fmt, TArgs&&... args )
     {
-      extend_gfa( graph, in, std::forward< TArgs >( args )... );
+      extend_gfa( graph, in, fmt, std::forward< TArgs >( args )... );
     }
 
     template< typename TGraph, typename ...TArgs >
     inline void
-    extend( TGraph& graph, std::string fname, GFAFormat, TArgs&&... args )
+    extend( TGraph& graph, std::string fname, GFAFormat fmt, TArgs&&... args )
     {
-      extend_gfa( graph, std::move( fname ), std::forward< TArgs >( args )... );
+      extend_gfa( graph, std::move( fname ), fmt, std::forward< TArgs >( args )... );
     }
 
     template< typename TGraph, typename ...TArgs >
@@ -700,16 +746,16 @@ namespace gum {
 
     template< typename TGraph, typename ...TArgs >
     inline void
-    load( TGraph& graph, std::istream& in, GFAFormat, TArgs&&... args )
+    load( TGraph& graph, std::istream& in, GFAFormat fmt, TArgs&&... args )
     {
-      load_gfa( graph, in, std::forward< TArgs >( args )... );
+      load_gfa( graph, in, fmt, std::forward< TArgs >( args )... );
     }
 
     template< typename TGraph, typename ...TArgs >
     inline void
-    load( TGraph& graph, std::string fname, GFAFormat, TArgs&&... args )
+    load( TGraph& graph, std::string fname, GFAFormat fmt, TArgs&&... args )
     {
-      load_gfa( graph, std::move( fname ), std::forward< TArgs >( args )... );
+      load_gfa( graph, std::move( fname ), fmt, std::forward< TArgs >( args )... );
     }
   }  /* --- end of namespace util --- */
 }  /* --- end of namespace gum --- */
