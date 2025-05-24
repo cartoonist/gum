@@ -357,6 +357,18 @@ namespace gum {
       return trait_type::end_side( id );
     }
 
+    constexpr inline bool
+    is_start_side( side_type side ) const
+    {
+      return trait_type::is_start_side( side );
+    }
+
+    constexpr inline bool
+    is_end_side( side_type side ) const
+    {
+      return trait_type::is_end_side( side );
+    }
+
     constexpr inline side_type
     opposite_side( side_type side ) const
     {

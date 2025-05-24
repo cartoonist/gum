@@ -145,6 +145,20 @@ namespace gum {
       return side_type( id, DirectedGraphBaseTrait::end_sidetype() );
     }
 
+    constexpr static inline bool
+    is_start_side( side_type side )
+    {
+      return DirectedGraphBaseTrait::sidetype_of( side ) ==
+          DirectedGraphBaseTrait::start_sidetype();
+    }
+
+    constexpr static inline bool
+    is_end_side( side_type side )
+    {
+      return DirectedGraphBaseTrait::sidetype_of( side ) ==
+          DirectedGraphBaseTrait::end_sidetype();
+    }
+
     constexpr static inline side_type
     opposite_side( side_type side )
     {
@@ -394,6 +408,18 @@ namespace gum {
     end_side( id_type id )
     {
       return side_type( id );
+    }
+
+    constexpr static inline bool
+    is_start_side( side_type side )
+    {
+      return true;
+    }
+
+    constexpr static inline bool
+    is_end_side( side_type side )
+    {
+      return true;
     }
 
     constexpr static inline side_type

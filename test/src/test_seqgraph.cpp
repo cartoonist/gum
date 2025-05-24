@@ -354,8 +354,13 @@ TEMPLATE_SCENARIO( "Specialised functionality of DirectedGraph", "[seqgraph][tem
 
           REQUIRE( graph.get_edge_count() == edges.size() );
           for ( rank_type rank = 1; rank <= graph.get_node_count(); ++rank ) {
+            auto nid = graph.rank_to_id( rank );
+            REQUIRE( graph.is_start_side( graph.start_side( nid ) ) );
+            REQUIRE( graph.is_start_side( graph.end_side( nid ) ) );
+            REQUIRE( graph.is_end_side( graph.start_side( nid ) ) );
+            REQUIRE( graph.is_end_side( graph.end_side( nid ) ) );
             graph.for_each_side(
-                graph.rank_to_id( rank ),
+                nid,
                 [&graph]( side_type side ) {
                   id_type id = graph.id_of( side );
                   REQUIRE( graph.start_side( id ) == side );
@@ -633,8 +638,13 @@ TEMPLATE_SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[se
           REQUIRE( graph.get_edge_count() == edges.size() );
           for ( rank_type rank = 1; rank <= graph.get_node_count(); ++rank ) {
             bool sidetype = false;
+            auto nid = graph.rank_to_id( rank );
+            REQUIRE( graph.is_start_side( graph.start_side( nid ) ) );
+            REQUIRE( !graph.is_start_side( graph.end_side( nid ) ) );
+            REQUIRE( !graph.is_end_side( graph.start_side( nid ) ) );
+            REQUIRE( graph.is_end_side( graph.end_side( nid ) ) );
             graph.for_each_side(
-                graph.rank_to_id( rank ),
+                nid,
                 [&graph, &sidetype]( side_type side ) {
                   id_type id = graph.id_of( side );
                   if ( sidetype ) REQUIRE( graph.end_side( id ) == side );
