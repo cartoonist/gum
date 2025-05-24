@@ -26,9 +26,14 @@
 #include <list>
 #include <map>
 #include <cassert>
+#include <cstdlib>   // std::getenv()
+#include <unistd.h>  // close(int)
 
 #include "basic_types.hpp"
 #include "iterators.hpp"
+
+#define GUM_DEFAULT_TMPDIR "/tmp"
+#define GUM_TMPFILE_TEMPLATE "/gum-XXXXXX"
 
 
 namespace gum {
@@ -224,6 +229,35 @@ namespace gum {
       x |= x >> 32;
       ++x;
       return x;
+    }
+
+    inline std::string
+    get_tmpdir_env()
+    {
+      return std::getenv( "TMPDIR" );
+    }
+
+    inline std::string
+    get_tmpdir()
+    {
+      std::string tmpdir = get_tmpdir_env();
+      if ( tmpdir.empty() ) tmpdir = GUM_DEFAULT_TMPDIR;
+      return tmpdir;
+    }
+
+    inline std::string
+    get_tmpfile( char const* directory = "" )
+    {
+      assert( std::strlen( directory ) == 0 || directory[ 0 ] == '/' );
+      std::string tfpath = get_tmpdir() + directory + GUM_TMPFILE_TEMPLATE;
+      char* tmpl = new char[ tfpath.size() + 1 ];
+      std::strcpy( tmpl, tfpath.c_str() );
+      int fd = mkstemp( tmpl );
+      tfpath = tmpl;
+
+      ::close( fd );
+      delete[] tmpl;
+      return tfpath;
     }
 
     // Sort zipped containers: https://stackoverflow.com/a/17074810/357257
