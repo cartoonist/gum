@@ -964,14 +964,14 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
           REQUIRE( graph.node_length( ibyc(7) ) == 5 );
           REQUIRE( graph.node_length( ibyc(8) ) == 4 );
           if ( check_name ) {
-            REQUIRE( graph.get_node_prop( 1 ).name == "1" );
-            REQUIRE( graph.get_node_prop( 2 ).name == "2" );
-            REQUIRE( graph.get_node_prop( 3 ).name == "4" );
-            REQUIRE( graph.get_node_prop( 4 ).name == "3" );
-            REQUIRE( graph.get_node_prop( 5 ).name == "5" );
-            REQUIRE( graph.get_node_prop( 6 ).name == "6" );
-            REQUIRE( graph.get_node_prop( 7 ).name == "7" );
-            REQUIRE( graph.get_node_prop( 8 ).name == "8" );
+            REQUIRE( graph.node_name( ibyc(1) ) == "1" );
+            REQUIRE( graph.node_name( ibyc(2) ) == "2" );
+            REQUIRE( graph.node_name( ibyc(3) ) == "3" );
+            REQUIRE( graph.node_name( ibyc(4) ) == "4" );
+            REQUIRE( graph.node_name( ibyc(5) ) == "5" );
+            REQUIRE( graph.node_name( ibyc(6) ) == "6" );
+            REQUIRE( graph.node_name( ibyc(7) ) == "7" );
+            REQUIRE( graph.node_name( ibyc(8) ) == "8" );
           }
           if ( check_overlap ) {
             REQUIRE( graph.edge_overlap( link_type( { ibyc(1), true, ibyc(2), false } ) ) == 0 );

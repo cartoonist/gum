@@ -75,6 +75,8 @@ namespace gum {
     using sequence_type = typename node_prop_type::sequence_type;
     using seq_const_reference = typename node_prop_type::seq_const_reference;
     using seq_reference = typename node_prop_type::seq_reference;
+    using str_const_reference = typename node_prop_type::str_const_reference;
+    using str_reference = typename node_prop_type::str_reference;
     using edge_type = void;  // For compatibility with `SeqGraph< Dynamic >`
     using path_type = typename graph_prop_type::path_type;
 
@@ -87,11 +89,15 @@ namespace gum {
     using dynamic_type = dynamic_template<>;
     using succinct_type = succinct_template<>;
 
+    // Node names are excluded in the header, otherwise it should be 4.
+    // constexpr static padding_type NODE_PADDING = 4;
     constexpr static padding_type NODE_PADDING = 2;
     constexpr static padding_type EDGE_PADDING = 1;
 
     constexpr static size_type NP_SEQSTART_OFFSET = 0;
     constexpr static size_type NP_SEQLEN_OFFSET = 1;
+    // constexpr static size_type NP_NAMESTART_OFFSET = 2;
+    // constexpr static size_type NP_NAMELEN_OFFSET = 3;
 
     constexpr static size_type EP_OVERLAP_OFFSET = 0;
 
@@ -196,6 +202,15 @@ namespace gum {
     node_length( id_type id ) const
     {
       return this->get_np_value( id, SeqGraph::NP_SEQLEN_OFFSET );
+    }
+
+    inline str_const_reference
+    node_name( id_type id ) const
+    {
+      // size_type npos = this->get_np_value( id, SeqGraph::NP_NAMESTART_OFFSET );
+      // size_type len = this->get_np_value( id, SeqGraph::NP_NAMELEN_OFFSET );
+      rank_type rank = base_type::id_to_rank( id );
+      return this->node_prop.names()[ rank - 1 ];
     }
 
     inline offset_type
@@ -349,6 +364,10 @@ namespace gum {
                                 this->node_prop.sequences().start_position( rank - 1 ) );
             this->set_np_value( id, SeqGraph::NP_SEQLEN_OFFSET,
                                 this->node_prop.sequences().length( rank - 1 ) );
+            // this->set_np_value( id, SeqGraph::NP_NAMESTART_OFFSET,
+            //                     this->node_prop.names().start_position( rank - 1 ) );
+            // this->set_np_value( id, SeqGraph::NP_NAMELEN_OFFSET,
+            //                     this->node_prop.names().length( rank - 1 ) );
             id_type d_id = d_graph.rank_to_id( rank );
             this->for_each_edges_out_pos(
                 id,

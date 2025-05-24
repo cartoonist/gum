@@ -173,6 +173,8 @@ namespace gum {
     using const_stringset_type = const_name_container_type;
     using seq_const_reference = typename const_sequenceset_type::const_reference;
     using seq_reference = typename const_sequenceset_type::reference;
+    using str_const_reference = typename const_stringset_type::const_reference;
+    using str_reference = typename const_stringset_type::reference;
     using succinct_type = NodeProperty< Succinct, TWidths... >;
     using dynamic_type = NodeProperty;
 

@@ -62,6 +62,8 @@ namespace gum {
     using sequence_type = typename node_prop_type::sequence_type;
     using seq_const_reference = typename node_prop_type::seq_const_reference;
     using seq_reference = typename node_prop_type::seq_reference;
+    using str_const_reference = typename node_prop_type::str_const_reference;
+    using str_reference = typename node_prop_type::str_reference;
     using edge_type = typename edge_prop_type::edge_type;
     using path_type = typename graph_prop_type::path_type;
 
@@ -259,6 +261,13 @@ namespace gum {
     node_length( id_type id ) const
     {
       return this->node_sequence( id ).size();
+    }
+
+    inline str_const_reference
+    node_name( id_type id ) const
+    {
+      rank_type rank = base_type::id_to_rank( id );
+      return this->node_prop( rank ).name;
     }
 
     inline offset_type

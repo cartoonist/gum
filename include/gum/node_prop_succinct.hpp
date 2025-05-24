@@ -40,6 +40,8 @@ namespace gum {
     using seq_const_reference = typename sequenceset_type::const_reference;
     using seq_reference = typename sequenceset_type::reference;
     using string_type = typename trait_type::string_type;
+    using str_const_reference = typename stringset_type::const_reference;
+    using str_reference = typename stringset_type::reference;
     using char_type = typename alphabet_type::char_type;
     using node_type = Node< sequence_type, string_type >;
     using value_type = node_type;
@@ -64,6 +66,8 @@ namespace gum {
     using stringset_type = typename trait_type::stringset_type;
     using seq_const_reference = typename trait_type::seq_const_reference;
     using seq_reference = typename trait_type::seq_reference;
+    using str_const_reference = typename trait_type::str_const_reference;
+    using str_reference = typename trait_type::str_reference;
     using sequence_type = typename trait_type::sequence_type;
     using string_type = typename trait_type::string_type;
     using char_type = typename trait_type::char_type;
