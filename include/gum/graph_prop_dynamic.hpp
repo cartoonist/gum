@@ -77,14 +77,17 @@ namespace gum {
       }
 
       template< typename TCallback >
-      inline void
-      for_each_node( TCallback callback )
+      inline bool
+      for_each_node( TCallback callback ) const
       {
         static_assert( std::is_invocable_r_v< bool, TCallback, id_type, bool >, "received a non-invocable as callback" );
 
         for ( auto it = this->nodes.begin(); it != this->nodes.end(); ++it ) {
-          callback( base_type::id_of( *it ), base_type::is_reverse( *it ) );
+          if ( !callback( base_type::id_of( *it ), base_type::is_reverse( *it ) ) ) {
+            return false;
+          }
         }
+        return true;
       }
 
       inline const_iterator
