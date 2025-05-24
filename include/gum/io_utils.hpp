@@ -276,6 +276,31 @@ namespace gum {
     {
       _load( graph, fname, typename TGraph::spec_type(), std::forward< TArgs >( args )... );
     }
+
+    template< typename TGraph, typename ...TArgs >
+    inline void
+    write( TGraph const& graph, std::string fname, TArgs&&... args )
+    {
+      if ( util::ends_with( fname, GFAFormat::FILE_EXTENSION ) ) {
+        write_gfa( graph, fname, std::forward< TArgs >( args )... );
+      }
+#ifndef GUM_IO_PROTOBUF_VG
+#ifdef GUM_INCLUDED_HG
+      else if ( util::ends_with( fname, HGFormat::FILE_EXTENSION ) ) {
+        //write_hg( graph, fname, std::forward< TArgs >( args )... );
+        throw std::runtime_error( "output hg format not implemented" );
+      }
+#endif
+#else
+#ifdef GUM_INCLUDED_VG
+      else if ( util::ends_with( fname, VGFormat::FILE_EXTENSION ) ) {
+        //write_vg( graph, fname, std::forward< TArgs >( args )... );
+        throw std::runtime_error( "output vg format not implemented" );
+      }
+#endif
+#endif
+      else throw std::runtime_error( "unsupported output file format" );
+    }
   }  /* --- end of namespace util --- */
 }  /* --- end of namespace gum --- */
 

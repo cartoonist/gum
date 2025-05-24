@@ -24,6 +24,150 @@
 #include "test_base.hpp"
 
 
+TEMPLATE_SCENARIO( "Sanity checks for serialising a SeqGraph", "[ioutils][serialise]",
+                   ( gum::SeqGraph< gum::Dynamic > ),
+                   ( gum::SeqGraph< gum::Succinct > ) )
+{
+  using graph_type = TestType;
+  using id_type = typename graph_type::id_type;
+  using rank_type = typename graph_type::rank_type;
+
+  auto compare_graph = []( auto const& g1, auto const& g2 ) -> bool {
+    if ( g1.get_node_count() != g2.get_node_count() ) { return false; }
+    if ( g1.get_edge_count() != g2.get_edge_count() ) { return false; }
+    if ( g1.get_path_count() != g2.get_path_count() ) { return false; }
+
+    auto res = g1.for_each_node( [&]( rank_type rank, id_type id ) {
+      if ( !g2.has_node( id ) ) return false;
+
+      auto res = g1.for_each_side( id, [&]( auto from ) {
+        auto res = g1.for_each_edges_out( from, [&]( auto to ) {
+          if ( !g2.has_edge( from, to ) ) return false;
+          return true;
+        } );
+        if ( !res ) return false;
+        return true;
+      } );
+
+      if ( !res ) return false;
+      return true;
+    } );
+
+    if ( !res ) return false;
+
+    return g1.for_each_path( [&]( auto, auto pid1 ) {
+      auto pname = g1.path_name( pid1 );
+      id_type pid2 = 0;
+      g2.for_each_path( [&]( auto, auto _pid2 ) {
+        if ( g2.path_name( _pid2 ) == pname ) {
+          pid2 = _pid2;
+          return false;
+        }
+        return true;
+      } );
+
+      if ( pid2 == 0 ) return false;
+      auto path1 = g1.path( pid1 );
+      auto path2 = g2.path( pid2 );
+
+      return std::equal( path1.begin(), path1.end(), path2.begin(),
+                         path2.end() );
+    } );
+  };
+
+  GIVEN( "Variation graph in GFA1" )
+  {
+    std::string basename_v1 = GENERATE(
+        "/complex_v1.gfa", "/dfs_dag_v1.gfa", "/graph_simple_v1.gfa",
+        "/tiny_v1.gfa", "/tiny_p1.gfa", "/dfs_cyclic_v1.gfa",
+        "/hprc-v1.0-minigraph-chm13-subgraph_v1.gfa" );
+    std::string other_basename = "/tiny_p2.gfa";
+    graph_type other;
+    gum::util::load( other, test_data_dir + other_basename, false );
+
+    AND_GIVEN( "Input graph '" + basename_v1.substr( 1 ) + "'" )
+    {
+      graph_type graph;
+      auto bname = basename_v1;
+
+      WHEN( "Loaded a Dynamic SeqGraph from a file" )
+      {
+        gum::util::load( graph, test_data_dir + bname, gum::util::GFA1,
+                         false );
+
+        THEN( "The graph should be equal to itself" )
+        {
+          REQUIRE( compare_graph( graph, graph ) );
+        }
+
+        THEN( "The graph should not be equal to a different graph" )
+        {
+          REQUIRE( !compare_graph( graph, other ) );
+        }
+
+        AND_WHEN( "Serialised the graph to a GFA1 file" )
+        {
+          std::string fname = gum::util::get_tmpfile();
+          gum::util::write( graph, fname, gum::util::GFA1, true );
+
+          THEN( "The serialised graph should be equal to the original" )
+          {
+            graph_type graph2;
+            gum::util::load( graph2, fname, gum::util::GFA1, false );
+            REQUIRE( compare_graph( graph, graph2 ) );
+          }
+        }
+      }
+    }
+  }
+
+  GIVEN( "Variation graph in GFA2" )
+  {
+    std::string basename_v2 = GENERATE(
+        "/complex_v2.gfa", "/dfs_dag_v2.gfa", "/graph_simple_v2.gfa",
+        "/tiny_v2.gfa", "/tiny_p2.gfa", "/dfs_cyclic_v2.gfa",
+        "/hprc-v1.0-minigraph-chm13-subgraph_v2.gfa" );
+    std::string other_basename = "/tiny_p1.gfa";
+    graph_type other;
+    gum::util::load( other, test_data_dir + other_basename, false );
+
+    AND_GIVEN( "Input graph '" + basename_v2.substr( 1 ) + "'" )
+    {
+      graph_type graph;
+      auto bname = basename_v2;
+
+      WHEN( "Loaded a Dynamic SeqGraph from a file" )
+      {
+        gum::util::load( graph, test_data_dir + bname, gum::util::GFA2,
+                         false );
+
+        THEN( "The graph should be equal to itself" )
+        {
+          REQUIRE( compare_graph( graph, graph ) );
+        }
+
+        THEN( "The graph should not be equal to a different graph" )
+        {
+          REQUIRE( !compare_graph( graph, other ) );
+        }
+
+        AND_WHEN( "Serialised the graph to a GFA2 file" )
+        {
+          std::string fname = gum::util::get_tmpfile();
+          gum::util::write( graph, fname, gum::util::GFA2, true );
+
+          THEN( "The serialised graph should be equal to the original" )
+          {
+            graph_type graph2;
+            gum::util::load( graph2, fname, gum::util::GFA2, false );
+            REQUIRE( compare_graph( graph, graph2 ) );
+          }
+        }
+      }
+    }
+  }
+}
+
 SCENARIO( "Sanity check for deserialising a SeqGraph", "[ioutils]" )
 {
   GIVEN( "The 'tiny' variation graph" )
@@ -549,7 +693,7 @@ SCENARIO( "Sanity check for deserialising a SeqGraph", "[ioutils]" )
 
     WHEN( "Loaded a Dynamic SeqGraph from a file in GFA 2.0 format" )
     {
-      gum::util::load( graph, test_data_dir + "/tiny.gfa", true );
+      gum::util::load( graph, test_data_dir + "/tiny_v2.gfa", true );
       THEN( "The resulting graph should pass integrity tests" )
       {
         integrity_test( graph );
@@ -568,7 +712,7 @@ SCENARIO( "Sanity check for deserialising a SeqGraph", "[ioutils]" )
     WHEN( "Loaded a Succinct SeqGraph from a file in GFA 2.0 format" )
     {
       succinct_type sc_graph;
-      gum::util::load( sc_graph, test_data_dir + "/tiny.gfa", true );
+      gum::util::load( sc_graph, test_data_dir + "/tiny_v2.gfa", true );
       THEN( "The resulting graph should pass integrity tests" )
       {
         integrity_test( sc_graph );

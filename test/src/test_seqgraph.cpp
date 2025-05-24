@@ -1311,7 +1311,7 @@ TEMPLATE_SCENARIO( "Get graph statistics", "[seqgraph][template]",
 
   GIVEN( "A tiny variation graph" )
   {
-    std::string filepath = test_data_dir + "/tiny.gfa";
+    std::string filepath = test_data_dir + "/tiny_v2.gfa";
     graph_type graph;
     gum::util::load( graph, filepath, true );
 
@@ -1639,7 +1639,7 @@ SCENARIO( "Cuthill-McKee permutation", "[seqgraph]" )
 {
   using graph_type = gum::SeqGraph< gum::Dynamic >;
   std::string basename
-      = GENERATE( "/complex_v2.gfa", "/dfs_dag_v2.gfa", "/tiny.gfa",
+      = GENERATE( "/complex_v2.gfa", "/dfs_dag_v2.gfa", "/tiny_v2.gfa",
                   "/graph_simple_v2.gfa", "/dfs_cyclic_v2.gfa" );
 
   GIVEN( "Variation graph: " + basename )
@@ -1777,7 +1777,7 @@ SCENARIO( "Minimal Breaks Ordering", "[seqgraph]" )
   }
 
   std::string basename
-      = GENERATE( "/complex_v2.gfa", "/dfs_dag_v2.gfa", "/tiny.gfa",
+      = GENERATE( "/complex_v2.gfa", "/dfs_dag_v2.gfa", "/tiny_v2.gfa",
                   "/graph_simple_v2.gfa" );
 
   GIVEN( "Variation graph: " + basename )

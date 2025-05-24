@@ -20,7 +20,7 @@
 #define  GUM_GFA_UTILS_HPP__
 
 #include <string>
-#include <istream>
+#include <iostream>
 
 #include <gfakluge.hpp>
 
@@ -756,6 +756,135 @@ namespace gum {
     load( TGraph& graph, std::string fname, GFAFormat fmt, TArgs&&... args )
     {
       load_gfa( graph, std::move( fname ), fmt, std::forward< TArgs >( args )... );
+    }
+
+    template< typename TGraph >
+    inline gfak::sequence_elem
+    gfa_segment( TGraph const& graph, typename TGraph::id_type node_id )
+    {
+      gfak::sequence_elem s;
+      s.name = std::string( graph.node_name( node_id ) );
+      s.sequence = std::string( graph.node_sequence( node_id ) );
+      s.length = graph.node_length( node_id );
+      return s;
+    }
+
+    template< typename TGraph >
+    inline gfak::edge_elem
+    gfa_edge( TGraph const& graph, typename TGraph::side_type from,
+              typename TGraph::side_type to, bool safe = true )
+    {
+      if ( safe && !graph.has_edge( from, to ) ) {
+        throw std::runtime_error( "accessing non-existant edge" );
+      }
+      gfak::edge_elem e;
+      // NOTE: only dovetail overlap is supported
+      auto overlap = graph.edge_overlap( from, to );
+      auto from_id = graph.id_of( from );
+      auto to_id = graph.id_of( to );
+      e.source_name = std::string( graph.node_name( from_id ) );
+      e.source_end = graph.node_length( from_id );
+      e.source_begin = e.source_end - overlap;
+      e.source_orientation_forward = graph.is_end_side( from );
+      // type = 2 if `to` is contained by `from`; otherwise 1.
+      e.type = ( overlap == graph.node_length( to_id ) ) ? 2 : 1;
+      e.sink_name = std::string( graph.node_name( to_id ) );
+      e.sink_begin = 0;
+      e.sink_end = overlap;
+      e.sink_orientation_forward = graph.is_start_side( to );
+      e.alignment = std::to_string( overlap ) + "M";
+      return e;
+    }
+
+    template< typename TGraph >
+    inline gfak::edge_elem
+    gfa_edge( TGraph const& graph, typename TGraph::link_type sides,
+              bool safe = true )
+    {
+      return gfa_edge( graph, graph.from_side( sides ), graph.to_side( sides ),
+                       safe );
+    }
+
+    template< typename TGraph >
+    inline gfak::path_elem
+    gfa_path( TGraph const& graph, typename TGraph::id_type pid )
+    {
+      gfak::path_elem p;
+      p.name = graph.path_name( pid );
+      p.segment_names.reserve( graph.path_length( pid ) );
+      p.orientations.reserve( graph.path_length( pid ) );
+      graph.path( pid ).for_each_node(
+          [&p, &graph]( typename TGraph::id_type node_id, bool reverse ) {
+            p.segment_names.push_back( graph.node_name( node_id ) );
+            p.orientations.push_back( !reverse );
+            return true;
+          } );
+      return p;
+    }
+
+    template< typename TGraph >
+    inline gfak::GFAKluge
+    gfa_graph( TGraph const& graph, GFAFormat fmt )
+    {
+      using graph_type = TGraph;
+      using id_type = typename graph_type::id_type;
+      using rank_type = typename graph_type::rank_type;
+      using side_type = typename graph_type::side_type;
+
+      gfak::GFAKluge gfa;
+      gfa.set_version( fmt.version_d() );
+
+      graph.for_each_node( [&]( rank_type rank, id_type id ) {
+        auto seg = gfa_segment( graph, id );
+        gfa.add_sequence( seg );
+
+        return graph.for_each_side( id, [&]( side_type from ) {
+          return graph.for_each_edges_out( from, [&]( side_type to ) {
+            gfa.add_edge( seg.name, gfa_edge( graph, from, to, false ) );
+            return true;
+          } );
+        } );
+      } );
+
+      graph.for_each_path( [&]( rank_type, id_type pid ) {
+        gfa.add_path( graph.path_name( pid ), gfa_path( graph, pid ) );
+        return true;
+      } );
+
+      return gfa;
+    }
+
+    template< typename TGraph >
+    inline void
+    write_gfa( TGraph const& graph, std::ostream& out,
+               GFAFormat fmt, bool block_ordered = false )
+    {
+      gfa_graph( graph, fmt ).output_to_stream( out, block_ordered );
+    }
+
+    template< typename TGraph, typename ...TArgs >
+    inline void
+    write_gfa( TGraph const& graph, std::string fname, TArgs&&... args )
+    {
+      std::ofstream ofs( fname, std::ofstream::out | std::ofstream::binary );
+      if( !ofs ) {
+        throw std::runtime_error( "cannot open file '" + fname + "'" );
+      }
+      write_gfa( graph, ofs, std::forward< TArgs >( args )... );
+    }
+
+    template< typename TGraph, typename ...TArgs >
+    inline void
+    write( TGraph const& graph, std::ostream& out, GFAFormat fmt, TArgs&&... args )
+    {
+      write_gfa( graph, out, fmt, std::forward< TArgs >( args )... );
+    }
+
+    template< typename TGraph, typename ...TArgs >
+    inline void
+    write( TGraph const& graph, std::string fname, GFAFormat fmt, TArgs&&... args )
+    {
+      write_gfa( graph, std::move( fname ), fmt, std::forward< TArgs >( args )... );
     }
   }  /* --- end of namespace util --- */
 }  /* --- end of namespace gum --- */
