@@ -76,6 +76,27 @@ namespace gum {
         this->nodes.push_back( base_type::encode( id, reversed ) );
       }
 
+      inline void
+      flip_orientation( /*node*/ id_type node_id ) noexcept
+      {
+        for ( auto& n : this->nodes ) {
+          if ( base_type::id_of( n ) == node_id ) {
+            base_type::reverse( n );
+          }
+        }
+      }
+
+      template< typename TSet >
+      inline void
+      flip_orientation( TSet const& node_set )
+      {
+        for ( auto& n : this->nodes ) {
+          if ( node_set.count( base_type::id_of( n ) ) ) {
+            base_type::reverse( n );
+          }
+        }
+      }
+
       template< typename TCallback >
       inline bool
       for_each_node( TCallback callback ) const
@@ -331,6 +352,19 @@ namespace gum {
     has_path( id_type id ) const
     {
       return this->path_rank.find( id ) != this->path_rank.end();
+    }
+
+    inline void
+    flip_orientation( /*node*/ id_type node_id )
+    {
+      for ( auto& path : this->paths ) { path.flip_orientation( node_id ); }
+    }
+
+    template< typename TSet >
+    inline void
+    flip_orientation( TSet const& node_set )
+    {
+      for ( auto& path : this->paths ) { path.flip_orientation( node_set ); }
     }
 
     template< typename TCallback >

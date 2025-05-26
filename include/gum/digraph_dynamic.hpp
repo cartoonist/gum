@@ -507,6 +507,53 @@ namespace gum {
     }
 
     /**
+     *  @brief  Flip the orientation of a node.
+     *
+     *  NOTE: This function *should not* invalidate iterators of the `adj_out`
+     *  and `adj_in` maps except for the sides of the flipped node. This
+     *  assumption is essential for preserving the correctness of the edge
+     *  canonicalisation; i.e. `make_edges_canonical` method. Invalidation could
+     *  lead to unpredictable behavior or disrupt algorithmic consistency.
+     */
+    inline bool
+    flip_orientation( id_type id )
+    {
+      if ( !this->has_node( id ) ) return false;
+
+      /* Toggle sides in the links from or to adjacent nodes */
+      auto left = this->start_side( id );
+      auto right = this->end_side( id );
+      this->_toggle_side_in_adjacent_nodes( left );
+      this->_toggle_side_in_adjacent_nodes( right );
+
+      /* flip the links for this node */
+      auto flip_sides = [&]( auto&& adjs ) {
+        auto left_itr = adjs.find( left );
+        auto right_itr = adjs.find( right );
+        auto left_found = ( left_itr != adjs.end() );
+        auto right_found = ( right_itr != adjs.end() );
+        if ( left_found && right_found ) {
+          std::swap( left_itr->second, right_itr->second );
+        }
+        else if ( left_found ) {
+          auto elem = std::move( left_itr->second );
+          adjs.erase( left_itr );
+          adjs[ right ] = elem;
+        }
+        else if ( right_found ) {
+          auto elem = std::move( right_itr->second );
+          adjs.erase( right_itr );
+          adjs[ left ] = elem;
+        }
+      };
+
+      flip_sides( this->adj_out );
+      flip_sides( this->adj_in );
+
+      return true;
+    }
+
+    /**
      *  @brief  Call a `callback` on each outgoing edges from `from` side.
      *
      *  The `callback` function should get the outgoing side and return `true`
@@ -838,6 +885,34 @@ namespace gum {
     set_last_rank( size_type count=1 )
     {
       this->set_rank( this->nodes.end() - count, this->nodes.end() );
+    }
+
+    /**
+     *  @brief toggle the given side for the adjacent nodes.
+     *
+     *  NOTE: This function *should not* invalidate iterators of the `adj_out`
+     *  and `adj_in` maps. This assumption is essential for preserving the
+     *  correctness of the edge canonicalisation; i.e. `make_edges_canonical`
+     *  method. Invalidation could lead to unpredictable behavior or disrupt
+     *  algorithmic consistency.
+     */
+    inline void
+    _toggle_side_in_adjacent_nodes( side_type side )
+    {
+      auto flip_adjs = [this]( auto side, auto&& adjs1, auto&& adjs2 ) {
+        auto opposite = this->opposite_side( side );
+        auto itr1 = adjs1.find( side );
+        if ( itr1 == adjs1.end() ) return;
+        for ( auto& other_side : itr1->second ) {
+          auto itr2 = adjs2.find( other_side );
+          auto siter = std::find( itr2->second.begin(), itr2->second.end(), side );
+          assert( siter != itr2->second.end() );
+          *siter = opposite;
+        }
+      };
+
+      flip_adjs( side, this->adj_out, this->adj_in );
+      flip_adjs( side, this->adj_in, this->adj_out );
     }
   };  /* --- end of template class DirectedGraph --- */
 }  /* --- end of namespace gum --- */

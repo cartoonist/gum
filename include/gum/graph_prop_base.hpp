@@ -68,6 +68,12 @@ namespace gum {
       return value >> ( PathBase::VALUE_WIDTH - 1 );
     }
 
+    constexpr static inline void
+    reverse( value_type& value )
+    {
+      value ^= PathBase::get_orientation_bit();
+    }
+  private:
     constexpr static inline value_type
     get_orientation_bit( )
     {

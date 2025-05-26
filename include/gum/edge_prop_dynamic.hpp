@@ -128,6 +128,25 @@ namespace gum {
       return this->edges.find( sides ) != this->edges.end();
     }
 
+    inline bool
+    change_edge( key_type old_sides, key_type new_sides, bool swap = false )
+    {
+      auto o_itr = this->edges.find( old_sides );
+      if ( o_itr == this->edges.end() ) return false;
+
+      auto n_itr = this->edges.find( new_sides );
+      if ( n_itr != this->edges.end() ) {
+        if ( swap ) std::swap( o_itr->second, n_itr->second );
+        else return false;  // do not swap with an existing edge
+      }
+      else {
+        auto elem = std::move( o_itr->second );
+        this->edges.erase( o_itr );
+        this->edges[ new_sides ] = elem;
+      }
+      return true;
+    }
+
     inline void
     clear( )
     {

@@ -15,6 +15,7 @@
  *  See LICENSE file for more information.
  */
 
+#include <unordered_map>
 #include <vector>
 #include <utility>
 #include <algorithm>
@@ -1315,6 +1316,395 @@ SCENARIO( "Specialised functionality of SeqGraph", "[seqgraph]" )
         THEN( "The graph should be empty" )
         {
           empty_graph_test( sc_graph );
+        }
+      }
+    }
+  }
+}
+
+TEMPLATE_SCENARIO( "Modify the orientation of nodes and edges in SeqGraph", "[seqgraph][flip]",
+                   ( gum::SeqGraph< gum::Dynamic > ) )
+{
+  using graph_type = TestType;
+  using id_type = typename graph_type::id_type;
+  using rank_type = typename graph_type::rank_type;
+  using side_type = typename graph_type::side_type;
+  using link_type = typename graph_type::link_type;
+  using offset_type = typename graph_type::offset_type;
+
+  auto compare_graph = []( auto const& g1, auto const& g2 ) -> bool {
+    if ( g1.get_node_count() != g2.get_node_count() ) { return false; }
+    if ( g1.get_edge_count() != g2.get_edge_count() ) { return false; }
+    if ( g1.get_path_count() != g2.get_path_count() ) { return false; }
+
+    auto res = g1.for_each_node( [&]( rank_type rank, id_type id ) {
+      if ( !g2.has_node( id ) ) return false;
+
+      auto res = g1.for_each_side( id, [&]( auto from ) {
+        auto res = g1.for_each_edges_out( from, [&]( auto to ) {
+          if ( !g2.has_edge( from, to ) ) return false;
+          return true;
+        } );
+        if ( !res ) return false;
+        return true;
+      } );
+
+      if ( !res ) return false;
+      return true;
+    } );
+
+    if ( !res ) return false;
+
+    return g1.for_each_path( [&]( auto, auto pid1 ) {
+      auto pname = g1.path_name( pid1 );
+      id_type pid2 = 0;
+      g2.for_each_path( [&]( auto, auto _pid2 ) {
+        if ( g2.path_name( _pid2 ) == pname ) {
+          pid2 = _pid2;
+          return false;
+        }
+        return true;
+      } );
+
+      if ( pid2 == 0 ) return false;
+      auto path1 = g1.path( pid1 );
+      auto path2 = g2.path( pid2 );
+
+      return std::equal( path1.begin(), path1.end(), path2.begin(),
+                         path2.end() );
+    } );
+  };
+
+  GIVEN( "A simple SeqGraph" )
+  {
+    graph_type graph;
+    graph_type orig_graph;
+    gum::util::load( graph, test_data_dir + "/graph_simple_v2.gfa" );
+    graph.add_edge( { 6, true }, { 8, false }, { 7 } );
+    orig_graph = graph;
+    std::unordered_map< side_type, std::vector< side_type > > adjs
+        = { { { 1, true }, { { 2, false }, { 3, true }, { 4, false } } },
+            { { 2, true }, { { 5, false } } },
+            { { 3, false }, { { 5, false } } },
+            { { 4, true }, { { 5, true } } },
+            { { 5, false }, { { 6, false }, { 7, false } } },
+            { { 5, true }, { { 8, false } } },
+            { { 6, true }, { { 8, false } } } };
+    std::unordered_map< link_type, offset_type > overlaps
+        = { { { 1, true, 2, false }, 0 },  { { 1, true, 3, true }, 0 },
+            { { 1, true, 4, false }, 0 },  { { 2, true, 5, false }, 0 },
+            { { 3, false, 5, false }, 1 }, { { 4, true, 5, true }, 0 },
+            { { 5, false, 6, false }, 1 }, { { 5, false, 7, false }, 0 },
+            { { 5, true, 8, false }, 0 },  { { 6, true, 8, false }, 7 } };
+    std::vector< gum::String< gum::Char > > seqs;
+    seqs.resize( 9 );
+    seqs[ 1 ] = "TGGTCAAC";
+    seqs[ 2 ] = "T";
+    seqs[ 3 ] = "GCC";
+    seqs[ 4 ] = "A";
+    seqs[ 5 ] = "CTTAAA";
+    seqs[ 6 ] = "GCG";
+    seqs[ 7 ] = "CTTTT";
+    seqs[ 8 ] = "AAAT";
+    std::vector< std::vector< std::pair< id_type, bool > > > paths
+        = { { { 1, false }, { 2, false }, { 5, false }, { 8, false } },
+            { { 4, false }, { 5, true }, { 7, false } } };
+
+    THEN( "Paths in the graph should be properly defined" )
+    {
+      graph.for_each_path(
+          [&]( auto rank, auto id ) {
+            auto path = graph.path( id );
+            auto& true_path = paths[ rank - 1 ];
+            REQUIRE( path.size() == true_path.size() );
+            auto node_itr = true_path.begin();
+            path.for_each_node(
+                [&]( id_type id, bool is_reverse ) {
+                  REQUIRE( id == node_itr->first );
+                  REQUIRE( is_reverse == node_itr->second );
+                  ++node_itr;
+                  return true;
+                } );
+            return true;
+          } );
+    }
+
+    AND_GIVEN( "A node in the graph" )
+    {
+      id_type nid = GENERATE( Catch::Generators::range( 1, 9 ) );
+
+      WHEN( "Go through the properties of each side" )
+      {
+        auto is_start_side = GENERATE( true, false );
+        side_type side;
+        if ( is_start_side ) side = graph.start_side( nid );
+        else side = graph.end_side( nid );
+
+        INFO( "Selected node: " << nid << ( is_start_side ? "+" : "-" ) );
+
+        THEN( "It should have the expected properties" )
+        {
+          REQUIRE( graph.outdegree( side ) == adjs[ side ].size() );
+          REQUIRE( graph.node_sequence( nid ) == seqs[ nid ] );
+          for ( auto const& to : adjs[ side ] ) {
+            REQUIRE( graph.has_edge( side, to ) );
+            auto link = graph.make_link( side, to );
+            REQUIRE( graph.edge_overlap( link ) == overlaps[ link ] );
+            REQUIRE( !graph.for_each_edges_in(
+                to, [&side]( auto from ) { return from != side; } ) );
+          }
+        }
+      }
+
+      WHEN( "Flip the orientation of a node" )
+      {
+        REQUIRE( graph.flip_orientation( nid, true ) );
+
+        THEN( "Paths in the graph should be properly defined" )
+        {
+          graph.for_each_path(
+            [&]( auto rank, auto id ) {
+              auto path = graph.path( id );
+              auto& true_path = paths[ rank - 1 ];
+              REQUIRE( path.size() == true_path.size() );
+              auto node_itr = true_path.begin();
+              path.for_each_node(
+                [&]( id_type id, bool is_reverse ) {
+                  REQUIRE( id == node_itr->first );
+                  if ( id == nid ) {
+                    is_reverse = !is_reverse;
+                  }
+                  REQUIRE( is_reverse == node_itr->second );
+                  ++node_itr;
+                  return true;
+                } );
+              return true;
+            } );
+        }
+
+        AND_WHEN( "Go through the properties of each side" )
+        {
+          auto is_start_side = GENERATE( true, false );
+          side_type side;
+          if ( is_start_side )
+            side = graph.start_side( nid );
+          else
+            side = graph.end_side( nid );
+          auto opposite = graph.opposite_side( side );
+
+          INFO( "Selected node: " << nid << ( is_start_side ? "+" : "-" ) );
+
+          THEN( "The node should be properly flipped" )
+          {
+            REQUIRE( graph.outdegree( side ) == adjs[ opposite ].size() );
+            auto label = seqs[ nid ];
+            label.reverse_complement();
+            REQUIRE( graph.node_sequence( nid ) == label );
+            REQUIRE( graph.node_name( nid ) == std::to_string( nid ) + "-" );
+            for ( auto const& to : adjs[ opposite ] ) {
+              REQUIRE( graph.has_edge( side, to ) );
+              auto link = graph.make_link( side, to );
+              auto old_link = graph.make_link( opposite, to );
+              REQUIRE( graph.edge_overlap( link ) == overlaps[ old_link ] );
+              REQUIRE( !graph.for_each_edges_in(
+                  to, [&side]( auto from ) { return from != side; } ) );
+            }
+          }
+        }
+
+        AND_WHEN( "Flip the orientation of the node again" )
+        {
+          REQUIRE( graph.flip_orientation( nid, true ) );
+
+          THEN( "The node should be back to its original orientation" )
+          {
+            REQUIRE( graph.node_name( nid ) == std::to_string( nid ) );
+            REQUIRE( compare_graph( graph, orig_graph ) );
+          }
+        }
+      }
+    }
+
+    AND_GIVEN( "A node set in the graph" )
+    {
+      std::size_t node_count = 4;
+      std::vector< id_type > fullset( 8, 0 );
+      std::unordered_set< id_type > nodes;
+      std::iota( fullset.begin(), fullset.end(), 1 );
+      auto rgn = rnd::get_rgn();
+      std::shuffle( fullset.begin(), fullset.end(), rgn );
+
+      while ( node_count --> 0 ) {
+        nodes.insert( fullset[ node_count ] );
+      }
+
+      WHEN( "Flip the orientation of a set of nodes" )
+      {
+        REQUIRE( graph.flip_orientation( nodes, true ) );
+
+        THEN( "Paths in the graph should be properly defined" )
+        {
+          graph.for_each_path(
+            [&]( auto rank, auto id ) {
+              auto path = graph.path( id );
+              auto& true_path = paths[ rank - 1 ];
+              REQUIRE( path.size() == true_path.size() );
+              auto node_itr = true_path.begin();
+              path.for_each_node(
+                [&]( id_type id, bool is_reverse ) {
+                  REQUIRE( id == node_itr->first );
+                  if ( nodes.count( id ) ) {
+                    is_reverse = !is_reverse;
+                  }
+                  REQUIRE( is_reverse == node_itr->second );
+                  ++node_itr;
+                  return true;
+                } );
+              return true;
+            } );
+        }
+
+        AND_WHEN( "Go through the properties of each side of flipped nodes" )
+        {
+          auto is_start_side = GENERATE( true, false );
+
+          THEN( "The node should be properly flipped" )
+          {
+            for ( auto const& nid : nodes ) {
+              side_type side;
+              if ( is_start_side )
+                side = graph.start_side( nid );
+              else
+                side = graph.end_side( nid );
+              auto opposite = graph.opposite_side( side );
+
+              INFO( "Node: " << nid << ( is_start_side ? "+" : "-" ) );
+
+              REQUIRE( graph.outdegree( side ) == adjs[ opposite ].size() );
+              auto label = seqs[ nid ];
+              label.reverse_complement();
+              REQUIRE( graph.node_sequence( nid ) == label );
+              REQUIRE( graph.node_name( nid ) == std::to_string( nid ) + "-" );
+              for ( auto to : adjs[ opposite ] ) {
+                auto old_link = graph.make_link( opposite, to );
+                if ( nodes.count( graph.id_of( to ) ) ) {
+                  to = graph.opposite_side( to );
+                }
+                auto link = graph.make_link( side, to );
+                REQUIRE( graph.has_edge( side, to ) );
+                REQUIRE( graph.edge_overlap( link ) == overlaps[ old_link ] );
+                REQUIRE( !graph.for_each_edges_in(
+                    to, [&side]( auto from ) { return from != side; } ) );
+              }
+            }
+          }
+        }
+
+        AND_WHEN( "Flip the orientation of the node set again" )
+        {
+          REQUIRE( graph.flip_orientation( nodes, true ) );
+
+          THEN( "The nodes should be back to their original orientation" )
+          {
+            graph.for_each_node(
+              [&]( rank_type, id_type nid ) {
+                REQUIRE( graph.node_name( nid ) == std::to_string( nid ) );
+                return true;
+              } );
+            REQUIRE( compare_graph( graph, orig_graph ) );
+          }
+        }
+      }
+
+      WHEN( "Flip the orientation of a set of nodes using NodeFlipper" )
+      {
+        bool res = true;
+        {
+          auto flipper = graph.get_node_flipper( /*annotate*/ true );
+          for ( auto const& nid : nodes ) {
+            if ( !flipper.flip_orientation( nid ) ) res = false;
+          }
+        }
+        REQUIRE( res );
+
+        THEN( "Paths in the graph should be properly defined" )
+        {
+          graph.for_each_path(
+            [&]( auto rank, auto id ) {
+              auto path = graph.path( id );
+              auto& true_path = paths[ rank - 1 ];
+              REQUIRE( path.size() == true_path.size() );
+              auto node_itr = true_path.begin();
+              path.for_each_node(
+                [&]( id_type id, bool is_reverse ) {
+                  REQUIRE( id == node_itr->first );
+                  if ( nodes.count( id ) ) {
+                    is_reverse = !is_reverse;
+                  }
+                  REQUIRE( is_reverse == node_itr->second );
+                  ++node_itr;
+                  return true;
+                } );
+              return true;
+            } );
+        }
+
+        AND_WHEN( "Go through the properties of each side of flipped nodes" )
+        {
+          auto is_start_side = GENERATE( true, false );
+
+          THEN( "The node should be properly flipped" )
+          {
+            for ( auto const& nid : nodes ) {
+              side_type side;
+              if ( is_start_side )
+                side = graph.start_side( nid );
+              else
+                side = graph.end_side( nid );
+              auto opposite = graph.opposite_side( side );
+
+              INFO( "Node: " << nid << ( is_start_side ? "+" : "-" ) );
+
+              REQUIRE( graph.outdegree( side ) == adjs[ opposite ].size() );
+              auto label = seqs[ nid ];
+              label.reverse_complement();
+              REQUIRE( graph.node_sequence( nid ) == label );
+              REQUIRE( graph.node_name( nid ) == std::to_string( nid ) + "-" );
+              for ( auto to : adjs[ opposite ] ) {
+                auto old_link = graph.make_link( opposite, to );
+                if ( nodes.count( graph.id_of( to ) ) ) {
+                  to = graph.opposite_side( to );
+                }
+                auto link = graph.make_link( side, to );
+                REQUIRE( graph.has_edge( side, to ) );
+                REQUIRE( graph.edge_overlap( link ) == overlaps[ old_link ] );
+                REQUIRE( !graph.for_each_edges_in(
+                    to, [&side]( auto from ) { return from != side; } ) );
+              }
+            }
+          }
+        }
+
+        AND_WHEN( "Flip the orientation of the node set again" )
+        {
+          bool res = true;
+          {
+            auto flipper = graph.get_node_flipper( true, /*lazy*/ true );
+            for ( auto const& nid : nodes ) {
+              if ( !flipper.flip_orientation( nid ) ) res = false;
+            }
+          }
+          REQUIRE( res );
+
+          THEN( "The nodes should be back to their original orientation" )
+          {
+            graph.for_each_node(
+              [&]( rank_type, id_type nid ) {
+                REQUIRE( graph.node_name( nid ) == std::to_string( nid ) );
+                return true;
+              } );
+            REQUIRE( compare_graph( graph, orig_graph ) );
+          }
         }
       }
     }

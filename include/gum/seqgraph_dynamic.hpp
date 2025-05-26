@@ -250,6 +250,133 @@ namespace gum {
       return this->graph_prop.for_each_path( callback, rank );
     }
 
+    template< typename TGraph >
+    class NodeFlipper {
+      public:
+        /* === TYPE MEMBERS === */
+        using graph_type = TGraph;
+        using id_type = typename graph_type::id_type;
+        using function_type = std::function< void( std::string const& ) >;
+        using container_type = phmap::flat_hash_set< id_type >;
+        /* === LIFECYCLE === */
+        NodeFlipper( TGraph* ptr, bool annotate = false, bool lazy = false,
+                     function_type info = nullptr,
+                     function_type warn = nullptr )
+            : m_ptr( ptr ), m_annotate( annotate ), m_lazy( lazy ),
+              m_info( info ), m_warn( warn )
+        { }
+
+        ~NodeFlipper() noexcept
+        {
+          this->flush();
+        }
+        /* === METHOD === */
+        inline bool
+        flip_orientation( id_type id )
+        {
+          if ( !this->m_lazy ) {
+            if ( !this->_flip( id ) ) return false;
+          }
+          this->_stash( id );
+          return true;
+        }
+
+        inline void
+        flush() noexcept
+        {
+          if ( this->m_lazy ) {
+            for ( auto id : this->m_stash ) this->_flip( id );
+          }
+          this->m_ptr->graph_prop.flip_orientation( this->m_stash );
+          this->m_stash.clear();
+        }
+
+        inline void
+        discard() noexcept
+        {
+          this->m_stash.clear();
+        }
+
+      private:
+        /* === DATA MEMBERS === */
+        TGraph* m_ptr;
+        bool m_annotate;
+        bool m_lazy;
+        function_type m_info;
+        function_type m_warn;
+        container_type m_stash;
+        /* === METHODS === */
+        inline bool
+        _flip( id_type id )
+        {
+          if ( !this->m_ptr->_flip_orientation_impl( id, this->m_annotate ) ) {
+            if ( this->m_warn ) {
+              this->m_warn( "cannot flip the orientation of node '"
+                            + std::to_string( id ) + "'" );
+            }
+            return false;
+          }
+          return true;
+        }
+
+        inline void
+        _stash( id_type id )
+        {
+          auto itr = this->m_stash.find( id );
+          if ( itr != this->m_stash.end() ) {
+            if ( this->m_info ) {
+              this->m_info( "double flipping orientation of node '"
+                            + std::to_string( id ) + "'" );
+            }
+            this->m_stash.erase( itr );
+          }
+          else {
+            this->m_stash.insert( id );
+          }
+        }
+    };
+
+    template< typename ...TArgs >
+    inline auto
+    get_node_flipper( TArgs&&... args )
+    {
+      return NodeFlipper( this, std::forward< TArgs >( args )... );
+    }
+
+    /**
+     *  @brief Flip the orientation of a node.
+     *
+     *  @param id       Node ID.
+     *  @param annotate If true, the node's name will be appended by "-". If
+     *                  already flipped, the annotation will be removed.
+     *
+     *  NOTE: Flipping a node also requires updating its orientation in all
+     *  embedded paths to maintain the integrity of the graph. However,
+     *  flipping nodes one at a time is inefficient. For better performance,
+     *  you can use a `NodeFlipper` by calling `get_node_flipper`. It offers an
+     *  RAII design to make sure that paths are compliant with the graph
+     *  topology.
+     */
+    inline bool
+    flip_orientation( id_type id, bool annotate=false )
+    {
+      if ( !this->_flip_orientation_impl( id, annotate ) ) return false;
+      this->graph_prop.flip_orientation( id );
+      return true;
+    }
+
+    template< typename TSet >
+    inline bool
+    flip_orientation( TSet const& node_set, bool annotate=false )
+    {
+      std::size_t cnt = 0;
+      for ( auto id : node_set ) {
+        if ( this->_flip_orientation_impl( id, annotate ) ) cnt++;
+      }
+      if ( cnt > 0 ) this->graph_prop.flip_orientation( node_set );
+      return cnt > 0;
+    }
+
     inline seq_const_reference
     node_sequence( id_type id ) const
     {
@@ -355,6 +482,48 @@ namespace gum {
     node_prop_type node_prop;
     edge_prop_type edge_prop;
     graph_prop_type graph_prop;
+    /* === METHODS === */
+    inline bool
+    _flip_orientation_impl( id_type id, bool annotate=false )
+    {
+      rank_type rank = base_type::id_to_rank( id );
+      if ( rank == 0 ) return false;
+      this->_flip_edge_props( id );
+      this->node_prop.flip_orientation( rank, annotate );
+      auto res = base_type::flip_orientation( id );
+      assert( res );  // should always succeed
+      return res;
+    }
+
+    inline void
+    _flip_edge_props( id_type id )
+    {
+      phmap::flat_hash_set< side_type > visited;  // to avoid double flipping
+      this->for_each_side( id, [&]( auto from ) {
+        return this->for_each_edges_out( from, [&]( auto to ) {
+          if ( visited.count( to ) ) return true;
+          visited.insert( to );
+          auto opposite = this->opposite_side( from );
+          auto old_link = this->make_link( from, to );
+          auto new_link = this->make_link( opposite, to );
+          this->edge_prop.change_edge( old_link, new_link, /*swap=*/true );
+          return true;
+        } );
+      } );
+
+      visited.clear();
+      this->for_each_side( id, [&]( auto to ) {
+        return this->for_each_edges_in( to, [&]( auto from ) {
+          if ( visited.count( from ) ) return true;
+          visited.insert( from );
+          auto opposite = this->opposite_side( to );
+          auto old_link = this->make_link( from, to );
+          auto new_link = this->make_link( from, opposite );
+          this->edge_prop.change_edge( old_link, new_link, /*swap=*/true );
+          return true;
+        } );
+      } );
+    }
   };  /* --- end of template class SeqGraph --- */
 }  /* --- end of namespace gum --- */
 

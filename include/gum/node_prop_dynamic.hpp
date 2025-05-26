@@ -18,10 +18,13 @@
 #ifndef GUM_NODE_PROP_DYNAMIC_HPP__
 #define GUM_NODE_PROP_DYNAMIC_HPP__
 
+#include <algorithm>
+
 #include "utils.hpp"
 #include "graph_traits_dynamic.hpp"
 #include "node_prop_base.hpp"
 #include "iterators.hpp"
+#include "alphabet.hpp"
 
 
 namespace gum {
@@ -124,6 +127,7 @@ namespace gum {
     using id_type = typename trait_type::id_type;
     using offset_type = typename trait_type::offset_type;
     using rank_type = typename trait_type::rank_type;
+    using alphabet_type = gum::Char;
     using sequence_type = std::string;
     using string_type = typename trait_type::string_type;
     using node_type = Node< sequence_type, string_type >;
@@ -157,6 +161,7 @@ namespace gum {
     using id_type = typename trait_type::id_type;
     using offset_type = typename trait_type::offset_type;
     using rank_type = typename trait_type::rank_type;
+    using alphabet_type = typename trait_type::alphabet_type;
     using sequence_type = typename trait_type::sequence_type;
     using string_type = typename trait_type::string_type;
     using node_type = typename trait_type::node_type;
@@ -275,6 +280,49 @@ namespace gum {
       this->sequences_len_sum += node.sequence.size() - old.sequence.size();
       this->names_len_sum += node.name.size() - old.name.size();
       old = std::move( node );
+    }
+
+    inline void
+    reverse_node_sequence( rank_type rank )
+    {
+      auto&& node = this->nodes[ rank - 1 ];
+      std::reverse( node.sequence.begin(), node.sequence.end() );
+    }
+
+    inline void
+    complement_node_sequence( rank_type rank )
+    {
+      auto&& node = this->nodes[ rank - 1 ];
+      std::transform(
+          node.sequence.begin(), node.sequence.end(), node.sequence.begin(),
+          []( auto c ) { return alphabet_type::complement( c ); } );
+    }
+
+    inline void
+    revcomp_node_sequence( rank_type rank, bool annotate=false )
+    {
+      auto&& node = this->nodes[ rank - 1 ];
+      auto l_itr = node.sequence.begin();
+      auto r_itr = node.sequence.end();
+      if ( l_itr == r_itr ) return;
+
+      for ( --r_itr; l_itr < r_itr; ( void )++l_itr, --r_itr ) {
+        auto l_tmp = *r_itr;
+        *r_itr = alphabet_type::complement( *l_itr );
+        *l_itr = alphabet_type::complement( l_tmp );
+      }
+      if ( l_itr == r_itr ) *l_itr = alphabet_type::complement( *l_itr );
+
+      if ( annotate ) {
+        if ( node.name.back() == '-' ) node.name.pop_back();
+        else node.name.push_back( '-' );
+      }
+    }
+
+    inline void
+    flip_orientation( rank_type rank, bool annotate=false )
+    {
+      this->revcomp_node_sequence( rank, annotate );
     }
 
     template< typename TContainer >
