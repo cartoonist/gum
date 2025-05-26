@@ -374,7 +374,16 @@ TEMPLATE_SCENARIO( "Specialised functionality of DirectedGraph", "[seqgraph][tem
             REQUIRE( !graph.has_edge( edge.second, edge.first ) );
             REQUIRE( !graph.has_edge( abs_id, edge.second ) );
             REQUIRE( graph.has_edge( edge ) );
+            side_type from = graph.from_side( edge );
+            side_type to = graph.to_side( edge );
+            link_type flipped_link = graph.make_link( to, from );
+            REQUIRE( graph.flipped_link( edge ) == flipped_link );
+            REQUIRE( graph.flipped_link( graph.id_of( from ),
+                                         graph.id_of( to ),
+                                         graph.linktype( edge ) )
+                     == flipped_link );
           }
+          REQUIRE( !graph.has_any_parallel_edge() );
           std::vector< side_type > truth;
           auto side_truth_check =
               [&truth]( side_type side ) {
@@ -671,7 +680,16 @@ TEMPLATE_SCENARIO( "Specialised functionality of Bidirected DirectedGraph", "[se
             REQUIRE( graph.is_from_start( type ) == !std::get<1>( edge ) );
             REQUIRE( graph.is_to_end( edge ) == std::get<3>( edge ) );
             REQUIRE( graph.is_to_end( type ) == std::get<3>( edge ) );
+            side_type from = graph.from_side( edge );
+            side_type to = graph.to_side( edge );
+            link_type flipped_link = graph.make_link( to, from );
+            REQUIRE( graph.flipped_link( edge ) == flipped_link );
+            REQUIRE( graph.flipped_link( graph.id_of( from ),
+                                         graph.id_of( to ),
+                                         graph.linktype( edge ) )
+                     == flipped_link );
           }
+          REQUIRE( !graph.has_any_parallel_edge() );
           std::vector< side_type > truth;
           auto side_truth_check =
               [&truth]( side_type side ) {

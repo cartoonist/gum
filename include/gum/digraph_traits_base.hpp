@@ -206,6 +206,21 @@ namespace gum {
     }
 
     constexpr static inline link_type
+    flipped_link( id_type from_id, id_type to_id, linktype_type type )
+    {
+      return DirectedGraphBaseTrait::make_link(
+          to_id, from_id, DirectedGraphBaseTrait::flipped_linktype( type ) );
+    }
+
+    constexpr static inline link_type
+    flipped_link( link_type sides )
+    {
+      return DirectedGraphBaseTrait::make_link(
+          DirectedGraphBaseTrait::to_side( sides ),
+          DirectedGraphBaseTrait::from_side( sides ) );
+    }
+
+    constexpr static inline link_type
     get_dummy_link( )
     {
       return DirectedGraphBaseTrait::make_link(
@@ -228,6 +243,14 @@ namespace gum {
       return DirectedGraphBaseTrait::_linktype(
           DirectedGraphBaseTrait::from_sidetype( sides ),
           DirectedGraphBaseTrait::to_sidetype( sides ) );
+    }
+
+    constexpr static inline linktype_type
+    flipped_linktype( linktype_type type )
+    {
+      return DirectedGraphBaseTrait::_linktype(
+          DirectedGraphBaseTrait::to_sidetype( type ),
+          DirectedGraphBaseTrait::from_sidetype( type ) );
     }
 
     constexpr static inline bool
@@ -457,6 +480,22 @@ namespace gum {
                         DirectedGraphBaseTrait::to_side( to_id, type ) );
     }
 
+
+    constexpr static inline link_type
+    flipped_link( id_type from_id, id_type to_id, linktype_type type )
+    {
+      return DirectedGraphBaseTrait::make_link(
+          to_id, from_id, DirectedGraphBaseTrait::flipped_linktype( type ) );
+    }
+
+    constexpr static inline link_type
+    flipped_link( link_type sides )
+    {
+      return DirectedGraphBaseTrait::make_link(
+          DirectedGraphBaseTrait::to_side( sides ),
+          DirectedGraphBaseTrait::from_side( sides ) );
+    }
+
     constexpr static inline link_type
     get_dummy_link( )
     {
@@ -480,6 +519,12 @@ namespace gum {
 
     constexpr static inline linktype_type
     linktype( link_type )
+    {
+      return DirectedGraphBaseTrait::get_default_linktype();
+    }
+
+    constexpr static inline linktype_type
+    flipped_linktype( linktype_type )
     {
       return DirectedGraphBaseTrait::get_default_linktype();
     }

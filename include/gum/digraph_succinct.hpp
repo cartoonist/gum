@@ -397,6 +397,18 @@ namespace gum {
       return trait_type::make_link( from, to, type );
     }
 
+    constexpr inline link_type
+    flipped_link( id_type from_id, id_type to_id, linktype_type type ) const
+    {
+      return trait_type::flipped_link( from_id, to_id, type );
+    }
+
+    constexpr inline link_type
+    flipped_link( link_type sides ) const
+    {
+      return trait_type::flipped_link( sides );
+    }
+
     constexpr inline linktype_type
     get_default_linktype( ) const
     {
@@ -413,6 +425,12 @@ namespace gum {
     linktype( link_type sides ) const
     {
       return trait_type::linktype( sides );
+    }
+
+    constexpr inline linktype_type
+    flipped_linktype( linktype_type type ) const
+    {
+      return trait_type::flipped_linktype( type );
     }
 
     constexpr inline bool
@@ -489,6 +507,17 @@ namespace gum {
     {
       return this->has_edge( this->from_id( sides ), this->to_id( sides ),
                              this->linktype( sides ) );
+    }
+
+    inline bool
+    has_any_parallel_edge() const
+    {
+      return !this->for_each_node( [this]( rank_type, id_type from ) {
+        return this->for_each_edges_out(
+            from, [&]( id_type to, linktype_type type ) {
+              return !this->has_edge( to, from, this->flipped_linktype( type ) );
+            } );
+      } );
     }
 
     inline adjs_type
