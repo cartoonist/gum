@@ -377,6 +377,126 @@ namespace gum {
       return cnt > 0;
     }
 
+    template< typename TGraph >
+    class EdgeFlipper {
+      public:
+        /* === TYPE MEMBERS === */
+        using graph_type = TGraph;
+        using side_type = typename graph_type::side_type;
+        using function_type = std::function< void( std::string const& ) >;
+        using container_type = phmap::flat_hash_set< std::pair< side_type, side_type > >;
+        /* === LIFECYCLE === */
+        EdgeFlipper( TGraph* ptr, bool swap = false, bool lazy = false,
+                     function_type info = nullptr,
+                     function_type warn = nullptr )
+            : m_ptr( ptr ), m_swap( swap ), m_lazy( lazy ), m_info( info ),
+              m_warn( warn )
+        { }
+
+        ~EdgeFlipper() noexcept
+        {
+          this->flush();
+        }
+        /* === METHOD === */
+        inline bool
+        flip_edge( side_type from, side_type to )
+        {
+          if ( !this->m_lazy ) {
+            return this->_flip( from, to );
+          }
+          this->_stash( from, to );
+          return true;
+        }
+
+        inline void
+        flush() noexcept
+        {
+          for ( auto const& [ from, to ] : this->m_stash ) {
+            this->_flip( from, to );
+          }
+          this->m_stash.clear();
+        }
+
+        inline void
+        discard() noexcept
+        {
+          this->m_stash.clear();
+        }
+        /* === STATIC METHODS === */
+        inline std::string
+        edge_to_str( side_type from, side_type to ) const
+        {
+          return "(" + std::to_string( this->m_ptr->id_of( from ) )
+                 + ( this->m_ptr->is_end_side( from ) ? "" : "-" ) + ", "
+                 + std::to_string( this->m_ptr->id_of( to ) )
+                 + ( this->m_ptr->is_start_side( to ) ? "" : "-" ) + ")";
+        }
+
+      private:
+        /* === DATA MEMBERS === */
+        TGraph* m_ptr;
+        bool m_swap;
+        bool m_lazy;
+        function_type m_info;
+        function_type m_warn;
+        container_type m_stash;
+        /* === METHOD === */
+        inline bool
+        _flip( side_type from, side_type to )
+        {
+          if ( !this->m_ptr->flip_edge( from, to, this->m_swap ) ) {
+            if ( this->m_warn ) {
+              this->m_info( "cannot flip edge "
+                            + this->edge_to_str( from, to ) );
+            }
+            return false;
+          }
+          return true;
+        }
+
+        inline void
+        _stash( side_type from, side_type to )
+        {
+          auto itr = this->m_stash.find( { from, to } );
+          if ( itr != this->m_stash.end() ) {
+            if ( this->m_info ) {
+              this->m_info( "double flipping of edge "
+                            + this->edge_to_str( from, to ) );
+            }
+            this->m_stash.erase( itr );
+          }
+          else {
+            this->m_stash.insert( { from, to } );
+          }
+        }
+    };
+
+    template< typename ...TArgs >
+    inline auto
+    get_edge_flipper( TArgs&&... args )
+    {
+      return EdgeFlipper( this, std::forward< TArgs >( args )... );
+    }
+
+    inline bool
+    flip_edge( side_type from, side_type to, bool swap = false )
+    {
+      auto old_link = this->make_link( from, to );
+      auto new_link = this->make_link( to, from );
+      auto res = base_type::flip_edge( from, to, swap );
+      if ( res ) {
+        res = this->edge_prop.change_edge( old_link, new_link, swap );
+        if ( !res ) base_type::flip_edge( to, from, swap );  // revert
+      }
+      return res;
+    }
+
+    inline bool
+    flip_edge( link_type link, bool swap = false )
+    {
+      return this->flip_edge( this->from_side( link ), this->to_side( link ), swap );
+    }
+
     inline seq_const_reference
     node_sequence( id_type id ) const
     {

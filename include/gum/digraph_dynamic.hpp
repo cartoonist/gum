@@ -554,6 +554,29 @@ namespace gum {
     }
 
     /**
+     *  @brief  Flip the edge from `from` side to `to` side.
+     *
+     *  NOTE: When `TDir` is `Bidirected`, flipping an edge does not change the
+     *  topology of the graph since each edge in both directions yeilds the same
+     *  sequence. However, in `Directed` graphs, it does change the topology.
+     */
+    inline bool
+    flip_edge( side_type from, side_type to, bool swap = false )
+    {
+      if ( !this->has_edge( from, to ) ) return false;
+      if ( this->has_edge( to, from ) ) return swap;
+      this->remove_edge_imp( from, to );
+      this->add_edge( to, from );
+      return true;
+    }
+
+    inline bool
+    flip_edge( link_type link, bool swap = false )
+    {
+      return this->flip_edge( this->from_side( link ), this->to_side( link ), swap );
+    }
+
+    /**
      *  @brief  Call a `callback` on each outgoing edges from `from` side.
      *
      *  The `callback` function should get the outgoing side and return `true`
@@ -841,6 +864,36 @@ namespace gum {
     add_edge_imp( link_type sides, bool safe=true )
     {
       this->add_edge_imp( this->from_side( sides ), this->to_side( sides ), safe );
+    }
+
+    inline void
+    remove_edge_imp( side_type from, side_type to )
+    {
+      auto out_it = this->adj_out.find( from );
+      auto in_it = this->adj_in.find( to );
+      if ( out_it != this->adj_out.end() && in_it != this->adj_in.end() ) {
+        auto& from_outs = out_it->second;
+        auto& to_ins = in_it->second;
+        auto to_itr = std::find( from_outs.begin(), from_outs.end(), to );
+        if ( to_itr != from_outs.end() ) {
+          auto from_itr = std::find( to_ins.begin(), to_ins.end(), from );
+          assert( from_itr != to_ins.end() );
+
+          if ( from_outs.size() == 1 ) this->adj_out.erase( out_it );
+          else {
+            std::swap( *to_itr, from_outs.back() );
+            from_outs.pop_back();
+          }
+
+          if ( to_ins.size() == 1 ) this->adj_in.erase( in_it );
+          else {
+            std::swap( *from_itr, to_ins.back() );
+            to_ins.pop_back();
+          }
+
+          --this->edge_count;
+        }
+      }
     }
 
   private:
