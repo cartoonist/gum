@@ -2243,3 +2243,65 @@ SCENARIO( "Minimal Breaks Ordering", "[seqgraph]" )
     }
   }
 }
+
+SCENARIO( "Edge canonicalization", "[seqgraph][canonical]" )
+{
+  using graph_type = gum::SeqGraph< gum::Dynamic >;
+
+  auto is_canonical = [&]( auto const& graph ) {
+    return graph.for_each_node( [&]( auto rank, auto id ) {
+      auto start = graph.start_side( id );
+      auto end = graph.end_side( id );
+      if ( graph.indegree( end ) != 0 || graph.outdegree( start ) != 0 ) {
+        return false;
+      }
+      return true;
+    } );
+  };
+
+  GIVEN( "A complex variation graph" )
+  {
+    graph_type graph;
+    gum::util::load( graph, test_data_dir + "/complex_v2.gfa" );
+
+    THEN( "It has some non-canonical edges" )
+    {
+      REQUIRE( !is_canonical( graph ) );
+    }
+
+    WHEN( "The graph is canonicalised" )
+    {
+      graph.make_edges_canonical( /*
+          []( auto& msg ) { std::cout << "[INFO] " << msg << std::endl; },
+          []( auto& msg ) { std::cerr << "[WARN] " << msg << std::endl; } */ );
+
+      THEN( "All edges are canonical" )
+      {
+        REQUIRE( is_canonical( graph ) );
+      }
+    }
+  }
+
+  GIVEN( "A HPRC subgraph" )
+  {
+    graph_type graph;
+    gum::util::load( graph, test_data_dir + "/hprc-v1.0-minigraph-chm13-subgraph_v2.gfa" );
+
+    THEN( "It has some non-canonical edges" )
+    {
+      REQUIRE( !is_canonical( graph ) );
+    }
+
+    WHEN( "The graph is canonicalised" )
+    {
+      graph.make_edges_canonical( /*
+          []( auto& msg ) { std::cout << "[INFO] " << msg << std::endl; },
+          []( auto& msg ) { std::cerr << "[WARN] " << msg << std::endl; } */ );
+
+      THEN( "All edges are canonical" )
+      {
+        REQUIRE( is_canonical( graph ) );
+      }
+    }
+  }
+}

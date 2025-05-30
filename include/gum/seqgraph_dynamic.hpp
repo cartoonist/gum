@@ -497,6 +497,194 @@ namespace gum {
       return this->flip_edge( this->from_side( link ), this->to_side( link ), swap );
     }
 
+    /**
+     *  @brief Make edges canonical by arranging node orientations.
+     *
+     *  NOTE: The initial node ranks are crucial for effectiveness of final
+     *  graph. Ranking nodes based on the semi-topological order or their node
+     *  ids when indicates the structure of sequences encoded in the graph,
+     *  would be a good start.
+     */
+    inline void
+    make_edges_canonical( std::function< void( std::string const& ) > info=nullptr,
+                          std::function< void( std::string const& ) > warn=nullptr )
+    {
+      if ( warn && this->has_any_parallel_edge() ) {
+        warn( "graph has parallel edges" );
+      }
+
+      sdsl::bit_vector visited( this->get_node_count() + 1, 0 );
+      this->for_each_node( [ & ]( rank_type rank, id_type id ) {
+        visited[ rank ] = 1;  // assume forward
+
+        if ( this->_is_unambiguously_forward( id, visited ) ) {
+          bool r;
+          r = this->_make_outgoing_edges_canonical( id, visited, info, warn );
+          assert( r );
+          assert( this->indegree( this->end_side( id ) ) == 0 );
+          r = this->_make_incoming_edges_canonical( id, visited, info, warn );
+          assert( r );
+          assert( this->outdegree( this->start_side( id ) ) == 0 );
+        }
+        else {
+          if ( warn ) {
+            warn( "cannot unambiguously determine orientation of node '"
+                  + std::to_string( id ) + "'" );
+          }
+        }
+
+        return true;
+      } );
+    }
+
+    inline bool
+    _is_unambiguously_forward( id_type id, sdsl::bit_vector& visited ) const
+    {
+      auto start = this->start_side( id );
+      auto end = this->end_side( id );
+      phmap::flat_hash_set< side_type > fwd_adjs;  // to detect common adjacents
+
+      return this->for_each_edges_in( end, [&]( side_type from ) {
+        auto f_id = this->id_of( from );
+        auto f_rank = this->id_to_rank( f_id );
+        fwd_adjs.insert( from );
+        if ( this->is_end_side( from ) && visited[ f_rank ] == 1 ) {
+          return false;
+        }
+        return true;
+      } ) && this->for_each_edges_out( end, [&]( side_type to ) {
+        auto t_id = this->id_of( to );
+        auto t_rank = this->id_to_rank( t_id );
+        fwd_adjs.insert( to );
+        if ( this->is_end_side( to ) && visited[ t_rank ] == 1 ) {
+          return false;
+        }
+        return true;
+      } ) && this->for_each_edges_out( start, [&]( side_type to ) {
+        auto t_id = this->id_of( to );
+        auto t_rank = this->id_to_rank( t_id );
+        if ( ( this->is_start_side( to ) && visited[ t_rank ] == 1 )
+             || fwd_adjs.count( to ) ) {  // both sides have a common adjacent
+          return false;
+        }
+        return true;
+      } );
+    }
+
+    inline bool
+    _make_outgoing_edges_canonical(
+        id_type id, sdsl::bit_vector& visited,
+        std::function< void( std::string const& ) > info,
+        std::function< void( std::string const& ) > warn )
+    {
+      auto node_flipper = this->get_node_flipper(
+          /*annotate*/ false, /*lazy*/ true, info, warn );
+      auto edge_flipper = this->get_edge_flipper(
+          /*swap*/ false, /*lazy*/ true, info, warn );
+
+      // find edges to this end side, canonicalise edges, and adjust
+      // adjacent nodes' orientation
+      auto end = this->end_side( id );
+      bool unanimously_fwd = true;
+      this->for_each_edges_in( end, [&]( side_type from ) {
+        auto from_id = this->id_of( from );
+        auto from_rank = this->id_to_rank( from_id );
+        if ( this->is_end_side( from ) ) {
+          if ( visited[ from_rank ] == 1 ) {
+            unanimously_fwd = false;
+            return true;  // continue
+          }
+          // flip adjacent nodes that are reversed from this node's
+          // perspective
+          if ( info ) {
+            info( "flipping node '" + std::to_string( from_id ) + "'" );
+          }
+          // mark to flip
+          node_flipper.flip_orientation( from_id );
+          from = this->start_side( from_id );  // node has flipped
+        }
+        // assume adjacents' orientation
+        visited[ from_rank ] = 1;
+        if ( info ) {
+          info( "flipping edge " + edge_flipper.edge_to_str( from, end ) );
+        }
+        // mark to flip
+        edge_flipper.flip_edge( from, end );
+        return true;
+      } );
+
+      node_flipper.flush();
+      edge_flipper.flush();
+
+      // Assume adjacents' orientation forward
+      this->for_each_edges_out( end, [&]( side_type to ) {
+        auto to_id = this->id_of( to );
+        auto to_rank = this->id_to_rank( to_id );
+        if ( this->is_end_side( to ) ) {
+          if ( visited[ to_rank ] == 1 ) {
+            unanimously_fwd = false;
+            return true;  // continue
+          }
+          if ( info ) {
+            info( "flipping node '" + std::to_string( to_id ) + "'" );
+          }
+          node_flipper.flip_orientation( to_id );
+        }
+        visited[ to_rank ] = 1;
+        return true;
+      } );
+
+      return unanimously_fwd;
+    }
+
+    inline bool
+    _make_incoming_edges_canonical(
+        id_type id, sdsl::bit_vector& visited,
+        std::function< void( std::string const& ) > info,
+        std::function< void( std::string const& ) > warn )
+    {
+      auto node_flipper = this->get_node_flipper(
+          /*annotate*/ false, /*lazy*/ true, info, warn );
+      auto edge_flipper = this->get_edge_flipper(
+          /*swap*/ false, /*lazy*/ true, info, warn );
+
+      // find edges to this end side, canonicalise edges, and adjust
+      // adjacent nodes' orientation
+      auto start = this->start_side( id );
+      bool unanimously_fwd = true;
+      this->for_each_edges_out( start, [&]( side_type to ) {
+        auto to_id = this->id_of( to );
+        auto to_rank = this->id_to_rank( to_id );
+        if ( this->is_start_side( to ) ) {
+          if ( visited[ to_rank ] == 1 ) {
+            unanimously_fwd = false;
+            return true;  // continue
+          }
+          // flip adjacent nodes that are reversed from this node's
+          // perspective
+          if ( info ) {
+            info( "flipping node '" + std::to_string( to_id ) + "'" );
+          }
+          // mark to flip
+          node_flipper.flip_orientation( to_id );
+          to = this->end_side( to_id );  // node has flipped
+        }
+        // assume adjacents' orientation
+        visited[ to_rank ] = 1;
+        if ( info ) {
+          info( "flipping edge " + edge_flipper.edge_to_str( start, to ) );
+        }
+        // mark to flip
+        edge_flipper.flip_edge( start, to );
+        return true;
+      } );
+
+      node_flipper.flush();
+      edge_flipper.flush();
+
+      return unanimously_fwd;
+    }
+
     inline seq_const_reference
     node_sequence( id_type id ) const
     {
