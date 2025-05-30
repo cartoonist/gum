@@ -81,25 +81,14 @@ main( int argc, char* argv[] )
     std::string format = res[ "format" ].as< std::string >();
     graph_type graph;
 
-    auto load_versioned_gfa = []( auto& graph, auto& graph_path, bool sorted, auto version ) {
-      using dynamic_type = typename std::remove_reference_t< decltype( graph ) >::dynamic_type;
-      std::ifstream ifs( graph_path, std::ifstream::in | std::ifstream::binary );
-      gfak::GFAKluge gg;
-      gg.set_version( version );
-      gg.parse_gfa_file( ifs );
-      dynamic_type dyn_graph;
-      util::extend( dyn_graph, gg, sorted );
-      graph = dyn_graph;
-    };
-
     if ( format == "gfa" ) {
       util::load_gfa( graph, graph_path, true );
     }
     else if ( format == "gfa1" ) {
-      load_versioned_gfa( graph, graph_path, true, 1.0 );
+      util::load( graph, graph_path, util::GFA1, true );
     }
     else if ( format == "gfa2" ) {
-      load_versioned_gfa( graph, graph_path, true, 2.0 );
+      util::load( graph, graph_path, util::GFA2, true );
     }
     else if ( format == "vg" ) {
       util::load_vg( graph, graph_path, true );
